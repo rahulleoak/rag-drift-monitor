@@ -5,6 +5,15 @@
 brief except the brief adds the Nov 10 deadline). As questions are answered,
 the outcome moves into `docs/decisions.md`.
 
+**Updates (2026-11-04):**
+- Project structure approved (decision D1).
+- Q1 and Q3: decided after exploring HuffPost and arXiv (D3).
+- Q9: accepted for now (D2).
+- Other Part 2 items: recommendations are working assumptions, not yet
+  confirmed.
+- Part 4 added: ideas taken from the paper "Semantic Drift in Paraphrasing",
+  awaiting approval.
+
 Facts about the dataset used below come from the Kaggle dataset card and are
 **still to be verified** by `scripts/explore_data.py`:
 
@@ -80,6 +89,7 @@ Each item lists options with tradeoffs and a recommendation. Approved items
 become entries in `docs/decisions.md`.
 
 ### Q1. Dataset and use case
+*Status: decide after exploring HuffPost and arXiv (D3).*
 - **A. HuffPost News Category (newsroom archive assistant).** Suggested first in
   the brief, small, timestamped, has categories to segment by, and has well-known
   drift events to validate against (2016 election, #MeToo in late 2017, COVID in
@@ -105,6 +115,7 @@ become entries in `docs/decisions.md`.
   rate as a document-quality metric in Agent A.
 
 ### Q3. Baseline and later periods
+*Status: decide after exploration (D3).*
 - **A. Dense era only (2012 to mid-2018), yearly periods.** Plenty of data, but
   misses COVID, the clearest validation case.
 - **B. Baseline from the dense era (for example 2014–2015, to confirm in step 5),
@@ -195,6 +206,7 @@ become entries in `docs/decisions.md`.
   suite).
 
 ### Q9. Retrieval ground truth (an important subtlety)
+*Status: accepted for now (D2).*
 A stale index cannot contain a 2020 article, so "did we retrieve the source
 article?" is zero by construction on the stale index. That alone would make the
 stale-vs-refreshed comparison trivial.
@@ -327,3 +339,93 @@ stale-vs-refreshed comparison trivial.
     to normalise? Proposed: normalise for segment analysis using a mapping in the
     config, and report the raw label changes as a Data Monitoring finding.
     To verify in step 5.
+
+---
+
+## Part 4. Ideas from "Semantic Drift in Paraphrasing" (unpublished draft)
+
+The paper measures drift between individual text pairs (a source and its
+paraphrase). This project measures drift between collections of documents over
+time. Most findings carry over as design ideas; the paper's numbers and
+thresholds do not. Each idea below needs your approval.
+
+### P1. Compare each period with the baseline and with the previous period
+- **From the paper:** the "Boiling Frog" effect. Each paraphrase step looked
+  safe (mean SDS about 0.38–0.41), while cumulative drift reached 2.27 times
+  the threshold.
+- **Transfer:** measure every later period against the fixed baseline (what
+  the stale index was built on) and against the previous period. Monitoring
+  only consecutive windows, which is common in practice, can miss slow drift.
+- **Recommendation: adopt.** Impact decisions use cumulative drift, because that
+  is what a stale index actually experiences; period-over-period drift flags
+  sudden events. Expectation to test, not a result: consecutive years look
+  modest while 2020 vs the baseline is large.
+
+### P2. Classify drift as lexical, semantic, or both
+- **From the paper:** the "Distance Effect Gap" (lexical metrics report high
+  drift while embedding metrics report little) and the Type 4 "stealth" vs
+  Type 5 "decay" signatures.
+- **Transfer:** place each segment on two axes, lexical drift (technique 2) and
+  embedding drift (technique 1). That gives four kinds: surface drift (new
+  words, same meaning, such as renamed terminology), semantic drift (new
+  meaning or topics), both, or neither.
+- **Hypothesis for "which drift matters":** a dense retriever tolerates surface
+  drift but not semantic drift; a keyword retriever (BM25) is hurt by both.
+- **Recommendation: adopt the four kinds now** (no extra cost: both signals are
+  already planned). Adding BM25 to test the hypothesis is a stretch goal (one
+  small dependency).
+
+### P3. Track how spread out each period is, not just where it sits
+- **From the paper:** "drift deceleration": later iterations had narrower,
+  left-shifted distributions, read as model collapse.
+- **Transfer, two uses:**
+  1. Track the dispersion of each period's embeddings. A period dominated by
+     one story (2020) should be narrower, which a centroid-based measure misses.
+  2. A quality gate on LLM-generated queries. Generated questions can collapse
+     into generic phrasing, so compare their diversity with the documents they
+     came from and regenerate if it is too low.
+- **Recommendation: adopt both.** Cheap.
+
+### P4. No fixed-weight composite score for decisions
+- **From the paper:** SDS, a weighted sum of seven metrics with a 0.35
+  threshold taken from ParaScore.
+- **Recommendation: do not base decisions on a fixed-weight composite here.**
+  1. The 0.35 threshold was calibrated for sentence pairs, not for
+     distributions of documents. We calibrate against within-baseline variation
+     instead (Q3, Q11).
+  2. Fixed weights are hard to defend in a review without something to fit
+     them against.
+- **What our setting adds:** we do have something to fit against, measured
+  quality loss. Agent D can test which drift signal, or combination, best
+  predicts quality loss across segments. That turns the paper's
+  metric-correlation analysis into a direct answer to "which drift matters".
+  A composite can still be shown in the dashboard for sorting.
+- **Worth preparing for if the paper comes up in the walkthrough:** the
+  r = 0.92 correlation between SBERT distance and SDS is partly built in,
+  because SBERT is a 35%-weight component of SDS.
+
+### P5. Tiered data cleaning with a retention table
+- **From the paper:** Table 1 (length filter, near-duplicate removal by cosine,
+  noise filter, with counts removed at each step).
+- **Recommendation: adopt** in `scripts/prepare_data.py`: length bounds,
+  near-duplicate removal by embedding cosine, and the retention table logged in
+  `docs/findings.md`. Thresholds are chosen from the exploration results.
+
+### P6. Correlation heatmap of the drift metrics
+- **From the paper:** Figure 9.
+- **Recommendation: adopt.** Show how our drift metrics correlate across
+  segments. Low correlation supports the claim that the two techniques are
+  complementary; high correlation would mean one is redundant, which is itself
+  worth reporting.
+
+### P7. Low / medium / high severity bands
+- **From the paper:** SDS bands at 0.35 and 0.45.
+- **Recommendation: adopt the bands, but set their boundaries from the
+  within-baseline null** (for example, medium above the 95th percentile of
+  normal year-to-year drift, high above the 99th) rather than fixed constants.
+  They map onto actions: low → monitor, medium → investigate, high → act if
+  impact is confirmed.
+
+### P8. Human validation
+- **From the paper:** future work, section 7.3.
+- Already planned for the LLM judge (Q10, 30 to 50 hand-labelled items).

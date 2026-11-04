@@ -19,4 +19,5 @@ chart, and whether it supports or contradicts what we expected.
 
 ## Findings
 
-_None yet._
+_None yet._ F1 (dataset exploration with `scripts/explore_data.py`) is waiting
+for the dataset files; see the journal entry for 2026-11-04.

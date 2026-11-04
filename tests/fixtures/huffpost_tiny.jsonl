@@ -1,0 +1,8 @@
+{"link": "https://example.org/a1", "headline": "Synthetic headline one", "category": "POLITICS", "short_description": "Synthetic description one.", "authors": "Test Author", "date": "2014-03-01"}
+{"link": "https://example.org/a2", "headline": "Synthetic headline two", "category": "POLITICS", "short_description": "", "authors": "", "date": "2014-07-15"}
+{"link": "https://example.org/a3", "headline": "Synthetic   headline\nthree", "category": "WELLNESS", "short_description": "Synthetic description three.", "authors": "", "date": "2015-01-02"}
+this line is not valid json
+{"link": "https://example.org/a4", "headline": "Missing date", "category": "WELLNESS", "short_description": "x"}
+{"link": "https://example.org/a5", "headline": "Synthetic headline five", "category": "WELLNESS", "short_description": "Synthetic description five.", "authors": "", "date": "2020-04-10"}
+
+{"link": "https://example.org/a6", "headline": "Synthetic headline six", "category": "U.S. NEWS", "short_description": "Synthetic description six.", "authors": "", "date": "2020-11-30"}

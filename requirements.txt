@@ -1,0 +1,34 @@
+# Version ranges for now; exact versions get locked with `pip freeze` once the
+# full stack runs end to end (see docs/decisions.md, D4).
+
+# Data
+pandas>=3.0,<4
+numpy>=2.0,<3
+pyarrow>=20
+pyyaml>=6.0,<7
+
+# Statistics and ML utilities
+scipy>=1.14,<2
+scikit-learn>=1.6,<2
+
+# Embeddings and retrieval
+sentence-transformers>=5.0,<7
+faiss-cpu>=1.9,<2
+
+# Orchestration
+langgraph>=1.0,<2
+
+# LLM clients (provider chosen in config/config.yaml; only one key is needed)
+anthropic>=0.40
+openai>=1.50
+
+# Config, schemas, secrets
+pydantic>=2.7,<3
+python-dotenv>=1.0,<2
+
+# Dashboard and charts
+streamlit>=1.40,<2
+matplotlib>=3.9,<4
+
+# Tests
+pytest>=8,<10

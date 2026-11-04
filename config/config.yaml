@@ -1,0 +1,73 @@
+# Single source of truth for paths, datasets, periods, models and thresholds.
+# Code reads values from here; nothing below should be hard-coded elsewhere.
+#
+# Values set to null are decided later, and the comment says where:
+#   - dataset and periods: after data exploration (docs/questions.md Q1, Q3)
+#   - thresholds: written down BEFORE looking at experiment results (Q11), so
+#     they cannot be tuned to make results look good.
+
+paths:
+  data_raw: data/raw
+  data_processed: data/processed
+  data_sample: data/sample
+  cache: cache          # embeddings and LLM responses
+  runs: runs            # one folder per pipeline run: reports and charts
+
+# Candidate datasets. Both are explored before one is chosen (Q1).
+datasets:
+  huffpost:
+    file: data/raw/News_Category_Dataset_v3.json
+    source: https://www.kaggle.com/datasets/rmisra/news-category-dataset
+  arxiv:
+    file: data/raw/arxiv-metadata-oai-snapshot.json
+    source: https://www.kaggle.com/datasets/Cornell-University/arxiv
+
+active_dataset: null    # set after exploration (Q1)
+
+seed: 42                # every random sample in the project uses this
+
+exploration:
+  samples_per_year: 5   # example titles printed per year
+
+periods:
+  baseline: null        # e.g. {start: "2014-01-01", end: "2015-12-31"}, after exploration (Q3)
+  later: []             # list of {name, start, end}, after exploration (Q3)
+  sample_per_period: 2000   # equal-size samples keep drift statistics comparable; small while building
+  min_segment_size: 50      # smallest period x category group that gets analysed
+
+data_cleaning:          # values set after exploration, and the retention table logged in findings
+  min_words: null
+  max_words: null
+  near_duplicate_cosine: null
+
+embeddings:
+  model: BAAI/bge-small-en-v1.5           # Q12
+  query_prefix: "Represent this sentence for searching relevant passages: "
+  batch_size: 64
+
+retrieval:
+  top_k: 10
+  index_type: faiss_flat_ip               # exact search, Q13
+
+llm:
+  provider: null          # anthropic | openai, once a key is available (Q15)
+  generator_model: null   # writes queries and answers
+  judge_model: null       # judges relevance and answers; ideally stronger than the generator
+  temperature: 0.0
+
+drift:
+  alpha: 0.05
+  multiple_testing: benjamini-hochberg
+  mmd_permutations: 500
+  compare_to: [baseline, previous_period]   # cumulative and period-over-period (proposal P1)
+  severity_null_percentiles: {medium: 95, high: 99}   # bands calibrated on within-baseline drift (P7)
+
+evaluation:
+  queries_per_segment: null      # set once the LLM budget is known
+  judge_validation_items: 40     # hand-labelled items used to check the LLM judge
+
+impact:
+  min_retrieval_drop: null       # practical-significance thresholds, set before running (Q11)
+  min_answer_quality_drop: null
+  bootstrap_resamples: 2000
+  max_evidence_loops: 1          # how many times Impact may ask Retrieval Eval for more queries

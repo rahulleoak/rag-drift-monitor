@@ -1,0 +1,37 @@
+# --- Data: everything under data/ is ignored except the committed sample ---
+data/*
+!data/sample/
+!data/sample/**
+!data/raw/
+data/raw/*
+!data/raw/.gitkeep
+
+# --- Caches and run outputs (embeddings, LLM responses, reports) ---
+cache/
+runs/
+*.npy
+*.faiss
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,17 @@
+# Packaging and test config only. Dependencies live in requirements.txt.
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "driftmon"
+version = "0.1.0"
+description = "Agentic semantic drift detection and RAG quality assurance"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+include = ["driftmon*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

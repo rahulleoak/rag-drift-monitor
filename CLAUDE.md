@@ -55,7 +55,22 @@ pytest. Cache all embeddings and LLM calls to disk.
 - Config (paths, periods, model names, thresholds) in one config file, not hard-coded.
 - Secrets only via environment variables (`.env`, never committed).
 - Large data files are gitignored; a small sample may be committed under `data/sample/`.
-- Record every significant design choice in `docs/decisions.md`
-  (decision, alternatives, why).
-- Keep `docs/architecture.md` and its Mermaid diagram up to date whenever the
-  agent design or data flow changes.
+
+## Documentation as you go
+These notes feed the README and the stakeholder walkthrough, so update them
+as part of the work, not at the end. Write them in plain language.
+
+- `docs/decisions.md`: one entry per significant choice, with date, context
+  (the problem), options considered with their tradeoffs, the choice, why,
+  and the evidence behind it (a measurement, a test, a failed attempt).
+  Mark an entry "Revised" with the reason if a decision changes later.
+- `docs/journal.md`: short dated entries, newest first. What was built,
+  what was tried and abandoned and why, surprises, open questions.
+- `docs/findings.md`: results worth showing, each with the exact numbers,
+  the command or notebook that reproduces them, and the path to any chart.
+  Note whether each finding supports or contradicts expectations.
+- `docs/architecture.md`: keep it and its Mermaid diagram up to date whenever
+  the agent design or data flow changes.
+
+At the end of each working session, add a journal entry and update decisions
+and findings before stopping.

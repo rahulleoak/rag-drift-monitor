@@ -7,15 +7,20 @@ the outcome moves into `docs/decisions.md`.
 
 **Updates (2026-11-04):**
 - Project structure approved (decision D1).
-- Q1 and Q3: decided after exploring HuffPost and arXiv (D3).
+- Q1 and Q3: decided 2026-11-04 after exploration: HuffPost (D3), baseline
+  2016–17 with yearly periods 2018–2022 (D6).
 - Q9: accepted for now (D2).
 - Other Part 2 items: recommendations are working assumptions, not yet
   confirmed.
-- Part 4 added: ideas taken from the paper "Semantic Drift in Paraphrasing",
-  awaiting approval.
+- Part 4 added: ideas taken from the paper "Semantic Drift in Paraphrasing".
+  P1–P8 approved 2026-11-04 and recorded as D5. One change: no
+  composite score for sorting the dashboard either (see D5, P4).
 
-Facts about the dataset used below come from the Kaggle dataset card and are
-**still to be verified** by `scripts/explore_data.py`:
+Facts about the dataset used below come from the Kaggle dataset card. They
+were **verified on 2026-11-04** (see `docs/findings.md` F1): 209,527 records;
+2019–2022 hold 7,523 of them; descriptions are short (median 28 words with the
+headline). F1 also found category renames and a large shift in category mix
+that the card does not mention.
 
 - About 210k records with fields `headline`, `short_description`, `category`
   (42 labels), `authors`, `date`, `link`.
@@ -89,7 +94,7 @@ Each item lists options with tradeoffs and a recommendation. Approved items
 become entries in `docs/decisions.md`.
 
 ### Q1. Dataset and use case
-*Status: decide after exploring HuffPost and arXiv (D3).*
+*Status: decided: A, HuffPost (D3, F1).*
 - **A. HuffPost News Category (newsroom archive assistant).** Suggested first in
   the brief, small, timestamped, has categories to segment by, and has well-known
   drift events to validate against (2016 election, #MeToo in late 2017, COVID in
@@ -115,7 +120,7 @@ become entries in `docs/decisions.md`.
   rate as a document-quality metric in Agent A.
 
 ### Q3. Baseline and later periods
-*Status: decide after exploration (D3).*
+*Status: decided: B, with baseline 2016–17 instead of 2014–15 (D6, F2).*
 - **A. Dense era only (2012 to mid-2018), yearly periods.** Plenty of data, but
   misses COVID, the clearest validation case.
 - **B. Baseline from the dense era (for example 2014–2015, to confirm in step 5),

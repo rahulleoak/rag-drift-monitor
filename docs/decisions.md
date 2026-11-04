@@ -56,7 +56,7 @@ date and reason, and add a new entry that supersedes it.
     truth, except through the golden evaluation set, which is how a real team
     would maintain an eval suite.
 - **Evidence:** the first real modules (`driftmon/data.py`,
-  `scripts/explore_data.py`) are covered by 10 tests that run in under a second
+  `scripts/explore_data.py`, since moved to `scripts/exploration/`) are covered by 10 tests that run in under a second
   with no models or keys (`python -m pytest -q`).
 
 ## D2. Retrieval ground truth: known-item plus pooled LLM-judged relevance
@@ -85,8 +85,8 @@ date and reason, and add a new entry that supersedes it.
 
 ## D3. Choose the dataset and periods only after exploring the candidates
 - **Date:** 2026-11-04
-- **Status:** Accepted (approved 2026-11-04). The choice itself is still open
-  (docs/questions.md Q1, Q3).
+- **Status:** Accepted (approved 2026-11-04). Outcome: HuffPost, with the
+  periods in D6.
 - **Context:** The dataset decides the period boundaries, the sample size per
   period, and whether chunking can be demonstrated. HuffPost is the brief's
   first suggestion, but its documents are very short and, per its dataset card,
@@ -110,8 +110,22 @@ date and reason, and add a new entry that supersedes it.
      records per period × category.
   4. Document length: whether chunking can be meaningfully demonstrated.
   5. Cost: can it be embedded and evaluated on a CPU within the week?
-- **Evidence:** pending. Exploration is blocked until the dataset files are
-  available in this environment (see journal 2026-11-04).
+- **Evidence (2026-11-04, F1):** HuffPost checked against the criteria above.
+  1. *Records per later period:* partly met. 2019–2021 have about 2,000
+     articles each and 2022 has 1,398, so the 2,000 sample size does not fit
+     every period.
+  2. *Known drift events:* met. COVID terms go from 0% to 18.4% of 2020
+     articles; "coronavirus" gives way to "covid" in 2021.
+  3. *Usable categories:* partly met. The labels were renamed twice, so they
+     need a normalisation map, and from 2019 on only 5–9 categories per year
+     reach 50 articles.
+  4. *Document length:* not met. The median is 28 words, so chunking cannot
+     be shown, as expected.
+  5. *Cost:* met. The data loads in about 2 seconds; at most about 75k records
+     are ever embedded.
+  HuffPost passes on the criteria that matter most (2 and 5) and the gaps
+  have workarounds, so arXiv was not downloaded. The dataset and period choice
+  are set in D6.
 
 ## D4. Dependency versions: ranges now, exact lock later
 - **Date:** 2026-11-04
@@ -125,5 +139,129 @@ date and reason, and add a new entry that supersedes it.
 - **Choice:** Option 2.
 - **Why:** exact pins are only worth something once that exact combination has
   been shown to work.
-- **Evidence:** none yet. The lock file is created after the first end-to-end
-  run.
+- **Evidence:** 2026-11-04: the full stack installed together on Windows 11
+  with Python 3.13 (torch 2.11 with CUDA 12.8, sentence-transformers 6.2,
+  faiss-cpu 1.15, langgraph 1.2, pandas 3.1). `pip check` is clean and all
+  19 tests pass. The exploration outputs are identical under pandas 2.3 and
+  3.1. The exact lock file still waits for the first end-to-end run.
+
+## D5. Ideas adopted from the author's paper (proposals P1–P8)
+- **Date:** 2026-11-04
+- **Status:** Accepted (approved 2026-11-04)
+- **Context:** The author's paper "Semantic Drift in Paraphrasing" measures
+  drift between pairs of sentences. This project measures drift between
+  collections of documents over time. The ideas carry over; the numbers and
+  thresholds do not. Full reasoning is in `docs/questions.md` Part 4.
+- **Choice:**
+  - **P1:** compare each period with the fixed baseline and with the previous
+    period. Whether the two ever disagree enough to matter (slow drift that
+    consecutive comparisons miss) is checked once results exist; if the
+    difference is negligible, we say so rather than claim the effect.
+  - **P2:** label each segment's drift as wording-only, meaning, both or
+    neither, using the two drift techniques. Adding BM25 (keyword search) to
+    test whether wording-only drift hurts keyword search but not
+    meaning-based search is a stretch goal.
+  - **P3:** track how spread out each period's embeddings are, and check that
+    LLM-generated queries are not much less varied than their source
+    documents.
+  - **P4:** no fixed-weight composite score. Agent D measures which drift
+    signal best predicts quality loss. *Changed from the proposal:* no
+    composite for sorting the dashboard either. Segments are sorted by
+    severity band, then by the signal D finds most predictive, so the order
+    comes from evidence, not hand-picked weights.
+  - **P5:** tiered cleaning with a retention table; thresholds set from the
+    data as we go.
+  - **P6:** a correlation heatmap of the drift metrics across segments. It
+    changes no decision at run time. It checks two things: that the two
+    techniques measure different things (the brief's "complementary"
+    requirement), and how far the P4 analysis can be trusted, since strongly
+    correlated signals cannot be told apart.
+  - **P7:** low / medium / high severity bands with boundaries set from
+    within-baseline variation (for example the 95th and 99th percentiles),
+    not fixed constants.
+  - **P8:** hand-label about 40 items to check the LLM judge, without seeing
+    the judge's verdict first. Estimated about an hour.
+- **Why:** each idea answers part of "which drift matters" at little extra
+  cost, and the changes from the paper (calibrated bands, no fixed weights)
+  avoid importing thresholds that were set for a different problem.
+- **Evidence:** none yet; each item is checked as results come in.
+
+## D6. Baseline 2016–17; later periods 2018 to 2022, one per year
+- **Date:** 2026-11-04
+- **Status:** Accepted (approved 2026-11-04), **with re-evaluation checks**
+  (below). Settles Q3 and, with D3, Q1 (HuffPost).
+- **Context:** the baseline is what the stale index is built on and what every
+  later period is compared with. HuffPost's topic mix and section names
+  change a lot over time (F1): politics goes from 0% of articles in 2012–13 to
+  25–40% from 2016 on, lifestyle sections almost vanish after 2018, and
+  sections were renamed. If the baseline's mix differs a lot from the later
+  years, the drift detectors mostly measure that change in mix, not a change
+  in meaning. Volume after 2018 is about 2,000 articles a year, so the later
+  periods are fixed by the data: one per year, 2018 to 2022.
+- **Options considered** (numbers from F2: mean mix difference with the later
+  years, and how much the candidate differs between its own two halves):
+  1. *2012–13* (83.1%, 12.5%). Rejected: no politics coverage at all, almost
+     nothing in common with the later years.
+  2. *2014–15, the earlier proposal* (50.9%, 27.5%). Rejected: half the
+     articles would have to change category to match the later years, and the
+     two years differ a lot from each other (2014 is when sections were
+     renamed).
+  3. *2015 only* (43.4%, 30.1% between half-years). The runner-up from the
+     earlier discussion: it keeps the 2016 election as a test event and gives
+     seven later periods. Rejected: worse mix match, and it is the least
+     stable candidate internally.
+  4. *2015–16* (36.8%, 17.3%). Rejected: worse on both measures than 2016–17
+     for no gain.
+  5. *2017 only* (29.5%, 5.6% between half-years). **Closest runner-up.** Same
+     mix match as 2016–17 with half the articles (29,889, still far more than
+     needed), and it keeps the election year out of "normal" variation.
+     Rejected because a single year can only be split into half-years, so
+     the normal-variation
+     estimate used to set the severity bands (P7) would come from half-year
+     differences, while the later periods are a year apart. That would
+     probably understate normal variation, set the bands too tight and flag
+     too much as drift.
+  6. *2016–17* (30.2%, 13.5% between 2016 and 2017). **Chosen.**
+- **Choice:** baseline 2016-01-01 to 2017-12-31 (61,987 articles); later
+  periods 2018, 2019, 2020, 2021 and 2022 (ends 2022-09-23). Set in
+  `config/config.yaml` under `periods`. Renamed sections are merged using
+  `categories.normalise` for analysis; raw labels are kept.
+- **Strengths:**
+  - Closest topic mix to the later years among the two-year options.
+  - Stable within itself, and its two halves are a year apart like the later
+    periods, so "normal year-to-year variation" for the severity bands is
+    measured at the right time scale.
+  - Section names were already settled by 2016 (the 2014 renaming is outside
+    it).
+  - A realistic story: the archive assistant's index was built at the end of
+    2017 and never refreshed.
+  - Removes a distraction: "trump" is already in 17–24% of baseline articles,
+    so the detectors flag what is new later on (COVID in 2020, the shift from
+    "coronavirus" to "covid" and vaccines in 2021).
+  - Plenty of data: 61,987 articles, far more than the per-period sample.
+- **Weaknesses:**
+  - The mix still differs by about 30%. About half of that is sections the
+    baseline does not contain at all (mainly U.S. NEWS, new in 2018).
+    Handled by measuring drift within each category as well as per period,
+    and by reporting new sections as a structural change (Data Monitoring)
+    rather than scoring them as semantic drift.
+  - The 2016 election and #MeToo are inside the baseline, so they cannot be
+    used as test events. COVID (2020) and the 2021 change in wording remain.
+  - The election year is part of "normal" variation (2016 vs 2017), which
+    could make the severity bands too loose.
+  - Only five later periods, about 1,400–2,000 articles each; 2018 is a
+    transition year (the site changed mid-year).
+- **Re-evaluate the baseline if any of these happen** (checked once drift
+  results exist; outcome recorded here):
+  1. *Mix still dominates:* whole-period drift is high but drift within
+     categories is low in most categories. Then the period-level numbers
+     mostly show the change in mix. Response: reweight the baseline to each
+     period's mix, or rely on the within-category numbers.
+  2. *Bands too loose:* the bands set from 2016 vs 2017 are so wide that 2020
+     (known COVID drift) is not flagged at least "medium". Response: consider
+     2017 alone or a different estimate of normal variation.
+  3. *2018 is dominated by the site change:* its drift comes mostly from
+     structure (volume, new sections) rather than content.
+  4. *U.S. NEWS is mostly politics in disguise* (checked with embeddings).
+     Response: map it to POLITICS, which shrinks the unmatched share.
+- **Evidence:** F2; `python scripts/exploration/compare_baselines.py`.

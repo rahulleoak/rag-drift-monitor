@@ -1,0 +1,329 @@
+# Clarifying Questions
+
+**Status:** open. Written 2026-11-04 after reading `CLAUDE.md`,
+`docs/project-brief.md` and the original assignment (.docx, same content as the
+brief except the brief adds the Nov 10 deadline). As questions are answered,
+the outcome moves into `docs/decisions.md`.
+
+Facts about the dataset used below come from the Kaggle dataset card and are
+**still to be verified** by `scripts/explore_data.py`:
+
+- About 210k records with fields `headline`, `short_description`, `category`
+  (42 labels), `authors`, `date`, `link`.
+- About 200k records fall between 2012 and May 2018, but only about 10k between
+  May 2018 and 2022 (HuffPost changed its website). The COVID year, 2020, is in
+  the sparse part.
+- No article bodies. A "document" is a headline plus a one to two sentence
+  description.
+
+---
+
+## Part 1. Ask stakeholders (top 5)
+
+1. **Is the corpus framing acceptable?**
+   The brief describes enterprise documents (contracts, policies, procedures)
+   that get versioned and replaced. We propose a newsroom archive assistant over
+   HuffPost headlines and short descriptions. Consequences: documents are one to
+   two sentences, so chunking does not apply, and "documents become outdated or
+   replaced" maps to "newer reporting supersedes older reporting" (for example,
+   changing COVID guidance during 2020). Is this an acceptable stand-in, or do
+   you expect long, enterprise-style documents where chunking matters (which
+   would point to a dataset such as arXiv abstracts)?
+   *Why it matters:* it fixes the dataset, and decides whether the "improve
+   chunking" recommendation can be demonstrated at all.
+
+2. **What counts as "agentic" for you?**
+   Our plan keeps statistics, metrics and final decisions in tested Python code.
+   The LLM generates queries, writes answers, judges quality and writes
+   explanations. LangGraph routes between agents based on intermediate results
+   (for example, skip the expensive answer evaluation if nothing drifted, or go
+   back for more evidence when a result is borderline). Does that meet "a working
+   agentic system rather than a collection of independent prompts", or do you
+   expect the LLM itself to plan and choose actions?
+   *Why it matters:* the success criteria and our rule "the LLM never makes the
+   final decision" could be read as in tension. We think auditable decisions in
+   code are the right enterprise choice, but want to confirm it is valued.
+
+3. **Is simulated evaluation data acceptable?**
+   There are no real user queries or human relevance labels. We plan to
+   (a) replay history as periodic batches to simulate continuous monitoring,
+   (b) generate user questions and reference answers with an LLM from sampled
+   articles, and (c) use an LLM judge for relevance, correctness and
+   groundedness, checked against a small hand-labelled subset (30 to 50 items).
+   Is that acceptable, or do you have a query log, a labelled set, or a required
+   evaluation framework (for example RAGAS)?
+   *Why it matters:* questions generated from documents make query drift partly
+   mirror document drift. We will state it as a limitation, but it limits how
+   much weight the query-drift results can carry.
+
+4. **What are the demo and run logistics?**
+   Live run or pre-computed results in a dashboard? Will you run the code
+   yourselves, and if so on what hardware (CPU only?) and with whose LLM API key?
+   Is there a spending cap or a required LLM provider (the brief suggests
+   OpenAI / Azure OpenAI "or equivalent")?
+   *Why it matters:* decides whether the pipeline must finish in minutes on a
+   laptop, how large the data sample can be, and which LLM client to build first.
+
+5. **If time runs short, what matters most?**
+   With about six days, depth has to be prioritised. Please rank:
+   (a) rigour of the drift statistics, (b) the causal stale-vs-refreshed index
+   experiment, (c) agent architecture and orchestration, (d) dashboard polish.
+   Also: what should be handed in (repository + README, slides, a recording)?
+   *Why it matters:* we plan to build the full loop thinly first, then deepen
+   (b) and (a). We would change that if (c) or (d) carries more weight.
+
+---
+
+## Part 2. Decide myself
+
+Each item lists options with tradeoffs and a recommendation. Approved items
+become entries in `docs/decisions.md`.
+
+### Q1. Dataset and use case
+- **A. HuffPost News Category (newsroom archive assistant).** Suggested first in
+  the brief, small, timestamped, has categories to segment by, and has well-known
+  drift events to validate against (2016 election, #MeToo in late 2017, COVID in
+  2020). Downsides: short documents, volume cliff after mid-2018.
+- **B. arXiv abstracts (research knowledge base).** Longer documents (chunking
+  becomes meaningful), steady volume, clear terminology drift ("transformer",
+  "LLM"). Downsides: multi-GB raw file, slower to embed, drift events less crisp
+  to validate, harder for non-experts to follow in a demo.
+- **C. Amazon reviews.** Large and timestamped, but drift is mostly product mix
+  and sentiment: a poor fit for a knowledge assistant.
+- **Recommendation: A**, subject to stakeholder question 1. Known drift (COVID
+  vocabulary must be detected, or the detector is broken) is worth more than
+  document length in a one-week project. State the short-document limitation
+  openly.
+
+### Q2. What counts as a "document"
+- **A. Headline only.** Too little text; many headlines are teasers.
+- **B. Headline + short description, one record = one chunk.** Uses all the text
+  we have, no chunking parameters to justify. Some descriptions are empty.
+- **C. Fetch full articles from the links.** Scraping, licensing and network
+  problems; not reproducible. Rejected.
+- **Recommendation: B.** Keep records with empty descriptions, and report their
+  rate as a document-quality metric in Agent A.
+
+### Q3. Baseline and later periods
+- **A. Dense era only (2012 to mid-2018), yearly periods.** Plenty of data, but
+  misses COVID, the clearest validation case.
+- **B. Baseline from the dense era (for example 2014–2015, to confirm in step 5),
+  then yearly periods through 2022, with an equal-size random sample per period.**
+  Covers 2016, 2017 and 2020. Equal sizes keep drift statistics comparable
+  across periods, because MMD values, classifier AUCs and p-values all depend on
+  sample size. Downside: the sample size is capped by the sparsest year.
+- **C. Quarterly or monthly windows.** Closer to "continuous", but too sparse
+  after 2018, so statistics get noisy.
+- **Recommendation: B.** Also compare two halves of the baseline against each
+  other to measure how much drift is normal year to year, and use that to
+  calibrate drift thresholds instead of inventing them. Final years chosen after
+  step 5.
+
+### Q4. Unit of analysis for "which drift matters"
+- **A. Period level only.** With 6 to 8 periods, a drift-vs-quality correlation
+  has about 7 points: no statistical power.
+- **B. Period × category segments** (categories normalised, minimum sample size).
+  Tens of data points; labels come with the data, so no clustering instability;
+  easy to explain ("POLITICS 2020 drifted and retrieval dropped; FOOD & DRINK
+  barely drifted and did not"). Downside: category labels are editorial and
+  changed over time.
+- **C. Period × embedding cluster (topics).** Catches topics that cut across
+  categories (COVID touches many). Downside: cluster IDs are unstable between
+  runs and harder to explain.
+- **Recommendation: B** as the primary unit; add C later for emerging topics
+  that span categories.
+
+### Q5. Drift technique 1: embedding space
+- **A. Centroid cosine distance.** Simple, but misses changes in spread or shape,
+  and has no significance test.
+- **B. MMD (kernel two-sample test, Gretton et al. 2012) with a permutation test,
+  plus a per-document novelty score** (1 − highest cosine similarity to any
+  baseline document). MMD gives a distribution-level number with a p-value.
+  Novelty gives concrete example documents and links straight to retrieval: a
+  novel document has no close neighbour in a stale index. Downsides: quadratic
+  cost (fine for a few thousand documents per segment); p-values shrink at large
+  sample sizes, so an effect-size threshold is also needed.
+- **C. Domain classifier** (logistic regression trained to tell baseline from
+  new; AUC as the drift score). Interpretable (0.5 = no drift) and its most
+  confident predictions are examples. Downsides: needs cross-validation and
+  largely overlaps with B.
+- **Recommendation: B**, reporting A alongside as the intuitive number. C is a
+  possible cross-check later.
+
+### Q6. Drift technique 2: lexical
+- **A. Jensen–Shannon divergence on term distributions.** One number per
+  segment, but does not say which terms changed.
+- **B. Log-odds ratio with an informative Dirichlet prior** ("Fightin' Words",
+  Monroe et al. 2008). A z-score per term gives ranked emerging and declining
+  terms with significance, and handles rare terms well.
+- **C. Out-of-vocabulary rate against the baseline vocabulary.** Very simple
+  but noisy (names, typos).
+- **Recommendation: A + B** together as the second technique: a number per
+  segment plus term-level explanations. It complements embeddings: a small
+  embedding model may place "COVID" near "flu" (low embedding drift) while
+  lexical drift is large; a topic shift in familiar words shows up in embeddings
+  but not in vocabulary. C goes into Agent A's descriptive statistics.
+
+### Q7. Shifts in semantic relationships (brief, Agent B)
+- **A. Term-context shift.** For a term such as "mask", "zoom", "remote" or
+  "corona", embed the documents containing it in each period, measure how far
+  their centroid moved, and list its top co-occurring words per period. Cheap,
+  reuses existing embeddings, very clear in a demo. Needs enough occurrences per
+  period.
+- **B. Train word2vec per period and align them** (Hamilton et al. 2016).
+  Standard in research, but there is too little text per period for stable
+  vectors.
+- **C. Skip it.** Leaves a brief requirement unmet.
+- **Recommendation: A**, with candidate terms taken from technique 2's top
+  emerging terms plus a few known ones. Build it after the thin end-to-end loop
+  works.
+
+### Q8. Simulated user queries
+- **A. LLM writes a question and reference answer from a sampled article,**
+  phrased as a journalist would ask. Gives ground truth (source document +
+  reference answer). Downsides: wording echoes the source (retrieval looks
+  better than reality), and query drift mirrors document drift.
+- **B. Headlines as queries, descriptions as targets.** No LLM cost, thousands
+  of queries, but not realistic questions.
+- **C. LLM writes period-aware questions without seeing an article.** Less echo,
+  but no ground truth, and the LLM's own world knowledge leaks in.
+- **Recommendation: A**, with a mix of evergreen and time-sensitive questions,
+  a prompt that asks for paraphrased wording to reduce echo, and the circularity
+  stated as a limitation. Split the output into an unlabelled **query stream**
+  (monitored by Agents A and B, like production traffic) and a labelled
+  **golden evaluation set** (used by Agents C and D, like a maintained eval
+  suite).
+
+### Q9. Retrieval ground truth (an important subtlety)
+A stale index cannot contain a 2020 article, so "did we retrieve the source
+article?" is zero by construction on the stale index. That alone would make the
+stale-vs-refreshed comparison trivial.
+- **A. Known-item only** (the source article is the one relevant document).
+  Cheap and exact, but meaningless for the stale index on new-period questions.
+- **B. LLM-judged graded relevance of the pooled top-k from both indexes**
+  (TREC-style pooling). A fair comparison, because an older article can still
+  answer an evergreen question. Costs LLM calls; recall is relative to the pool.
+- **C. Same category = relevant.** Free, but far too lenient (an Ebola story
+  "matches" a COVID question).
+- **Recommendation: A + B.** Known-item MRR and Recall@K on the refreshed index
+  test whether the retriever copes with new vocabulary. LLM-judged Precision@K
+  and nDCG@K on pooled results measure the stale-vs-refreshed impact. This is
+  also what makes "which drift matters" testable: evergreen segments should
+  lose little on the stale index, novel segments should lose a lot.
+
+### Q10. Answer quality evaluation
+- **A. RAGAS.** Recognised, but a heavy dependency with frequent API changes,
+  opaque prompts, and extra LLM calls.
+- **B. Custom LLM-judge rubrics:** correctness against the reference answer,
+  groundedness against the retrieved context, relevance to the question. Fixed
+  prompts, temperature 0, cached, and judged by a different (ideally stronger)
+  model than the one writing answers, to reduce self-preference. Transparent and
+  cheap, but the judge must be shown to be trustworthy.
+- **C. Lexical overlap (ROUGE, token F1).** Deterministic, but a poor proxy for
+  correctness.
+- **Recommendation: B**, plus a 30 to 50 item hand-labelled check with the
+  agreement rate reported.
+
+### Q11. Deciding "significant" drift and "material" impact
+- **A. Fixed thresholds only.** Simple but arbitrary.
+- **B. Statistical tests only** (bootstrap confidence interval excludes zero,
+  permutation p < α). Principled, but at large sample sizes trivial effects
+  become "significant".
+- **C. Both:** statistically significant and larger than a practical threshold
+  written in the config before looking at results; drift thresholds calibrated
+  against within-baseline variation (Q3).
+- **Recommendation: C.** This produces the 2×2 at the heart of the project:
+  drift + impact → act; drift + no impact → benign, keep monitoring;
+  no drift + impact → another cause, escalate; neither → healthy. Control for
+  testing many segments at once with Benjamini–Hochberg.
+
+### Q12. Embedding model
+- **A. all-MiniLM-L6-v2.** Very fast and widely used; weaker retrieval quality
+  and older training data.
+- **B. bge-small-en-v1.5.** Same size class (384 dimensions), generally stronger
+  on retrieval benchmarks. Needs a query instruction prefix; slightly slower.
+- **Recommendation: B** as the production retriever. Keep A as an optional
+  second model so an "evaluate a different embedding model" recommendation can
+  be backed by evidence (stretch goal).
+
+### Q13. Vector store
+- **A. FAISS exact search (IndexFlatIP).** Exact and deterministic (no
+  approximate-search noise in the experiment), and holding two indexes (stale,
+  refreshed) is trivial. No built-in metadata store, so metadata lives in a
+  parquet side table.
+- **B. Chroma.** Persistence and metadata filters, but heavier, and its
+  approximate (HNSW) search adds noise to comparisons.
+- **C. Plain numpy matrix product.** No dependency, but reinvents FAISS.
+- **Recommendation: A.** At up to about 50k × 384 vectors, exact search takes
+  milliseconds.
+
+### Q14. Orchestration and agentic behaviour
+- **A. Linear LangGraph pipeline A→B→C→D→E.** Simple, but reads as a script.
+- **B. Typed shared state plus conditional edges decided in Python.** For
+  example: when nothing drifted, skip full answer evaluation but still run a
+  small regression check to catch silent degradation; when an impact estimate
+  is borderline, loop back once for more evaluation queries. Real dependencies,
+  explainable, testable and bounded. Slightly more wiring.
+- **C. An LLM supervisor that picks the next agent.** Looks the most "agentic",
+  but non-deterministic, hard to test, and conflicts with our decision rule.
+- **Recommendation: B**, subject to stakeholder question 2.
+
+### Q15. LLM provider
+- **A. OpenAI / Azure OpenAI** (named in the brief). Not reachable from this
+  cloud development environment as currently configured.
+- **B. Anthropic.** Reachable from this environment.
+- **C. A local model (for example via Ollama).** Fully local, but slower, a
+  weaker judge, and extra setup for anyone running the code.
+- **Recommendation:** a provider-agnostic wrapper (one completion function and a
+  disk cache keyed on model, prompt and parameters), so the provider is a config
+  value. Default to whatever stakeholders provide or prefer (question 4). Use a
+  small model for bulk generation and a stronger one as judge.
+
+### Q16. Dashboard
+- **A. Streamlit reading saved run outputs** (JSON/parquet and charts). The demo
+  cannot fail on a live LLM call, and it is fast. Not "live".
+- **B. Streamlit triggers the full pipeline.** Live, but slow and fragile in a
+  15-minute demo.
+- **Recommendation: A**, with a button to re-run on the small sample if time
+  allows.
+
+---
+
+## Part 3. Ambiguities and conflicts in the brief
+
+1. **Enterprise documents vs news** (stakeholder question 1). News is not
+   replaced; it is superseded. Time-sensitive questions ("what is the current
+   mask guidance?") are the right analogue: a stale index can produce an answer
+   that is fluent, grounded in its context, and wrong. Retrieval metrics miss
+   this; answer correctness catches it.
+2. **"Continuously monitor" vs a historical dataset.** We replay periods as
+   batches. Window size (yearly) is a design choice; this is not a real-time
+   system.
+3. **"Monitor user queries"** with no query log. Queries are simulated (Q8), so
+   query drift partly mirrors document drift.
+4. **Agents A and B overlap** ("vocabulary, topics" vs "emerging topics,
+   changing terminology"). Proposed split: A does cheap descriptive monitoring
+   and data quality (volumes, lengths, category mix with a chi-square test,
+   new-term rate, empty descriptions, which segments have enough data); B does
+   embedding-based and statistically tested drift with explanations, only on
+   segments A marked as having enough data.
+5. **"Improve document chunking"** cannot be meaningfully shown on one to two
+   sentence documents. We will say so rather than fake it.
+6. **"Trigger model retraining":** we do not train models. The closest honest
+   analogue is "evaluate an alternative embedding model" (Q12).
+7. **"Relationship between drift scores and quality"** needs enough data points;
+   period level gives about 7 (Q4).
+8. **Recall@K** needs complete relevance judgements, which do not exist.
+   Known-item plus pooled judgements is the standard workaround (Q9).
+9. **"Agentic system" (success criteria) vs "the LLM never makes the final
+   decision" (CLAUDE.md):** see stakeholder question 2.
+10. **Evidently and RAGAS** are suggested in the brief. We plan small, tested
+    implementations of the specific statistics instead, for transparency and
+    fewer heavy dependencies. Worth one sentence in the README.
+11. **Volume cliff after May 2018** (dataset card): the most interesting period,
+    2020, is the sparsest. To verify in step 5.
+12. **Category labels change over time** (the dataset reportedly has
+    near-duplicates such as WORLDPOST / THE WORLDPOST). Drift to report, or noise
+    to normalise? Proposed: normalise for segment analysis using a mapping in the
+    config, and report the raw label changes as a Data Monitoring finding.
+    To verify in step 5.

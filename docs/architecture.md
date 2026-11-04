@@ -6,8 +6,8 @@ diagram up to date whenever the agent design or data flow changes.
 
 **Status (2026-11-04):** proposed design. The folder structure and module
 stubs exist; only data loading (`driftmon/data.py`) and exploration
-(`scripts/explore_data.py`) are implemented. Items marked *(proposal Pn)* come
-from `docs/questions.md` Part 4 and are not yet confirmed.
+(`scripts/exploration/`) are implemented. Items marked *(proposal Pn)* come
+from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5).
 
 ## 1. Overview
 
@@ -69,8 +69,8 @@ flowchart TD
 
 | Agent | Reads | Does | Writes (read by) |
 |---|---|---|---|
-| **A. Data Monitoring** | Period document batches, query stream | Fixes the baseline snapshot. Tracks volume, text length, category mix (chi-square), new-term rate, empty descriptions. Marks period × category segments with enough data. | `MonitoringReport` (B) |
-| **B. Semantic Drift Detection** | `MonitoringReport`, embeddings | Technique 1: MMD + permutation test, per-document novelty, centroid shift, dispersion *(P3)*. Technique 2: Jensen–Shannon divergence and log-odds emerging terms. Each period is compared with the baseline and with the previous period *(P1)*. Benjamini–Hochberg correction; severity bands calibrated on within-baseline drift *(P7)*; lexical × semantic drift type *(P2)*. LLM explains flagged segments from the numbers and examples. | `DriftReport`: per-segment scores, p-values, severity, examples, drifted + control segments (C, D, E) |
+| **A. Data Monitoring** | Period document batches, query stream | Fixes the baseline snapshot. Tracks volume, text length, category mix (chi-square), new-term rate, empty descriptions. Merges renamed sections (`categories.normalise`) and reports sections new since the baseline (e.g. U.S. NEWS) as a structural change, not drift (D6). Marks period × category segments with enough data. | `MonitoringReport` (B) |
+| **B. Semantic Drift Detection** | `MonitoringReport`, embeddings | Technique 1: MMD + permutation test, per-document novelty, centroid shift, dispersion *(P3)*. Technique 2: Jensen–Shannon divergence and log-odds emerging terms. Each period is compared with the baseline and with the previous period *(P1)*, both as a whole and within each category, so a change in topic mix is not mistaken for a change in meaning (F2, D6). Benjamini–Hochberg correction; severity bands calibrated on within-baseline drift *(P7)*; lexical × semantic drift type *(P2)*. LLM explains flagged segments from the numbers and examples. | `DriftReport`: per-segment scores, p-values, severity, examples, drifted + control segments (C, D, E) |
 | **C. Retrieval Evaluation** | `DriftReport`, golden eval set, both indexes | Selects questions from drifted and control segments. Known-item MRR and Recall@K; LLM-judged Precision@K and nDCG@K over pooled results of both indexes. Per-segment deltas with bootstrap CIs; worst queries with what was retrieved. | `RetrievalReport` (D) |
 | **D. RAG Impact Assessment** | `RetrievalReport`, `DriftReport` | Generates answers from both indexes; LLM judges correctness, groundedness, relevance. Quality deltas with CIs. Relates each drift signal to quality loss across segments. Classifies each segment: drift that hurts / drift that does not / quality loss without drift / healthy. | `ImpactReport` (E); may send C back for more queries once |
 | **E. Recommendation** | `ImpactReport` + B and C evidence | `policy.py` rules map evidence patterns to actions; LLM writes the explanation; a check rejects any recommendation without cited evidence. | List of `Recommendation` (dashboard) |

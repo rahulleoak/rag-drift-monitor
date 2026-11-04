@@ -1,5 +1,13 @@
 # Version ranges for now; exact versions get locked with `pip freeze` once the
 # full stack runs end to end (see docs/decisions.md, D4).
+#
+# Setup (tested on Windows 11, Python 3.13, NVIDIA GPU):
+#   py -3.13 -m venv .venv
+#   .venv\Scripts\python -m pip install torch --index-url https://download.pytorch.org/whl/cu128
+#   .venv\Scripts\python -m pip install -r requirements.txt
+#   .venv\Scripts\python -m pip install -e .
+# Install torch first: from PyPI alone, Windows gets the CPU-only build.
+# Without a GPU, skip that line; sentence-transformers then pulls the CPU build.
 
 # Data
 pandas>=3.0,<4

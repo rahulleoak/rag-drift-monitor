@@ -22,18 +22,60 @@ datasets:
     file: data/raw/arxiv-metadata-oai-snapshot.json
     source: https://www.kaggle.com/datasets/Cornell-University/arxiv
 
-active_dataset: null    # set after exploration (Q1)
+active_dataset: huffpost   # D3, F1
 
 seed: 42                # every random sample in the project uses this
 
 exploration:
   samples_per_year: 5   # example titles printed per year
+  # Terms tied to known real-world events, used to check that known drift is
+  # visible in the data at all. Regex, matched case-insensitively on title + text.
+  watch_terms:
+    covid: '\bcovid'
+    coronavirus: '\bcoronavirus'
+    pandemic: '\bpandemic'
+    vaccine: '\bvaccin'
+    mask: '\bmasks?\b'
+    trump: '\btrump\b'
+    metoo: '#?\bme ?too\b'
+  # Baselines compared by scripts/exploration/compare_baselines.py (F2, D6).
+  baseline_candidates:
+    - {name: "2012-13", start: "2012-01-01", end: "2013-12-31"}
+    - {name: "2014-15", start: "2014-01-01", end: "2015-12-31"}
+    - {name: "2015",    start: "2015-01-01", end: "2015-12-31"}
+    - {name: "2015-16", start: "2015-01-01", end: "2016-12-31"}
+    - {name: "2016-17", start: "2016-01-01", end: "2017-12-31"}
+    - {name: "2017",    start: "2017-01-01", end: "2017-12-31"}
 
 periods:
-  baseline: null        # e.g. {start: "2014-01-01", end: "2015-12-31"}, after exploration (Q3)
-  later: []             # list of {name, start, end}, after exploration (Q3)
-  sample_per_period: 2000   # equal-size samples keep drift statistics comparable; small while building
+  # D6: baseline 2016-17, closest in topic mix to the later years (F2).
+  # To be re-evaluated if the checks listed in D6 fail.
+  baseline: {name: "2016-17", start: "2016-01-01", end: "2017-12-31"}
+  later:
+    - {name: "2018", start: "2018-01-01", end: "2018-12-31"}
+    - {name: "2019", start: "2019-01-01", end: "2019-12-31"}
+    - {name: "2020", start: "2020-01-01", end: "2020-12-31"}
+    - {name: "2021", start: "2021-01-01", end: "2021-12-31"}
+    - {name: "2022", start: "2022-01-01", end: "2022-12-31"}   # data ends 2022-09-23
+  # Equal-size samples keep drift statistics comparable. Must fit the smallest
+  # period (2022: 1,398 records before cleaning); set after cleaning (P5).
+  sample_per_period: null
   min_segment_size: 50      # smallest period x category group that gets analysed
+
+# HuffPost renamed several sections over the years (F1). Old label -> label
+# used from 2018 on, so the same section can be compared across periods.
+# Applied for analysis only; raw labels are kept and their changes reported.
+categories:
+  normalise:
+    HEALTHY LIVING: WELLNESS        # 2014-2018, WELLNESS before and after
+    PARENTS: PARENTING              # 2014-2018
+    TASTE: FOOD & DRINK             # 2014-2018
+    STYLE: STYLE & BEAUTY           # 2014-2018
+    GREEN: ENVIRONMENT              # 2014-2018
+    WORLDPOST: WORLD NEWS           # 2014-2017
+    THE WORLDPOST: WORLD NEWS       # 2015-2017; WORLD NEWS from 2017
+    ARTS: CULTURE & ARTS            # 2014-2017
+    ARTS & CULTURE: CULTURE & ARTS  # 2015-2018
 
 data_cleaning:          # values set after exploration, and the retention table logged in findings
   min_words: null

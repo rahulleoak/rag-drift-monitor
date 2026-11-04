@@ -16,6 +16,96 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-04 (evening): Environment set up
+- **Built:** `.venv` (Python 3.13) with the CUDA build of PyTorch and all of
+  `requirements.txt`; the project installed in editable mode. `pip check` is
+  clean and all 19 tests pass with pytest, including the 3 data-loading tests
+  that could not run before. Setup steps added at the top of
+  `requirements.txt`; D4 evidence updated.
+- **Checked:**
+  - The exploration CSVs are identical under pandas 3.1 (venv) and 2.3
+    (system).
+  - bge-small runs on the GPU: about 5 s to load and 1.3 s for 5,000
+    headlines, so embedding the whole working set takes well under a minute.
+  - A first check that retrieval works by meaning: a "covid vaccine uptake"
+    query scores 0.74 against a coronavirus-vaccination headline and 0.43
+    against a pasta headline.
+- **Surprises:** `python` on this machine is the Microsoft Store build. The
+  venv was made with the regular install (`py -3.13`) instead, because the
+  Store build redirects file paths. Hugging Face's cache cannot use symlinks
+  on Windows without Developer Mode; this only costs disk space.
+- **Next:** data cleaning (P5) with the retention table, then set
+  `sample_per_period`; then embeddings with a disk cache.
+
+## 2026-11-04 (later): Baseline chosen: 2016–17
+- **Built:**
+  - `scripts/exploration/` folder for data exploration. `explore_data.py`
+    moved into it; `compare_baselines.py` added. The new script compares
+    candidate baselines by how closely their topic mix matches the later
+    years, how stable each is internally, and how much of each later year is
+    in sections the baseline does not have. 7 new tests (14 of 14 exploration
+    tests pass with the stand-in runner).
+  - Config: `active_dataset: huffpost`; baseline 2016–17 and later periods
+    2018–2022; `categories.normalise` mapping 9 renamed sections; the
+    baseline candidates under `exploration`. `sample_per_period` set to null
+    until cleaning, because 2022 has only 1,398 articles.
+  - F2 (the comparison, with walkthrough notes) and D6 (options, strengths,
+    weaknesses, runner-ups and the checks that would reopen the choice).
+    Architecture updated: Data Monitoring reports new sections as a
+    structural change; Drift Detection also compares within categories.
+- **Tried and abandoned:** 2014–15 (the earlier proposal), rejected on F2: a
+  51% mix difference against the later years.
+- **Surprises:**
+  - 2015 differs by 30% between its own two halves, so the earlier runner-up
+    (2015 only) was the weakest option on stability.
+  - About half of the remaining gap with 2016–17 is one new section, U.S.
+    NEWS (23% of 2019 articles).
+- **Open questions:**
+  - Re-evaluate the baseline if any check in D6 fails (author's request:
+    keep an eye on its weaknesses).
+  - Is U.S. NEWS mostly politics? To check once embeddings exist.
+  - Go-ahead for the environment and package setup; stakeholder answers; LLM
+    key (needed from about Thursday, not before).
+- **Next:** after the go-ahead, set up the environment and run the full test
+  suite with pytest; then cleaning (P5) and setting `sample_per_period`.
+
+## 2026-11-04 (local machine): Exploration: HuffPost downloaded and explored
+- **Built:**
+  - Moved from the cloud environment to a local Windows machine (RTX 4060 Ti).
+    Kaggle and Hugging Face are reachable here.
+  - Downloaded HuffPost (v3, 209,527 records) into `data/raw/` with the Kaggle
+    API and ran the exploration script (now `scripts/exploration/explore_data.py`).
+    Results logged as F1.
+  - Added a sixth exploration output: the share of each year's articles that
+    mention a list of watch terms tied to known events, set in the config.
+    It shows the known drift is present before any detector is built.
+    2 new tests.
+- **Tried and abandoned:** downloading arXiv. HuffPost passes the D3 criteria
+  that matter most, and arXiv is a multi-GB file.
+- **Surprises:**
+  - Category labels were renamed twice (for example WELLNESS → HEALTHY
+    LIVING in 2014, then back after 2018). This is label drift, not topic
+    drift, and has to be normalised before categories are compared.
+  - POLITICS goes from 10% of articles (2014) to 39% (2020). Against an
+    early baseline, embedding drift would mostly measure this change in mix.
+  - The Kaggle key was first saved into `.env.example`, which git tracks. It
+    was moved into `.env` (gitignored) before any commit, and `.env.example`
+    now has an empty `KAGGLE_API_KEY=` placeholder.
+  - pytest and the ML packages are not installed yet. The exploration tests
+    were run with a stand-in runner (7 of 7 pass); the full suite waits for
+    the project environment.
+- **Open questions:**
+  - Baseline and period choice, given F1 (to be approved). Leading option: a
+    2016–2017 baseline, whose topic mix and labels are closest to the later
+    years, with 2018–2022 as the later periods, equal-size samples, and
+    within-category comparisons alongside whole-period ones.
+  - P1–P8 approved later the same day and recorded as D5. One change from
+    the proposal: no composite score for sorting the dashboard either.
+  - Stakeholder questions sent; waiting for answers. No LLM key yet.
+- **Next:** once the periods are approved, set them in the config, write the
+  category normalisation map, and create the project environment (needs the
+  go-ahead).
+
 ## 2026-11-04 (later): Scaffold, exploration script, ideas from the paper
 - **Built:**
   - The approved structure (D1): `driftmon/` package with module stubs whose

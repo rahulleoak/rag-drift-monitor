@@ -289,6 +289,7 @@ stale-vs-refreshed comparison trivial.
 - **Recommendation: B**, subject to stakeholder question 2.
 
 ### Q15. LLM provider
+*Status: decided 2026-11-04 (D9): Anthropic; Sonnet 5.5 writes, Opus 5.5 judges.*
 - **A. OpenAI / Azure OpenAI** (named in the brief). Not reachable from this
   cloud development environment as currently configured.
 - **B. Anthropic.** Reachable from this environment.

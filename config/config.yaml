@@ -100,11 +100,15 @@ retrieval:
   top_k: 10
   index_type: faiss_flat_ip               # exact search, Q13
 
+# D9: a different, stronger model judges than the one that writes questions
+# and answers, to reduce self-preference. No temperature setting: current
+# models reject it; reproducibility comes from the disk cache of responses.
 llm:
-  provider: null          # anthropic | openai, once a key is available (Q15)
-  generator_model: null   # writes queries and answers
-  judge_model: null       # judges relevance and answers; ideally stronger than the generator
-  temperature: 0.0
+  provider: anthropic
+  generator_model: claude-sonnet-5-5   # writes test questions, reference answers and RAG answers
+  judge_model: claude-opus-5-5         # judges relevance and answer quality; writes explanations
+  use_batch_api: true                  # bulk jobs run through the Batch API (50% cheaper, not instant)
+  budget_usd: null                     # spending cap; waiting for the stakeholder answer (question 4)
 
 drift:
   alpha: 0.05
@@ -112,6 +116,18 @@ drift:
   mmd_permutations: 500
   compare_to: [baseline, previous_period]   # cumulative and period-over-period (proposal P1)
   severity_null_percentiles: {medium: 95, high: 99}   # bands calibrated on within-baseline drift (P7)
+  # D11: "ordinary change" = the same month one year apart inside the baseline
+  # (Jan 2016 vs Jan 2017, ...), each pair re-sampled null_draws times.
+  null_draws: 5
+  null_permutations: 50      # only to estimate the shuffled JSD average for "excess"
+  # D12: emerging topics = clusters whose share of a period grows vs the baseline
+  topics_k: 40               # number of clusters over all drift samples
+  topic_min_ratio: 3.0       # period share at least 3x the baseline share
+  topic_min_docs: 15
+  # D12: term-context shift; terms need >= context_min_docs articles on both sides
+  context_terms: [mask, virus, vaccine, outbreak, cases, test, home, biden, ukraine, russia,
+                  capitol, abortion, impeachment, police, climate, border, election]
+  context_min_docs: 20
 
 evaluation:
   queries_per_segment: null      # set once the LLM budget is known

@@ -179,3 +179,187 @@ chart, and whether it supports or contradicts what we expected.
   sample is 1,398 per period (all of 2022). Templated columns that survive
   (e.g. "Daily Meditation", "Headline Quiz") should be excluded when
   generating test questions, because they have no single right answer.
+
+## F4. Whole-period drift: COVID is the biggest shift, but not where expected
+- **Date:** 2026-11-05
+- **Setup:** drift samples of 1,398 articles per period; each later year
+  compared with the 2016–17 baseline and with the previous year; 500
+  permutations per test; a reference row compares 2017 with 2016 (one
+  ordinary year of change inside the baseline). Settings in D10.
+- **Result:**
+
+  | Period | vs | MMD² | × ordinary year | Word drift (excess JSD) | New-term rate | Spread (dispersion) | Novel articles |
+  |---|---|---|---|---|---|---|---|
+  | 2017 (reference) | 2016 | 0.0021 | 1.0 | 0.031 | – | 0.545 | 5.0% (by definition) |
+  | 2018 | baseline | 0.0037 | 1.8 | 0.035 | 3.0% | 0.561 | 8.2% |
+  | 2019 | baseline | 0.0071 | 3.4 | 0.067 | 3.7% | 0.561 | 9.5% |
+  | **2020** | **baseline** | **0.0119** | **5.7** | 0.073 | **5.5%** | **0.539** | 8.9% |
+  | 2021 | baseline | 0.0091 | 4.3 | 0.077 | 5.1% | 0.554 | 10.9% |
+  | 2022 | baseline | 0.0099 | 4.7 | 0.077 | 4.8% | 0.561 | 10.6% |
+  | 2019 | 2018 | 0.0036 | 1.7 | 0.048 | | | |
+  | **2020** | **2019** | **0.0088** | **4.2** | 0.072 | | | |
+  | 2021 | 2020 | 0.0044 | 2.1 | 0.047 | | | |
+  | 2022 | 2021 | 0.0025 | 1.2 | 0.038 | | | |
+
+  1. **Every comparison is "statistically significant",** including 2017 vs
+     2016 (all q = 0.002, the smallest possible with 500 permutations). At
+     1,398 articles per side any difference is detectable, so significance
+     alone cannot separate drift from ordinary change. Effect size against
+     an ordinary year is what matters (supports Q11 and P7).
+  2. **2020 is the largest embedding shift:** 5.7× an ordinary year against
+     the baseline, and the largest single-year jump (4.2× from 2019). Its
+     articles are also the least spread out (0.539), consistent with one
+     story dominating the year (P3's prediction).
+  3. **The Boiling Frog pattern appears (P1):** 2022 vs 2021 looks almost
+     ordinary (1.2×), yet 2022 vs the baseline is 4.7×. Monitoring only
+     year-on-year change would miss how far the archive has moved.
+  4. **The two techniques disagree after 2020:** embedding drift peaks in 2020
+     and eases, while word drift keeps rising (0.073 → 0.077). They measure
+     different things (supports "complementary"; P6 will quantify it).
+  5. **Emerging terms match real events** (log-odds z-scores vs the baseline):
+     2020: biden, coronavirus, virus, covid-19; 2021: vaccine, shot, jan,
+     gop; 2022: russia, putin, invasion, abortion. Declining: clinton,
+     hillary, then trump (2021–22). "said" rises every year: a shift towards
+     wire-style reporting.
+  6. **Surprise: COVID articles are not "novel" to the embedding model.**
+     Only 5.0% of 2020's 539 COVID articles have no close baseline match,
+     exactly the baseline's own rate, against 10.1% for other 2020
+     articles. Their nearest baseline articles are about Trump (146), health
+     (55), flu (30) and Zika (27), e.g. "China's Coronavirus Infections Top
+     40,000" → "H7N9 Bird Flu Epidemic In China Worst Since 2013". The most
+     novel 2020 articles are one-off human-interest stories.
+- **Reproduce:** `python scripts/run_drift.py` (tables in `runs/drift/`;
+  about 10 s after the first run).
+- **Chart:** none yet. Suggested: MMD² vs baseline and vs previous year per
+  period, with the ordinary-year reference line; emerging-term bars per year.
+- **Expectation:** 2020 the largest drift; COVID articles among the most
+  novel.
+- **Verdict:** Mixed. 2020 is the largest shift as expected, but per-article
+  novelty does not flag COVID at all.
+- **Implication:**
+  - Drift will be judged by effect size relative to ordinary change, with
+    bands calibrated on the baseline (next step), not by p-values.
+  - **Key hypothesis for the impact experiment:** COVID questions on the
+    stale index will retrieve related but wrong articles (bird flu, Zika,
+    Trump health policy): harmful drift that the embedding model does not
+    register as new. Word drift and distribution-level MMD catch it;
+    article-level novelty does not. This is the clearest "which drift
+    matters" case to test with Agents C and D.
+
+## F5. Severity bands and drift by section: COVID hit lifestyle journalism hardest; politics never looks unusual
+- **Date:** 2026-11-05
+- **Setup:** the A → B pipeline in LangGraph. Bands from ordinary change
+  inside the baseline (same month a year apart, D11). "× ordinary" here is
+  relative to the *median month-pair change*, which is larger than the
+  single 2017-vs-2016 value used in F4, so the multiples are smaller than
+  F4's; the ranking is the same.
+- **Whole periods vs the baseline:**
+
+  | Period | Embedding (× ordinary) | Words (× ordinary) | Bands (embedding / words) | Kind | Flagged |
+  |---|---|---|---|---|---|
+  | 2018 | 0.8 | 0.6 | low / low | none | no |
+  | 2019 | 1.5 | 1.1 | low / low | none | no |
+  | **2020** | **2.5** | 1.2 | **high** / low | meaning | **yes** |
+  | 2021 | 1.9 | 1.2 | low / **medium** | wording | **yes** |
+  | 2022 | 2.1 | 1.2 | medium / medium | both | **yes** |
+
+  Every year-on-year comparison is "low", including 2020 vs 2019 (1.9×):
+  measured against month-to-month news swings, no single year is
+  extraordinary on its own; the archive moves away gradually (P1).
+  **D6 check 2 passes:** 2020 is flagged high.
+- **Agent A:** category mix vs the baseline has Cramér's V of 0.21 (2018),
+  0.51 (2019), 0.37 (2020), 0.41 (2021), 0.42 (2022). Sections absent from
+  the baseline make up 1.9% of 2018 and 13–26% of later years; besides U.S.
+  NEWS, they include MONEY, HOME & LIVING and WEDDINGS, sections that existed
+  before 2016 and *returned* after 2018.
+- **Sections (37 of 134 period × category groups are large enough):** 14
+  flagged vs the baseline. Highlights:
+  - **2020 lifestyle sections are the most drifted of all,** with both
+    techniques high: WELLNESS (52 of 67 articles COVID-related, e.g.
+    "Social Distancing: Places And Events To Avoid"), FOOD & DRINK (28 of 54:
+    "Is It Safe To Go To The Grocery Store?"), STYLE & BEAUTY (35 of 75: "How
+    To Make Coronavirus Face Masks"), PARENTING (21 of 58; 11 are tweet or
+    shopping roundups). Also WORLD NEWS 2020 (outbreak, virus).
+  - **2022 WORLD NEWS:** ukraine, russian, invasion (both high).
+  - **SPORTS in Olympic years** (2018 Winter, 2021 Tokyo): wording drift.
+  - **2019 COMEDY:** late-night hosts on the shutdown and impeachment.
+  - **POLITICS is never flagged** (0.4–1.0× ordinary, 2018–2022) despite
+    Trump → Biden, the Capitol attack and Ukraine. The baseline's own
+    political coverage (election year, then a new administration) changes
+    so much month to month that later change looks ordinary. This is D6's
+    weakness 2 (the election year inside "normal" variation), seen for one
+    section.
+- **Caveats:** multiples for small sections (54–75 articles) are imprecise
+  (FOOD & DRINK 2020: 17×); the bands, built at the segment's size, are what
+  drive decisions. 97 groups are too small or have no baseline counterpart
+  (reported by Agent A instead).
+- **Reproduce:** `python scripts/run_pipeline.py` (about 60 s; reports in
+  `runs/<run_id>/`: `monitoring.json`, `drift.json`, `drift_whole.csv`,
+  `drift_segments.csv`, `route.txt`).
+- **Chart:** none yet. Suggested: heatmap of section × year bands; the 2020
+  lifestyle sections as the headline example.
+- **Expectation:** 2020 flagged; politics among the most drifted sections.
+- **Verdict:** Mixed. 2020 flagged as expected; politics not flagged at all.
+- **Implication:**
+  - The 2020 lifestyle sections are the best test cases for the impact
+    experiment: practical, time-sensitive questions ("is it safe to…") that
+    a 2017 archive cannot answer.
+  - **Politics is the key test of "quality loss without drift":** if
+    politics questions lose quality on the stale index although no drift
+    was flagged, the system must still catch it (the regression check and
+    the "escalate" rule exist for this).
+
+## F6. Emerging topics, changing word meanings, and how the drift measures relate
+- **Date:** 2026-11-05
+- **Result:**
+  1. **Emerging topics find COVID where article novelty could not (F4).**
+     Clustering all drift samples together (40 topics) and looking for
+     *growth* gives 17 emerging topic-years. In 2020, three COVID topics with
+     almost no baseline counterpart: political COVID (117 articles vs 0),
+     lifestyle COVID across wellness, style and food (104 vs 0, 3 sections)
+     and the world outbreak (89 vs 5). Later: vaccines (2021, 79 vs 8),
+     the Ukraine war (2022, 135 vs 8), the Hong Kong protests (2019), Biden
+     (2020–21), the royals (2021). One "topic" is a format, not news: weekly
+     funny-tweets roundups (25 in 2020 vs 1).
+  2. **Words that changed meaning** (centroid shift of the articles using a
+     word, vs the same word's shift between 2016 and 2017 at matched group
+     size; 44 term-years for 17 terms):
+
+     | Term | Year | × ordinary | Context before (baseline) | Context after |
+     |---|---|---|---|---|
+     | home | 2020 | 4.6 | refugees, world, state | hair, coronavirus, products, clothes |
+     | virus | 2020 | 3.5 | zika, florida, congress | china, coronavirus, covid-19 |
+     | cases | 2020 | 2.9 | sexual, assault, supreme (court) | coronavirus, covid-19, spread |
+     | biden | 2022 | 2.9 | joe, vice, obama | russian, administration, ukraine |
+     | russia | 2022 | 2.5 | trump, election, campaign | ukraine, war, europe, aid |
+     | test | 2020 | 2.4 | north korea, nuclear, missile | positive, coronavirus |
+     | outbreak | 2020 | 2.3 | ebola, zika | coronavirus, china, pandemic |
+
+     "mask" changes clearly (wore, campaign → face, coronavirus, wearing) but
+     has too few baseline articles per half (under 10) for an ordinary
+     estimate, so it is reported without a ratio. All 44 shifts are
+     "significant", the same large-sample effect as in F4, so the ratio is
+     what matters.
+  3. **Correlation of the drift measures across 42 comparisons with the baseline (P6,
+     Spearman):** MMD and centroid shift 0.93 (two views of the same
+     embedding shift, near-redundant); MMD and word drift (excess JSD) 0.68
+     (related but distinct); MMD and article novelty 0.07 (unrelated);
+     novelty and new-term rate 0.68.
+- **Reproduce:** `python scripts/run_pipeline.py` (`runs/<run_id>/topics.csv`,
+  `term_shifts.csv`, `correlations.csv`).
+- **Chart:** none yet. Suggested: the P6 correlation heatmap; a "before /
+  after" word panel for home, virus, cases, test.
+- **Expectation:** COVID visible as an emerging topic; several words with
+  shifted meaning; the two techniques only moderately correlated.
+- **Verdict:** Supports all three. Not expected: how cleanly ordinary words
+  ("home", "cases", "test") change meaning, and that article novelty is
+  almost unrelated to distribution-level drift.
+- **Implication:**
+  - Three families of drift signal, not two: distribution shift (MMD,
+    centroid), word drift (JSD, new terms) and article novelty. Agent D will
+    test which family predicts quality loss (P4).
+  - Centroid shift adds little beyond MMD; it stays as the intuitive number.
+  - Shifted words make concrete retrieval tests: "how many COVID cases" on a
+    stale index should retrieve court cases. 🔨
+  - A first version of the term-shift ratio was inflated for small groups
+    (noisy centroids); fixed by matching group sizes (D12).

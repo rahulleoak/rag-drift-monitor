@@ -380,3 +380,183 @@ date and reason, and add a new entry that supersedes it.
      seasonal artefact.
 - **Evidence:** F3; `python scripts/prepare_data.py`; tests in
   `tests/test_cleaning.py` and `tests/test_prepare_data.py`.
+
+## D9. LLM provider and models: Sonnet 5.5 writes, Opus 5.5 judges
+- **Date:** 2026-11-04
+- **Status:** Accepted (approved 2026-11-04). The spending cap waits for the
+  stakeholder answer (questions.md, stakeholder question 4).
+- **Context:** the LLM writes test questions and reference answers, writes
+  the RAG answers under test, judges retrieval relevance and answer quality,
+  and writes explanations. An Anthropic API key is available (checked
+  2026-11-04 with the free models endpoint). Q15 asked for a stronger model
+  as judge than as generator.
+- **Options considered** (per million tokens, input / output; rough full-run
+  estimates with the Batch API):
+  1. *Opus 5.5 ($4 / $20) for everything:* about $45–75. Simplest and
+     strongest, but the judge grades its own model's writing (self-preference).
+  2. *Sonnet 5.5 ($2 / $10) writes, Opus 5.5 judges:* about $25–40. A
+     different and stronger judge.
+  3. *Haiku 5.5 ($0.10 / $0.50) writes, Opus 5.5 judges:* cheapest; weaker
+     test questions.
+- **Choice:** option 2. `claude-sonnet-5-5` writes questions, reference
+  answers and RAG answers; `claude-opus-5-5` judges and writes the
+  explanations (few calls, where quality is most visible).
+- **Why:** two different models for writing and judging reduce the risk of
+  the judge favouring its own style, which matters because every quality
+  number depends on the judge. The ~40 hand labels (P8) measure how far the
+  judge can be trusted.
+- **Technical consequences:**
+  1. **No `temperature`:** current models return an error if it is sent.
+     The old `temperature: 0.0` was removed from the config. Reproducibility
+     comes from caching every response on disk, keyed on model, prompt
+     version and input.
+  2. **Structured outputs:** questions and judgements come back as JSON
+     validated against a schema, not parsed from free text.
+  3. **Refusals:** live calls use the API's automatic fallback to another
+     model; batch jobs cannot, so declined requests are counted and reported,
+     never silently dropped.
+  4. **Batch API** for the bulk jobs (questions, answers, judgements): half
+     price, results within hours rather than seconds.
+  5. A **20-question pilot** measures the real cost per job before any full
+     run.
+- **Evidence:** price list checked 2026-11-04; cost figures are estimates
+  until the pilot.
+
+## D10. Indexes and first drift statistics: setup choices
+- **Date:** 2026-11-05
+- **Status:** Accepted as the thin first version; within-category
+  comparisons and severity bands follow after review.
+- **Choices:**
+  1. **The refreshed index is cumulative:** for period P it holds the
+     baseline plus every later period up to P, like an archive that is kept
+     up to date. *Alternative:* baseline + P only, which is simpler but
+     unrealistic (the 2021 archive would forget 2020).
+  2. **One kernel width for all comparisons:** the RBF width comes from the
+     baseline sample (median heuristic) and is reused, so MMD values are on
+     one scale across periods.
+  3. **Novelty** = 1 − similarity to the nearest article in the full stale
+     index (all 60,591 baseline articles). "Novel" means above the 95th
+     percentile of the baseline's own novelty (each baseline article against
+     the others), so 5% is the expected rate with no drift.
+  4. **Word drift reported as excess JSD** (JSD minus its average under
+     shuffling). Raw JSD on word counts is mostly sampling noise at this
+     size (2018 scored below the ordinary-year reference).
+  5. **Emerging terms** by log-odds with an informative Dirichlet prior from
+     the whole cleaned collection (prior strength 1,000 pseudo-counts;
+     terms seen fewer than 5 times dropped).
+  6. **500 permutations** for each test, then Benjamini–Hochberg across all
+     comparisons.
+  7. **Reference for "ordinary change":** 2017 vs 2016, both inside the
+     baseline, at the same sample size.
+- **Why:** each choice keeps numbers comparable across periods, and ties the
+  measures to what retrieval experiences (the stale index).
+- **Evidence:** F4; tests in `tests/test_drift.py` (including a direct check
+  of the MMD formula and that shuffling removes the noise in JSD).
+
+## D11. Within-category comparisons and severity bands
+- **Date:** 2026-11-05
+- **Status:** Accepted (both recommendations approved 2026-11-05)
+- **Context:** F4 showed every comparison is significant at this sample size,
+  so severity must come from size relative to ordinary change. With only
+  the 1,398 drift samples, just 7 baseline categories had 50 articles.
+- **Choices:**
+  1. **Within-category comparisons use every cleaned article** in each
+     period × category group with at least 50 articles whose category also
+     has 50 in the baseline (37 groups); both sides sampled to the same
+     size, capped at 1,398. *Rejected:* the drift samples only (too few
+     categories).
+  2. **Ordinary change = the same month a year apart inside the baseline**
+     (January 2016 vs January 2017, ...: 12 pairs), each pair re-sampled 5
+     times at the size being judged, giving 60 values per measure. Medium
+     = above the 95th percentile, high = above the 99th. *Rejected:*
+     re-sampling 2017 vs 2016 only (sampling noise around one value; bands
+     too tight).
+  3. **Fallbacks:** if a category has too few articles per month, quarter
+     pairs are used (4 pairs); if still too few, the sample size shrinks to
+     what quarters hold; if no category null is possible, the pooled
+     baseline null is used. Each segment records its window and size.
+  4. **One null per category,** built at the smallest segment size in that
+     category: a smaller sample gives a wider, more cautious null.
+  5. **Flag rule:** both techniques significant after Benjamini–Hochberg
+     *and* severity at least medium (Q11 option C). Severity is the higher of
+     the two bands; the kind of drift (meaning / wording / both / none, P2)
+     comes from which bands are above low.
+  6. **Controls:** low-severity sections, kept for Agents C and D to compare
+     against drifted ones.
+  7. **"× ordinary"** = the measure divided by the median of its null; shown
+     for readability, while the bands make the decisions.
+  8. **Agent A** reports category-mix change with Cramér's V next to the
+     chi-square p-value, for the same reason as above.
+- **Why:** comparisons stay like-for-like (same section, same size), and
+  "unusual" is defined by the archive's own history, not invented constants.
+- **Evidence:** F5; `tests/test_agents.py` (null construction falls back from
+  months to quarters; the graph flags a shifted synthetic period and routes
+  to full evaluation, and routes to the regression check when nothing
+  changed).
+
+## D12. Emerging topics, term-context shift and the correlation check
+- **Date:** 2026-11-05
+- **Status:** Accepted (approved as part of finishing Agent B, 2026-11-05)
+- **Choices:**
+  1. **Emerging topics by growth, not novelty.** F4 showed COVID articles are
+     not individually novel, so clustering only novel articles would miss
+     them. Instead, k-means with 40 clusters over all drift samples
+     (baseline and every later period, equal sizes); a topic is emerging
+     when its share of a period is at least 3× its baseline share (add-one
+     smoothing), with at least 15 articles and a significant one-sided
+     Fisher test after Benjamini–Hochberg. Labelled by log-odds words;
+     "sections" counts sections holding at least 10% of the topic.
+     Clusters depend on the seed and k, so topics explain drift; they do not
+     drive the flags.
+  2. **Term-context shift:** centroid distance between the articles using a
+     word in the baseline and in a later period, with a permutation
+     p-value; "× ordinary" against the same word's 2016-vs-2017 shift with
+     the second group sampled to the later period's size (20 draws). Terms
+     are a curated list in the config (needing 20 articles on both sides);
+     context words by log-odds, excluding the word itself.
+  3. **Correlation check (P6):** Spearman correlation of six measures across
+     all baseline comparisons; returned as a table (a chart will follow with
+     the dashboard).
+  4. **Query drift** waits for the LLM query stream; the report says so.
+- **Corrections made while building:**
+  - The log-odds prior now sums over the whole vocabulary, as in Monroe et
+    al.; it had summed only over the reported terms, which broke in a
+    degenerate test case. Real-data term lists were unchanged.
+  - The first term-shift ratio compared a small later group against large
+    baseline halves, so small groups looked shifted by noise ("home" 2020:
+    9.6× before, 4.6× after matching).
+- **Evidence:** F6; `tests/test_topics_relations.py` (a topic that grows
+  from 5% to 60% is found and spans two sections; a word whose contexts
+  change is detected while a stable one is not; correlations need
+  variation).
+
+## D13. Plan: detecting quality loss without drift
+- **Date:** 2026-11-05
+- **Status:** Proposed (built with Agents C and D, after the stakeholder
+  answers)
+- **Context:** F5 found politics is never flagged as drifted, yet questions
+  about the Biden administration or January 6th cannot be answered from a
+  2017 archive. Harm without measurable drift must still be caught.
+- **Plan:**
+  1. **Always evaluate some undrifted segments.** Agent C tests control
+     segments (low drift) next to drifted ones, and the regression check
+     runs even when nothing is flagged. Without this, quality loss without
+     drift is invisible by construction.
+  2. **Historical control questions** (from baseline articles) should score
+     the same on both indexes; a drop there points to the pipeline itself
+     (model, prompt, retrieval settings, the judge), not to drift.
+  3. **Classify every evaluated segment** in Agent D on two axes: drift
+     flagged (from B) × material quality loss (confidence interval excludes
+     zero and the loss exceeds a threshold set before results). "Quality
+     loss without drift" is one of the four classes.
+  4. **Diagnose the cause** with checks that already exist in the design:
+     refreshed index recovers quality → the content changed but the drift
+     measures missed it (review that section's calibration, as with
+     politics); retrieval fine but answers wrong → prompt or generation;
+     both indexes poor → embedding model (trigger model evaluation);
+     historical questions also drop → pipeline or judge; time-sensitive
+     questions only → facts were superseded (who holds an office), which
+     no distribution measure can see.
+  5. **Agent E** maps the class and diagnosis to an action, by default
+     "escalate to a human" with the evidence.
+- **First test case:** politics, 2020–2022.

@@ -16,6 +16,84 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (evening): Agent B finished (except query drift)
+- **Built:** `driftmon/drift/topics.py` (emerging topics by growth),
+  `driftmon/drift/relations.py` (term-context shift with size-matched
+  ordinary shift), the P6 correlation table, all in the DriftReport and
+  saved by `run_pipeline.py`. 3 new tests (57 in total); the suite also
+  passes with runtime warnings treated as errors.
+- **Results:** F6. Three COVID topics in 2020; everyday words change
+  meaning (cases, test, home, virus); MMD vs word drift 0.68, MMD vs
+  novelty 0.07.
+- **Fixed:** log-odds prior summed over the wrong vocabulary (found via a
+  warning in a degenerate test); term-shift ratio inflated for small groups
+  ("home" 2020 9.6× → 4.6×).
+- **Planned:** D13, how quality loss without drift is detected (answers
+  the author's question; built with C and D).
+- **Open questions:** stakeholder answers (LLM work waits); charts come
+  with the dashboard.
+- **Next:** PR for this branch; then the LLM simulator and Agent C once the
+  answers arrive.
+
+## 2026-11-05 (afternoon): Agents A and B running in LangGraph
+- **Built:** `driftmon/monitoring.py` (Agent A statistics: volume, length,
+  category mix with Cramér's V, new and renamed sections, new-term rate);
+  `driftmon/drift/compare.py` (shared comparisons; `run_drift.py` now uses
+  it and reproduces F4 exactly); `driftmon/drift/severity.py` (bands from
+  same-month-a-year-apart pairs); `driftmon/drift/report.py` (flags,
+  controls, terms, examples); typed reports in `schemas.py`; agent nodes A
+  and B; `graph.py` with the routing decision; `scripts/run_pipeline.py`.
+  7 new tests (54 in total), including the whole graph on a synthetic
+  archive.
+- **Results:** F5. 2020, 2021 and 2022 flagged; the 2020 lifestyle sections
+  are the most drifted of all; politics is never flagged. The pipeline runs
+  in about 60 s.
+- **Surprises:** politics never looks unusual, because the baseline's own
+  politics coverage swings so much (D6 weakness 2). Pandas 3 returns
+  read-only arrays (an in-place `&=` failed).
+- **Checked:** the flagged 2020 lifestyle sections are mostly COVID
+  content, not templated columns, so D8's revisit trigger 1 does not fire.
+- **Open questions:** LLM explanations for B (wait for the stakeholder
+  answers); topic clusters, term-context shift and query drift (D7); the
+  P6 correlation heatmap.
+- **Next:** decide with the author what comes next: the remaining Agent B
+  items, or the LLM simulator and Agent C once the stakeholder answers
+  arrive.
+
+## 2026-11-05 (later): Indexes and first drift results
+- **Built:** `driftmon/index.py` (stale and cumulative refreshed indexes),
+  `driftmon/corpus.py` (documents + cached vectors), the embedding drift
+  measures (MMD with permutations, centroid shift, dispersion, novelty), the
+  word drift measures (JSD with permutations and excess over shuffling,
+  log-odds emerging terms, new-term rate), Benjamini–Hochberg, and
+  `scripts/run_drift.py`. 11 new tests (47 in total).
+- **Results:** F4. 2020 is the largest drift (5.7× an ordinary year); the
+  Boiling Frog pattern shows in 2022; the techniques disagree after 2020.
+- **Surprises:** COVID articles are not novel to the embedding model (their
+  nearest baseline articles are about flu, Zika and Trump's health policy).
+  Every comparison was significant, including 2017 vs 2016. Raw JSD was
+  mostly noise; excess JSD fixed it.
+- **Tried and abandoned:** raw JSD as the word-drift score.
+- **Open questions (for review before building):** within-category
+  comparisons (sample design), severity bands (how to build the null
+  distribution), Agent A's monitoring statistics.
+- **Next:** those three, then wiring Agents A and B in LangGraph.
+
+## 2026-11-05: LLM setup chosen; presentation notes started
+- **Built:** D9 (Sonnet 5.5 writes, Opus 5.5 judges; temperature removed from
+  the config); `docs/presentation.md`, the running notes for the walkthrough,
+  now part of the documentation list in `CLAUDE.md`.
+- **Surprises:** this worktree had been switched to an old branch from Zed's
+  branch picker, rolling the files on disk back to the early scaffold.
+  Nothing was lost (all work was committed); switched back and re-tested.
+  Two folders share the name `rag-drift-monitor`; the worktree is the one
+  with `steady-ledge` in its path.
+- **Open questions:** stakeholder answers (agentic definition, budget) before
+  building the LLM jobs; `driftmon/llm.py` and `driftmon/prompts.py` are still
+  stubs by design.
+- **Next:** the two indexes and the Agent A/B drift statistics, which need no
+  LLM.
+
 ## 2026-11-04 (late): Data cleaning built and run
 - **Built:**
   - `driftmon/embeddings.py`: embeddings with a disk cache keyed on model and

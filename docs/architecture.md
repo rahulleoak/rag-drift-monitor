@@ -5,8 +5,10 @@ produces, and how data flows between them. Keep this file and its Mermaid
 diagram up to date whenever the agent design or data flow changes.
 
 **Status (2026-11-04):** proposed design. The folder structure and module
-stubs exist; only data loading (`driftmon/data.py`) and exploration
-(`scripts/exploration/`) are implemented. Items marked *(proposal Pn)* come
+stubs exist. Implemented: data loading (`driftmon/data.py`), exploration
+(`scripts/exploration/`), periods (`driftmon/periods.py`), cleaning
+(`driftmon/cleaning.py`, `scripts/prepare_data.py`) and cached embeddings
+(`driftmon/embeddings.py`). Items marked *(proposal Pn)* come
 from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
 marked *(D7)* were added after checking the design against every requirement
 in the assignment (`docs/requirements-coverage.md`).
@@ -107,9 +109,10 @@ agent breaks the next one.
 | What | Where | In git? |
 |---|---|---|
 | Raw datasets | `data/raw/` | No |
-| Cleaned, per-period data | `data/processed/` (parquet) | No |
+| Cleaned documents, all periods, with period and drift-sample flag | `data/processed/documents.parquet` | No |
+| Cleaning reports (retention table, every removed document) | `runs/prepare/` (CSV) | No |
 | Small committed sample | `data/sample/` | Yes |
-| Embeddings and LLM responses | `cache/` | No |
+| Embeddings (`cache/embeddings/<model>/`) and LLM responses | `cache/` | No |
 | Run outputs (reports, charts) | `runs/<run_id>/` | No |
 | Exploration tables | `runs/explore/<dataset>/` (CSV) | No |
 | Settings, periods, thresholds | `config/config.yaml` | Yes |

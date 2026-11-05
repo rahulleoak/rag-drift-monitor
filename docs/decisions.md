@@ -264,6 +264,11 @@ date and reason, and add a new entry that supersedes it.
      structure (volume, new sections) rather than content.
   4. *U.S. NEWS is mostly politics in disguise* (checked with embeddings).
      Response: map it to POLITICS, which shrinks the unmatched share.
+  5. *Length explains the drift* (added 2026-11-04, F3): baseline articles
+     have a median of 24 words, 2019–2022 have 29–31. If embedding drift
+     largely disappears when the baseline sample is matched to later
+     lengths, length (format) rather than meaning is driving it. Response:
+     length-matched baseline samples.
 - **Evidence:** F2; `python scripts/exploration/compare_baselines.py`.
 
 ## D7. Close the gaps found by checking the design against the assignment
@@ -331,3 +336,47 @@ date and reason, and add a new entry that supersedes it.
   as "trigger model retraining", which dropped "evaluation"; it is now
   marked Revised.
 - **Evidence:** `docs/requirements-coverage.md`.
+
+## D8. Data cleaning rules, first version
+- **Date:** 2026-11-04
+- **Status:** Accepted (approved 2026-11-04) as a **first version, to be
+  revisited** as later findings come in (author's request; triggers below).
+- **Context:** proposal P5 (tiered cleaning with a retention table) needed
+  thresholds. They were chosen by looking at the data per period (lengths,
+  empty descriptions, exact and near-duplicates, hand-checked examples at
+  several similarity levels) before writing the cleaning code.
+- **Choice** (in `config/config.yaml`, `data_cleaning`; applied in order):
+  1. **Drop empty descriptions.** *Revises Q2*, which proposed keeping them:
+     all 1,034 are in the baseline and later years have none, so keeping
+     them adds a baseline-only format. Their rate is still reported by Data
+     Monitoring.
+  2. **Drop records under 8 words** (title + description): 46 records with
+     too little text to embed meaningfully (e.g. "Impeach! We can't wait
+     until November 2020.").
+  3. **Drop records over 80 words:** 34 records, all in the baseline; later
+     years never exceed 53. Mostly "Sunday Roundup" newsletters.
+  4. **Drop near-duplicates within a period at cosine ≥ 0.95,** keeping the
+     earliest copy. Exact (not approximate) comparison against every kept
+     document.
+  5. **Equal drift samples of 1,398 per period** (all of 2022), random with
+     the project seed. Used for drift statistics only; the indexes use
+     every cleaned document.
+- **Options considered for the near-duplicate threshold:** 0.97 (keeps most
+  templated columns, e.g. "Daily Meditation" variants), 0.95 (chosen), 0.93
+  (starts removing distinct articles about the same event, which are real
+  content).
+- **Why:** the rules remove formats that exist only in the baseline, so
+  they cannot pass for drift, and they remove templated copies that would
+  crowd retrieval results. Together they remove 1.8% overall.
+- **Revisit the rules if:**
+  1. the most novel or most drifted examples are dominated by a format
+     (templates, boilerplate) rather than content: tighten the duplicate
+     rule or add a template filter;
+  2. the length gap explains a large part of embedding drift (D6, check 5):
+     sample the baseline to match later lengths;
+  3. retrieval results are crowded by near-identical templated articles:
+     consider 0.93 with a hand check;
+  4. 2022 being a partial year (January to September) shows up as a
+     seasonal artefact.
+- **Evidence:** F3; `python scripts/prepare_data.py`; tests in
+  `tests/test_cleaning.py` and `tests/test_prepare_data.py`.

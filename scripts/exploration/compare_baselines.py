@@ -30,8 +30,6 @@ import math
 import sys
 from collections import Counter
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
-from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -41,30 +39,7 @@ if __package__ in (None, ""):  # allow running the file directly without install
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.data import Record, iter_records  # noqa: E402
-
-
-@dataclass(frozen=True)
-class Period:
-    """A named, inclusive date range."""
-
-    name: str
-    start: date
-    end: date
-
-    @classmethod
-    def from_config(cls, d: Mapping[str, str]) -> Period:
-        """Build from a config entry ``{name, start, end}`` with ISO dates."""
-        return cls(str(d["name"]), date.fromisoformat(str(d["start"])),
-                   date.fromisoformat(str(d["end"])))
-
-    def contains(self, day: date) -> bool:
-        return self.start <= day <= self.end
-
-    def halves(self) -> tuple[Period, Period]:
-        """Split at the midpoint, e.g. 2016-17 into 2016 and 2017."""
-        mid = self.start + (self.end - self.start) // 2
-        return (Period(f"{self.name} (1st half)", self.start, mid),
-                Period(f"{self.name} (2nd half)", mid + timedelta(days=1), self.end))
+from driftmon.periods import Period  # noqa: E402
 
 
 def count_categories(records: Iterable[Record], periods: Iterable[Period],

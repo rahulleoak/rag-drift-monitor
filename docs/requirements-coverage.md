@@ -71,7 +71,7 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 |---|---|---|
 | Public dataset, relevance explained | HuffPost News Category; newsroom archive use case | **Done** (D3, F1) |
 | Establish a historical baseline | 2016–17 | **Done** (D6) |
-| Introduce later periods as new incoming data | 2018–2022, one year at a time | Designed (set in config) |
+| Introduce later periods as new incoming data | 2018–2022, one year at a time; cleaned, with equal drift samples (F3) | Designed (data prepared) |
 | Build a baseline RAG pipeline | bge-small + exact FAISS search; stale and refreshed indexes | Designed (model tested on GPU) |
 | Simulate evolving documents and user queries | Period batches; LLM-generated query stream and golden set | Designed |
 | Detect semantic drift | Agent B | Designed |
@@ -102,5 +102,5 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 | Measurable retrieval and answer quality | Retrieval metrics and judged answer quality, with confidence intervals | Designed |
 | Evidence-based impact assessment | Stale vs refreshed experiment; historical control set | Designed |
 | Intelligent recommendations and decision-making | Evidence-triggered rules; model evaluation actually run | Designed |
-| Sound engineering practices | Tested pure modules, config file, disk caches, documented decisions | In progress (19 tests) |
+| Sound engineering practices | Tested pure modules, config file, disk caches, documented decisions | In progress (36 tests) |
 | Translate research into practice | MMD (Gretton et al.), Fightin' Words (Monroe et al.), TREC pooling, ideas from the author's paper (D5) | Designed |

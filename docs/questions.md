@@ -118,6 +118,9 @@ become entries in `docs/decisions.md`.
   problems; not reproducible. Rejected.
 - **Recommendation: B.** Keep records with empty descriptions, and report their
   rate as a document-quality metric in Agent A.
+  *Revised 2026-11-04 (D8): drop them. All 1,034 are in the baseline and later
+  years have none, so keeping them adds a baseline-only format. Agent A still
+  reports the rate.*
 
 ### Q3. Baseline and later periods
 *Status: decided: B, with baseline 2016–17 instead of 2014–15 (D6, F2).*

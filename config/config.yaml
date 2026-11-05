@@ -18,6 +18,10 @@ datasets:
   huffpost:
     file: data/raw/News_Category_Dataset_v3.json
     source: https://www.kaggle.com/datasets/rmisra/news-category-dataset
+    # The full dataset (Kaggle lists this single file), checked 2026-11-04 (F1).
+    bytes: 87295572
+    sha256: 2cfc51fa4a82a96ecbe251fa383737aa1dea2e0a517f61dece633fcc25a4a065
+    license: CC BY 4.0
   arxiv:
     file: data/raw/arxiv-metadata-oai-snapshot.json
     source: https://www.kaggle.com/datasets/Cornell-University/arxiv
@@ -57,9 +61,10 @@ periods:
     - {name: "2020", start: "2020-01-01", end: "2020-12-31"}
     - {name: "2021", start: "2021-01-01", end: "2021-12-31"}
     - {name: "2022", start: "2022-01-01", end: "2022-12-31"}   # data ends 2022-09-23
-  # Equal-size samples keep drift statistics comparable. Must fit the smallest
-  # period (2022: 1,398 records before cleaning); set after cleaning (P5).
-  sample_per_period: null
+  # Equal-size random samples for the drift statistics only (the indexes use
+  # every cleaned document). 1,398 = all of 2022, the smallest period after
+  # cleaning (F3).
+  sample_per_period: 1398
   min_segment_size: 50      # smallest period x category group that gets analysed
 
 # HuffPost renamed several sections over the years (F1). Old label -> label
@@ -77,10 +82,14 @@ categories:
     ARTS: CULTURE & ARTS            # 2014-2017
     ARTS & CULTURE: CULTURE & ARTS  # 2015-2018
 
-data_cleaning:          # values set after exploration, and the retention table logged in findings
-  min_words: null
-  max_words: null
-  near_duplicate_cosine: null
+# D8 / F3: first-version rules chosen from the data; to be revisited as
+# later findings come in. Applied in this order; each rule only sees what the
+# previous ones kept.
+data_cleaning:
+  drop_empty_text: true       # all 1,034 empty descriptions are in the baseline; later years have none
+  min_words: 8                # title + description; fewer carries too little meaning to embed
+  max_words: 80               # later years never exceed 53; mostly baseline "Sunday Roundup" newsletters
+  near_duplicate_cosine: 0.95 # within a period, keep the earliest copy; >= 0.95 is reposts and templates
 
 embeddings:
   model: BAAI/bge-small-en-v1.5           # Q12

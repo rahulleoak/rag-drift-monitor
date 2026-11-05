@@ -71,6 +71,11 @@ as part of the work, not at the end. Write them in plain language.
   Note whether each finding supports or contradicts expectations.
 - `docs/architecture.md`: keep it and its Mermaid diagram up to date whenever
   the agent design or data flow changes.
+- `docs/presentation.md`: raw material for the stakeholder walkthrough: the
+  thought process, ideas worth showing, talking points, course corrections,
+  likely reviewer questions and chart ideas, with the supporting numbers.
+  Add to it whenever a decision, finding or change of direction would be worth
+  mentioning in the presentation.
 
 At the end of each working session, add a journal entry and update decisions
 and findings before stopping.

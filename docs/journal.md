@@ -16,6 +16,21 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05: LLM setup chosen; presentation notes started
+- **Built:** D9 (Sonnet 5.5 writes, Opus 5.5 judges; temperature removed from
+  the config); `docs/presentation.md`, the running notes for the walkthrough,
+  now part of the documentation list in `CLAUDE.md`.
+- **Surprises:** this worktree had been switched to an old branch from Zed's
+  branch picker, rolling the files on disk back to the early scaffold.
+  Nothing was lost (all work was committed); switched back and re-tested.
+  Two folders share the name `rag-drift-monitor`; the worktree is the one
+  with `steady-ledge` in its path.
+- **Open questions:** stakeholder answers (agentic definition, budget) before
+  building the LLM jobs; `driftmon/llm.py` and `driftmon/prompts.py` are still
+  stubs by design.
+- **Next:** the two indexes and the Agent A/B drift statistics, which need no
+  LLM.
+
 ## 2026-11-04 (late): Data cleaning built and run
 - **Built:**
   - `driftmon/embeddings.py`: embeddings with a disk cache keyed on model and

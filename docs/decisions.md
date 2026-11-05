@@ -380,3 +380,44 @@ date and reason, and add a new entry that supersedes it.
      seasonal artefact.
 - **Evidence:** F3; `python scripts/prepare_data.py`; tests in
   `tests/test_cleaning.py` and `tests/test_prepare_data.py`.
+
+## D9. LLM provider and models: Sonnet 5.5 writes, Opus 5.5 judges
+- **Date:** 2026-11-04
+- **Status:** Accepted (approved 2026-11-04). The spending cap waits for the
+  stakeholder answer (questions.md, stakeholder question 4).
+- **Context:** the LLM writes test questions and reference answers, writes
+  the RAG answers under test, judges retrieval relevance and answer quality,
+  and writes explanations. An Anthropic API key is available (checked
+  2026-11-04 with the free models endpoint). Q15 asked for a stronger model
+  as judge than as generator.
+- **Options considered** (per million tokens, input / output; rough full-run
+  estimates with the Batch API):
+  1. *Opus 5.5 ($4 / $20) for everything:* about $45–75. Simplest and
+     strongest, but the judge grades its own model's writing (self-preference).
+  2. *Sonnet 5.5 ($2 / $10) writes, Opus 5.5 judges:* about $25–40. A
+     different and stronger judge.
+  3. *Haiku 5.5 ($0.10 / $0.50) writes, Opus 5.5 judges:* cheapest; weaker
+     test questions.
+- **Choice:** option 2. `claude-sonnet-5-5` writes questions, reference
+  answers and RAG answers; `claude-opus-5-5` judges and writes the
+  explanations (few calls, where quality is most visible).
+- **Why:** two different models for writing and judging reduce the risk of
+  the judge favouring its own style, which matters because every quality
+  number depends on the judge. The ~40 hand labels (P8) measure how far the
+  judge can be trusted.
+- **Technical consequences:**
+  1. **No `temperature`:** current models return an error if it is sent.
+     The old `temperature: 0.0` was removed from the config. Reproducibility
+     comes from caching every response on disk, keyed on model, prompt
+     version and input.
+  2. **Structured outputs:** questions and judgements come back as JSON
+     validated against a schema, not parsed from free text.
+  3. **Refusals:** live calls use the API's automatic fallback to another
+     model; batch jobs cannot, so declined requests are counted and reported,
+     never silently dropped.
+  4. **Batch API** for the bulk jobs (questions, answers, judgements): half
+     price, results within hours rather than seconds.
+  5. A **20-question pilot** measures the real cost per job before any full
+     run.
+- **Evidence:** price list checked 2026-11-04; cost figures are estimates
+  until the pilot.

@@ -100,11 +100,15 @@ retrieval:
   top_k: 10
   index_type: faiss_flat_ip               # exact search, Q13
 
+# D9: a different, stronger model judges than the one that writes questions
+# and answers, to reduce self-preference. No temperature setting: current
+# models reject it; reproducibility comes from the disk cache of responses.
 llm:
-  provider: null          # anthropic | openai, once a key is available (Q15)
-  generator_model: null   # writes queries and answers
-  judge_model: null       # judges relevance and answers; ideally stronger than the generator
-  temperature: 0.0
+  provider: anthropic
+  generator_model: claude-sonnet-5-5   # writes test questions, reference answers and RAG answers
+  judge_model: claude-opus-5-5         # judges relevance and answer quality; writes explanations
+  use_batch_api: true                  # bulk jobs run through the Batch API (50% cheaper, not instant)
+  budget_usd: null                     # spending cap; waiting for the stakeholder answer (question 4)
 
 drift:
   alpha: 0.05

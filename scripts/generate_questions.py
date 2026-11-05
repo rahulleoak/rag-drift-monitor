@@ -30,7 +30,7 @@ from driftmon.corpus import load_corpus  # noqa: E402
 from driftmon.embeddings import Embedder  # noqa: E402
 from driftmon.llm import LLMClient  # noqa: E402
 from driftmon.periods import study_periods  # noqa: E402
-from driftmon.prompts import QuestionDraft  # noqa: E402
+from driftmon.prompts import DraftQuestion  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -59,9 +59,8 @@ def main(argv: list[str] | None = None) -> int:
                     client=_DryClient() if args.dry_run else None)
     rows = articles.to_dict("records")
     writes = [simulate.question_request(a, cfg) for a in rows]
-    placeholder = QuestionDraft(question="x " * 15, reference_answer="y " * 25,
-                                question_type="evergreen", answerable_from_article=True)
-    reviews = [simulate.review_request(a, placeholder, cfg) for a in rows]
+    placeholder = DraftQuestion(question="x " * 15, reference_answer="y " * 25, question_type="evergreen")
+    reviews = [simulate.review_request(a, placeholder, cfg) for a in rows] * 2  # up to 2 per article
     est = llm.estimate(writes, args.batch) + llm.estimate(reviews, args.batch)
     print(f"Estimated cost: ${est:.2f} (if every draft is reviewed); spent so far ${llm.spent():.2f} "
           f"of the ${llm.budget:.0f} budget")
@@ -77,15 +76,19 @@ def main(argv: list[str] | None = None) -> int:
     report.mkdir(parents=True, exist_ok=True)
     table.to_csv(report / "questions.csv", index=False)
 
-    kept = table[table["kept"]]
+    kept = table[table["set"] == "answerable"]
+    unans = table[table["set"] == "unanswerable"]
     pos = {d: i for i, d in enumerate(docs["doc_id"])}
     div = simulate.diversity(kept["question"].tolist(),
                              vectors[[pos[d] for d in kept["doc_id"]]], Embedder.from_config(cfg))
     pd.set_option("display.width", 220)
     pd.set_option("display.max_colwidth", 90)
-    print(f"\nKept {len(kept)} of {len(table)} questions. Cost of this run: ${llm.spent() - before:.4f} "
-          f"(total ${llm.spent():.4f} of ${llm.budget:.0f})")
-    reasons = table.loc[~table["kept"], "rejected_by"].str.split("; ").explode().value_counts()
+    print(f"\n{len(table)} questions drafted from {table['doc_id'].nunique()} articles: kept "
+          f"{len(kept)} answerable + {len(unans)} unanswerable. Cost of this run: "
+          f"${llm.spent() - before:.4f} (total ${llm.spent():.4f} of ${llm.budget:.0f})")
+    print("\nKeep rates by period:\n" + simulate.keep_rates(table, "period").to_string())
+    print("\nKeep rates by section:\n" + simulate.keep_rates(table, "category").to_string())
+    reasons = table.loc[table["set"] == "", "rejected_by"].str.split("; ").explode().value_counts()
     if len(reasons):
         print("Rejection reasons:\n" + reasons.to_string())
     print(f"Question types kept: {kept['question_type'].value_counts().to_dict()}")

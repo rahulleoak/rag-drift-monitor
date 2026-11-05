@@ -74,11 +74,13 @@ simulation:
   exclude_title_patterns: ["funniest tweets", "tweets from", "huffpost rise", "daily meditation",
                            "headline quiz", "what to watch", "sunday roundup", "morning email",
                            "what you need to know"]
+  max_questions_per_article: 2   # D17: a second question only for a time-sensitive fact
   pilot_counts: {"2016-17": 5, "2018": 3, "2019": 3, "2020": 3, "2021": 3, "2022": 3}
   question_checks:
     min_words: 6
     max_words: 30
     copy_ngram: 4              # reject a question repeating 4 consecutive headline words
+    copy_ngram_description: 7  # ... or 7 description words (D17; 5 rejected names such as "8-year-old Malayan tiger named Eko")
     max_headline_overlap: 0.7  # reject if most of its content words come from the headline
     duplicate_cosine: 0.95
 

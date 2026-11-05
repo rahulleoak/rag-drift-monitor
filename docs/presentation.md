@@ -367,6 +367,13 @@ Honest moments that show judgement, good for a "what we learned" slide:
   temperature setting, so reproducibility comes from caching every response.
 - **Expected COVID to be the most novel content; it was not** (F4). Instead of
   hiding it, it became the central hypothesis for the impact experiment.
+- **Tuning the test-question writer taught us what "good" means** (F7, F8):
+  version 1 kept 75% but had no time-sensitive questions and copied the
+  articles; version 2 fixed that but rejected ordinary knowledge like
+  "Justin Trudeau"; version 3 showed that even Opus cannot consistently say
+  whether "what police said at the time" will go out of date. A strong model
+  as a reviewer is useful, but its yes/no checks need the same scrutiny as
+  any other measurement.
 - **Expected politics to be the most drifted section; it never was** (F5),
   which exposed how the election year inflates "normal" for that section.
 - **Two of our own measures needed correcting** (D12): a word-shift ratio

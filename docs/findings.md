@@ -404,3 +404,49 @@ chart, and whether it supports or contradicts what we expected.
   second pilot before generating the ~180-question set. At about $0.01 per
   kept question, the small set costs about $1–2, and the full plan is far
   inside the budget.
+
+## F8. Question pilots 2 and 3: stricter checks halve the keep rate; type labels are ambiguous even for Opus
+- **Date:** 2026-11-05
+- **Setup:** the same 20 articles as the first pilot (F7), so versions compare
+  directly.
+- **Result:**
+
+  | Version | Drafts | Kept | Keep rate | Time-sensitive kept | Unanswerable kept | Cost |
+  |---|---|---|---|---|---|---|
+  | v1 (F7) | 20 | 15 | 75% | 0 | n/a | $0.18 |
+  | v2 | 24 | 9 | 38% | 3 | 0 | $0.28 |
+  | v3 | 25 | 9 | 36% | 2 | 0 | $0.33 |
+
+  Total spent so far: $0.78 of the $150 budget.
+  - **v2 fixed what it targeted:** two-part questions gone; time-sensitive
+    questions appear ("How many people have Russian investigators said died
+    in the Moscow plane fire so far?"); the reviewer catches questions that
+    give away their own answer and wrong type labels.
+  - **v2 overshot:** "no outside facts" rejected common knowledge ("Justin
+    Trudeau", "Canada", "Pennsylvania senator"); the 5-word description copy
+    check rejected proper names; no unanswerable question survived, partly
+    because the writer treated the description as the whole article.
+  - **v3's remaining rejections are about half correct** (invented details:
+    "after the US decision on the Paris deal"; a winner the article never
+    names; "on Sunday" with no date) **and half noise:**
+    - **The type label is unstable even for Opus:** the same question ("Did
+      police see any initial indication that the Brooklyn shootings were
+      linked to gangs?") was accepted as time-sensitive in v2 and rejected
+      as "should be evergreen" in v3. Whether "what police said at the
+      time" is time-sensitive is genuinely ambiguous.
+    - **"Natural" rejects unanswerable questions for restating the
+      headline,** which they inherently do.
+  - Diversity stayed healthy (ratio 1.03–1.05: no collapse into generic
+    phrasing).
+- **Reproduce:** `python scripts/generate_questions.py --name pilot_v2` /
+  `--name pilot_v3` with the matching prompt versions (cached: reruns are
+  free); tables in `runs/questions/pilot_v2/` and `pilot_v3/`.
+- **Expectation:** v3 would keep 60–70%.
+- **Verdict:** Contradicts. Stricter checking found real writer errors, but
+  two checks (type label, "natural" for unanswerable questions) add noise.
+- **Implication (proposed):** the reviewer assigns the type label instead of
+  judging the writer's (disagreement recorded, not a rejection), and an
+  unanswerable question needs only the reviewer's agreement that it is
+  unanswerable and a single ask. Then stop tuning: about 50% kept at about
+  $0.035 per kept question is affordable, and the remaining rejections are
+  mostly right.

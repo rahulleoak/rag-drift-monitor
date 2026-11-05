@@ -10,11 +10,11 @@ from driftmon import simulate
 from driftmon.config import load_config
 from driftmon.embeddings import Embedder
 from driftmon.llm import LLMClient
-from driftmon.prompts import QuestionDraft
+from driftmon.prompts import REVIEW_CHECKS, DraftQuestion
 from tests.test_llm import FakeAPI, _msg
 
-LIMITS = {"min_words": 6, "max_words": 30, "copy_ngram": 4, "max_headline_overlap": 0.7,
-          "duplicate_cosine": 0.95}
+LIMITS = {"min_words": 6, "max_words": 30, "copy_ngram": 4, "copy_ngram_description": 7,
+          "max_headline_overlap": 0.7, "duplicate_cosine": 0.95}
 
 
 def test_eligible_articles_skip_templates_and_short_records():
@@ -32,16 +32,17 @@ def test_headline_copy_and_overlap():
     assert simulate.headline_overlap("China tariff hikes products", title) == 1.0
 
 
-def test_check_draft_reasons():
-    title = "Senate Passes Budget Bill After Long Night"
-    good = QuestionDraft(question="Which chamber approved the spending plan after an overnight session?",
-                         reference_answer="The Senate.", question_type="evergreen",
-                         answerable_from_article=True)
-    assert simulate.check_draft(good, title, LIMITS) == []
-    bad = good.model_copy(update={"question": "Senate passes budget bill after long night?",
-                                  "answerable_from_article": False})
-    reasons = simulate.check_draft(bad, title, LIMITS)
-    assert "copies the headline" in reasons and "writer: not answerable" in reasons
+def test_check_question_reasons():
+    title, text = "Senate Passes Budget Bill After Long Night", "Lawmakers approved it by a vote of 51 to 49."
+    good = DraftQuestion(question="Which chamber approved the spending plan after an overnight session?",
+                         reference_answer="The Senate.", question_type="evergreen")
+    assert simulate.check_question(good, title, text, True, LIMITS) == []
+    copied = good.model_copy(update={"question": "Is it true lawmakers approved it by a vote of 51 to 49?"})
+    assert "copies the description" in simulate.check_question(copied, title, text, True, LIMITS)
+    meta = good.model_copy(update={"reference_answer": "The article says the Senate passed it."})
+    assert simulate.check_question(meta, title, text, True, LIMITS) == ["reference describes the article"]
+    # the meta check does not apply to unanswerable questions ("Not stated in the article.")
+    assert simulate.check_question(meta, title, text, False, LIMITS) == []
 
 
 def _fake_embedder(tmp_path):
@@ -51,37 +52,48 @@ def _fake_embedder(tmp_path):
     return Embedder("fake", tmp_path / "emb", encode_fn=enc)
 
 
+def _review(**false):
+    body = {c: True for c in REVIEW_CHECKS}
+    body.update({k: False for k in false})
+    body["reason"] = ", ".join(false) or "fine"
+    return body
+
+
 def test_generate_questions_flow(tmp_path):
     articles = pd.DataFrame({
         "doc_id": ["a", "b", "c", "d"], "period": ["2016-17", "2020", "2020", "2020"],
-        "category": ["POLITICS"] * 4, "date": ["2016-05-01", "2020-03-01", "2020-03-02", "2020-03-03"],
+        "category": ["POLITICS", "WELLNESS", "MONEY", "WELLNESS"],
+        "date": ["2016-05-01", "2020-03-01", "2020-03-02", "2020-03-03"],
         "title": ["Senate Passes Budget Bill After Long Night", "Masks Required On City Buses",
-                  "Opinion: Why We Need Hope", "Masks Required On City Buses Again"],
-        "text": ["Lawmakers approved it 51-49.", "The rule starts Monday.", "A reflection.",
-                 "The rule returns Monday."], "words": [20] * 4})
-    writer = {
-        "Senate": {"question": "By what margin did the upper chamber approve the spending plan?",
-                   "reference_answer": "51-49.", "question_type": "evergreen", "answerable_from_article": True},
-        "Opinion": {"question": "What does the author argue about hope in difficult times?",
-                    "reference_answer": "That it is needed.", "question_type": "evergreen",
-                    "answerable_from_article": False},
-        "Masks Required On City Buses\n": None,
-    }
+                  "Who Pays The Debt After A Divorce?", "Masks Required On City Buses Again"],
+        "text": ["Lawmakers approved it 51-49.", "The rule starts Monday; 3 riders were fined so far.",
+                 "Here's how the debt gets split.", "The rule returns Monday."], "words": [20] * 4})
+    budget_q = {"question": "By what margin did the upper chamber approve the spending plan?",
+                "reference_answer": "51-49.", "question_type": "evergreen"}
     bus_q = {"question": "When does the face covering rule for public buses take effect in the city?",
-             "reference_answer": "Monday.", "question_type": "time_sensitive", "answerable_from_article": True}
+             "reference_answer": "Monday.", "question_type": "evergreen"}
+    fines_q = {"question": "How many bus riders have been fined under the face covering rule?",
+               "reference_answer": "Three riders.", "question_type": "time_sensitive"}
+    debt_q = {"question": "How is shared debt divided between spouses when they divorce?",
+              "reference_answer": "Not stated in the article.", "question_type": "evergreen"}
 
     def responder(kw, live):
         prompt = kw["messages"][0]["content"]
         if "Question:" in prompt:  # review
-            ok = "Monday" in prompt
-            body = {"answerable": True, "unambiguous": ok, "needs_article": True,
-                    "reference_correct": True, "natural": True, "reason": "fine" if ok else "vague"}
+            if "upper chamber" in prompt:
+                body = _review(no_invented_details=False)  # strict reviewer rejects
+            elif "divided between spouses" in prompt:
+                body = _review(answerable=False)                             # agrees: not answerable
+            else:
+                body = _review()
         elif "Senate" in prompt:
-            body = writer["Senate"]
-        elif "Opinion" in prompt:
-            body = writer["Opinion"]
+            body = {"questions": [budget_q], "answerable_from_article": True}
+        elif "Divorce" in prompt:
+            body = {"questions": [debt_q], "answerable_from_article": False}
+        elif "Again" in prompt:
+            body = {"questions": [bus_q], "answerable_from_article": True}  # duplicate of b's question
         else:
-            body = bus_q  # both bus articles give the same question: one is a duplicate
+            body = {"questions": [bus_q, fines_q], "answerable_from_article": True}
         return _msg(json.dumps(body), model=kw["model"])
 
     cfg = copy.deepcopy(load_config())
@@ -90,15 +102,17 @@ def test_generate_questions_flow(tmp_path):
                             cfg["llm"]["judge_model"]: {"input": 4, "output": 20}}
     llm = LLMClient(config=cfg["llm"], cache_dir=tmp_path / "cache", ledger=tmp_path / "l.csv",
                     client=FakeAPI(responder), sleep=lambda s: None)
-    table = simulate.generate_questions(cfg, articles, llm, _fake_embedder(tmp_path), batch=False).set_index("doc_id")
+    t = simulate.generate_questions(cfg, articles, llm, _fake_embedder(tmp_path), batch=False)
+    t = t.set_index("question_id")
 
-    assert table.loc["c", "rejected_by"] == "writer: not answerable"
-    assert table.loc["d", "rejected_by"] == "near-duplicate question"
-    assert bool(table.loc["b", "kept"]) and table.loc["b", "question_type"] == "time_sensitive"
-    assert not table.loc["a", "kept"] and table.loc["a", "rejected_by"] == "review: not unambiguous"
-    assert table.loc["a", "review_reason"] == "vague"
-    # only the two drafts that passed the code checks were sent to the (judge) reviewer
+    assert t.loc["b-q0", "set"] == "answerable" and t.loc["b-q1", "set"] == "answerable"
+    assert t.loc["b-q1", "question_type"] == "time_sensitive"          # second question per article
+    assert t.loc["c-q0", "set"] == "unanswerable"                        # teaser kept for abstention tests
+    assert t.loc["d-q0", "rejected_by"] == "near-duplicate question"
+    assert t.loc["a-q0", "set"] == "" and t.loc["a-q0", "rejected_by"] == "review: not no_invented_details"
+    rates = simulate.keep_rates(t.reset_index(), "category")
+    assert rates.loc["WELLNESS", "questions"] == 3 and rates.loc["WELLNESS", "answerable"] == 2
+    assert rates.loc["MONEY", "unanswerable"] == 1
+    # only questions that passed the code checks went to the (judge) reviewer
     reviewed = [c for c in llm.client.live_calls if "Question:" in c["messages"][0]["content"]]
-    assert len(reviewed) == 2 and all(c["model"] == cfg["llm"]["judge_model"] for c in reviewed)
-    writes = [c for c in llm.client.live_calls if "Question:" not in c["messages"][0]["content"]]
-    assert all(c["model"] == cfg["llm"]["generator_model"] for c in writes)
+    assert len(reviewed) == 4 and all(c["model"] == cfg["llm"]["judge_model"] for c in reviewed)

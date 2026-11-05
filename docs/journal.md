@@ -16,6 +16,22 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (late night): Question writer versions 2 and 3
+- **Built:** prompts q-v2/r-v2 then q-v3/r-v3 (D17): one fact per question,
+  up to two per article, direct reference answers, sharper time-sensitive
+  rule, description copy check, stricter reviewer with eight checks, an
+  unanswerable set, keep rates per section and period. Tests updated
+  (73 pass).
+- **Results:** F8. Keep rate 75% → 38% → 36%; time-sensitive questions now
+  appear; unanswerable set still empty. Spent $0.78 in total.
+- **Surprises:** Opus is inconsistent on the evergreen / time-sensitive label
+  for the same question across runs; "natural" rejects unanswerable
+  questions for restating the headline.
+- **Next (proposed to the author):** reviewer assigns the type label;
+  relax the unanswerable acceptance; rerun only the reviews (about $0.20);
+  then sample the ~180-question set weighted towards flagged and control
+  sections.
+
 ## 2026-11-05 (night): First live LLM run: the question pilot (checkpoint 3 of 3)
 - **Fixed first:** the shell defines `ANTHROPIC_API_KEY` as an empty
   string, which hid the `.env` key (python-dotenv never overrides an

@@ -660,3 +660,43 @@ date and reason, and add a new entry that supersedes it.
   prompt can be tuned on evidence.
 - **Evidence:** `tests/test_simulate.py`; the pilot (F7) will measure the
   keep rate, the reasons and the cost.
+
+## D17. Question writing, version 2 and 3: stricter questions, an unanswerable set, measured bias
+- **Date:** 2026-11-05
+- **Status:** Accepted (author, 2026-11-05). **To check against results:**
+  the author asked to revisit whether these choices were right once the
+  retrieval and answer results exist (see "Revisit" below).
+- **Context:** the first pilot (F7) found no time-sensitive questions,
+  copying from the description, a lenient reviewer, outside facts in
+  questions and two-part questions. Looking at one rejected teaser ("Who Is
+  Responsible For Debt When You Get A Divorce Or Break Up?") raised three
+  more points: the reference answer described the article instead of
+  answering; 20% of sampled articles are teasers with no stated fact; and
+  rejecting teasers may bias the test set away from the lifestyle and
+  service sections where COVID drift was strongest (F5).
+- **Choices:**
+  1. **One fact per question,** and up to two questions per article: a
+     second only for a time-sensitive fact.
+  2. **Direct reference answers,** never "the article says…" (also checked
+     in code).
+  3. **Sharper time-sensitive rule:** counts still being reported, current
+     rules, who holds a role now, ongoing situations.
+  4. **Copy check extended to the description** (7 consecutive words; 5
+     rejected proper names such as "8-year-old Malayan tiger named Eko").
+  5. **Stricter reviewer:** eight checks, including single question and the
+     type label, and it must say false whenever its reason names a problem.
+  6. **Common knowledge allowed, invented event details not** (version 3,
+     after version 2 rejected "Justin Trudeau", "Canada" and "Pennsylvania
+     senator"): realistic for journalists, at the cost of a little of the
+     writer's own knowledge entering the test. Stated as a limitation.
+  7. **An unanswerable set** (teaser articles): kept on purpose to test
+     whether the assistant admits the archive cannot answer instead of
+     guessing (groundedness).
+  8. **Keep rates reported per section and period** in every run, so any
+     bias in what survives is visible; sampling will draw more from the
+     flagged sections and the controls (politics).
+- **Revisit when results exist:** (a) is the unanswerable set useful in the
+  groundedness results? (b) do keep rates differ by section enough to bias
+  the drift-vs-quality analysis? (c) did allowing common knowledge make
+  retrieval easier than it should be?
+- **Evidence:** F8.

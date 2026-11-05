@@ -1,23 +1,29 @@
 """The simulator: stands in for production traffic (not an agent).
 
-Writes the golden evaluation set: one question per sampled archive article,
-with a reference answer and the article as its known source (D9, D16).
+Writes the golden evaluation set from sampled archive articles: each
+question has a reference answer and its article as the known source
+(D9, D16, D17).
 
-Flow for each article:
+Flow:
     1. **Select** articles from every period (baseline included, as the
        control), skipping templated columns ("HuffPost Rise", "Funniest
-       Tweets", ...) and very short records, which have no single answer.
-    2. **Write** (Sonnet): question, reference answer, evergreen or
-       time-sensitive, answerable from the article or not.
-    3. **Check in code:** length, copying the headline, the writer's own
-       "not answerable" flag, near-duplicate questions.
-    4. **Review** (Opus) the drafts that passed: yes/no checks
-       (answerable, unambiguous, needs the article, reference correct,
-       natural).
-    5. **Decide in code:** keep a question only if every check passes.
+       Tweets", ...) and very short records.
+    2. **Write** (Sonnet): one or two single-fact questions per article (a
+       second only for a time-sensitive fact), each with a direct reference
+       answer and a type label; or, for a teaser with no stated fact, the
+       question a journalist would naturally ask, flagged as not answerable.
+    3. **Check in code:** length, copying the headline or the description,
+       reference answers that describe the article, near-duplicates.
+    4. **Review** (Opus): eight yes/no checks per question.
+    5. **Decide in code:**
+       - answerable questions are kept only if all eight checks pass;
+       - unanswerable questions become a separate **unanswerable set**
+         (does the assistant admit the archive cannot answer, instead of
+         guessing?) if the reviewer agrees they are not answerable and they
+         are clear, single and natural.
 
-Every decision and its reason is kept in the output table, so rejected
-questions can be inspected.
+Every question, check and reason is kept in the output table; keep rates
+per section and period are reported so any bias in what survives is visible.
 """
 from __future__ import annotations
 
@@ -33,10 +39,18 @@ from driftmon.drift import embedding as emb
 from driftmon.drift import lexical as lex
 from driftmon.embeddings import Embedder
 from driftmon.llm import LLMClient, LLMRequest
-from driftmon.prompts import (QUESTION_SYSTEM, QUESTION_TEMPLATE, QUESTION_VERSION, REVIEW_SYSTEM,
-                              REVIEW_TEMPLATE, REVIEW_VERSION, QuestionDraft, QuestionReview)
+from driftmon.prompts import (QUESTION_SYSTEM, QUESTION_TEMPLATE, QUESTION_VERSION, REVIEW_CHECKS,
+                              REVIEW_SYSTEM, REVIEW_TEMPLATE, REVIEW_VERSION, DraftQuestion,
+                              QuestionDraft, QuestionReview)
 
 _WORD = re.compile(r"[a-z0-9']+")
+_META = re.compile(r"^\s*(the|this) (article|description|headline|story)\b|\bthe article (says|states)",
+                   re.IGNORECASE)
+UNANSWERABLE_REFERENCE = "Not stated in the article."
+# checks an unanswerable question must pass (besides the reviewer agreeing it is not answerable)
+# an unanswerable question may be broad ("how is debt split in a divorce?"): that is the point
+# of the test, so "unambiguous" is not required
+UNANSWERABLE_CHECKS = ("single_question", "natural")
 
 
 def _words(text: str) -> list[str]:
@@ -65,11 +79,16 @@ def sample_articles(docs: pd.DataFrame, counts: Mapping[str, int], seed: int) ->
 
 # ---------- 3. code checks ----------
 
-def copies_headline(question: str, title: str, n: int = 4) -> bool:
-    """True if the question repeats any run of ``n`` consecutive headline words."""
-    q, t = _words(question), _words(title)
+def copies_text(question: str, source: str, n: int) -> bool:
+    """True if the question repeats any run of ``n`` consecutive words of ``source``."""
+    q, t = _words(question), _words(source)
     grams = {tuple(t[i:i + n]) for i in range(len(t) - n + 1)}
     return any(tuple(q[i:i + n]) in grams for i in range(len(q) - n + 1))
+
+
+def copies_headline(question: str, title: str, n: int = 4) -> bool:
+    """True if the question repeats ``n`` consecutive headline words."""
+    return copies_text(question, title, n)
 
 
 def headline_overlap(question: str, title: str) -> float:
@@ -78,22 +97,29 @@ def headline_overlap(question: str, title: str) -> float:
     return len(q & set(lex.tokenize(title))) / len(q) if q else 0.0
 
 
-def check_draft(draft: QuestionDraft, title: str, limits: Mapping[str, Any]) -> list[str]:
-    """Reasons to reject a draft before review (empty list = passes)."""
+def check_question(item: DraftQuestion, title: str, text: str, answerable: bool,
+                   limits: Mapping[str, Any]) -> list[str]:
+    """Reasons to reject one drafted question before review (empty list = passes)."""
     reasons = []
-    n = len(draft.question.split())
+    n = len(item.question.split())
     if n < limits["min_words"] or n > limits["max_words"]:
         reasons.append(f"length {n} words")
-    if copies_headline(draft.question, title, int(limits["copy_ngram"])):
+    if copies_text(item.question, title, int(limits["copy_ngram"])):
         reasons.append("copies the headline")
-    if headline_overlap(draft.question, title) > float(limits["max_headline_overlap"]):
+    if copies_text(item.question, text, int(limits["copy_ngram_description"])):
+        reasons.append("copies the description")
+    if headline_overlap(item.question, title) > float(limits["max_headline_overlap"]):
         reasons.append("mostly headline words")
-    if not draft.answerable_from_article:
-        reasons.append("writer: not answerable")
+    if answerable and _META.search(item.reference_answer):
+        reasons.append("reference describes the article")
     return reasons
 
 
 # ---------- requests ----------
+
+def _fields(a: Mapping[str, Any]) -> dict[str, str]:
+    return {"date": str(a["date"]), "category": a["category"], "title": a["title"], "text": a["text"]}
+
 
 def question_request(article: Mapping[str, Any], cfg: Mapping[str, Any]) -> LLMRequest:
     job = cfg["llm"]["jobs"]["questions"]
@@ -102,65 +128,103 @@ def question_request(article: Mapping[str, Any], cfg: Mapping[str, Any]) -> LLMR
                       prompt_version=QUESTION_VERSION, effort=job["effort"], max_tokens=int(job["max_tokens"]))
 
 
-def review_request(article: Mapping[str, Any], draft: QuestionDraft, cfg: Mapping[str, Any]) -> LLMRequest:
+def review_request(article: Mapping[str, Any], item: DraftQuestion, cfg: Mapping[str, Any]) -> LLMRequest:
     job = cfg["llm"]["jobs"]["question_review"]
     return LLMRequest(job="question_review", model=cfg["llm"]["judge_model"], system=REVIEW_SYSTEM,
-                      prompt=REVIEW_TEMPLATE.format(**_fields(article), question=draft.question,
-                                                    reference_answer=draft.reference_answer),
+                      prompt=REVIEW_TEMPLATE.format(**_fields(article), question=item.question,
+                                                    reference_answer=item.reference_answer,
+                                                    question_type=item.question_type),
                       schema=QuestionReview, prompt_version=REVIEW_VERSION, effort=job["effort"],
                       max_tokens=int(job["max_tokens"]))
 
 
-def _fields(a: Mapping[str, Any]) -> dict[str, str]:
-    return {"date": str(a["date"]), "category": a["category"], "title": a["title"], "text": a["text"]}
-
-
 # ---------- 2-5. the whole flow ----------
-
-CHECKS = ("answerable", "unambiguous", "needs_article", "reference_correct", "natural")
-
 
 def generate_questions(cfg: Mapping[str, Any], articles: pd.DataFrame, llm: LLMClient,
                        embedder: Embedder, batch: bool | None = None) -> pd.DataFrame:
-    """Write, check, review and decide; one row per article with every decision."""
+    """Write, check, review and decide.
+
+    Returns one row per drafted question (or per article whose writing
+    failed), with ``set`` = "answerable", "unanswerable" or "" (rejected) and
+    the reasons for every rejection.
+    """
     limits = cfg["simulation"]["question_checks"]
-    rows = articles.reset_index(drop=True).to_dict("records")
-    drafts = llm.complete_many([question_request(a, cfg) for a in rows], batch=batch)
+    max_q = int(cfg["simulation"].get("max_questions_per_article", 2))
+    arts = articles.reset_index(drop=True).to_dict("records")
+    drafts = llm.complete_many([question_request(a, cfg) for a in arts], batch=batch)
 
-    reasons: list[list[str]] = []
-    for a, d in zip(rows, drafts):
-        reasons.append(check_draft(d.parsed, a["title"], limits) if d.ok else [f"writer: {d.error}"])
+    # one row per drafted question
+    rows: list[dict[str, Any]] = []
+    for a, d in zip(arts, drafts):
+        base = {"doc_id": a["doc_id"], "period": a["period"], "category": a["category"],
+                "date": a["date"], "title": a["title"], "text": a["text"]}
+        if not d.ok:
+            rows.append({**base, "question_id": f"{a['doc_id']}-q0", "item": None, "answerable": None,
+                         "reasons": [f"writer: {d.error}"]})
+            continue
+        items = d.parsed.questions[:max_q] or []
+        if not items:
+            rows.append({**base, "question_id": f"{a['doc_id']}-q0", "item": None, "answerable": None,
+                         "reasons": ["writer: no question"]})
+        answerable = d.parsed.answerable_from_article
+        for k, item in enumerate(items[:1] if not answerable else items):
+            rows.append({**base, "question_id": f"{a['doc_id']}-q{k}", "item": item, "answerable": answerable,
+                         "reasons": check_question(item, a["title"], a["text"], answerable, limits)})
 
-    # near-duplicate questions (embedding cosine), among drafts still in play
-    live = [i for i, r in enumerate(reasons) if not r]
+    # near-duplicate questions (embedding cosine), among questions still in play
+    live = [i for i, r in enumerate(rows) if not r["reasons"]]
     if len(live) > 1:
-        vecs = embedder.embed_queries([drafts[i].parsed.question for i in live])
+        vecs = embedder.embed_queries([rows[i]["item"].question for i in live])
         for i, dup in zip(live, cleaning.near_duplicates(vecs, float(limits["duplicate_cosine"]))):
             if dup:
-                reasons[i].append("near-duplicate question")
+                rows[i]["reasons"].append("near-duplicate question")
 
     # review the survivors; code decides from the reviewer's yes/no checks
-    live = [i for i, r in enumerate(reasons) if not r]
+    live = [i for i, r in enumerate(rows) if not r["reasons"]]
     reviews = dict(zip(live, llm.complete_many(
-        [review_request(rows[i], drafts[i].parsed, cfg) for i in live], batch=batch)))
+        [review_request(rows[i], rows[i]["item"], cfg) for i in live], batch=batch)))
+
     out = []
-    for i, (a, d) in enumerate(zip(rows, drafts)):
-        rec = {"doc_id": a["doc_id"], "period": a["period"], "category": a["category"],
-               "date": a["date"], "title": a["title"], "text": a["text"],
-               "question": d.parsed.question if d.ok else "",
-               "reference_answer": d.parsed.reference_answer if d.ok else "",
-               "question_type": d.parsed.question_type if d.ok else "",
-               **{c: None for c in CHECKS}, "review_reason": ""}
+    for i, r in enumerate(rows):
+        item: DraftQuestion | None = r["item"]
+        rec = {k: r[k] for k in ("question_id", "doc_id", "period", "category", "date", "title", "text")}
+        rec.update(question=item.question if item else "", reference_answer=item.reference_answer if item else "",
+                   question_type=item.question_type if item else "",
+                   writer_answerable=r["answerable"], **{f"rv_{c}": None for c in REVIEW_CHECKS},
+                   review_reason="")
+        reasons = r["reasons"]
         rv = reviews.get(i)
+        kept_as = ""
         if rv is not None and not rv.ok:
-            reasons[i].append(f"review: {rv.error}")
+            reasons.append(f"review: {rv.error}")
         elif rv is not None:
-            rec.update({c: getattr(rv.parsed, c) for c in CHECKS}, review_reason=rv.parsed.reason)
-            reasons[i] += [f"review: not {c}" for c in CHECKS if not getattr(rv.parsed, c)]
-        rec["kept"] = not reasons[i]
-        rec["rejected_by"] = "; ".join(reasons[i])
+            p: QuestionReview = rv.parsed
+            rec.update({f"rv_{c}": getattr(p, c) for c in REVIEW_CHECKS}, review_reason=p.reason)
+            if r["answerable"]:
+                failed = [c for c in REVIEW_CHECKS if not getattr(p, c)]
+                kept_as = "" if failed else "answerable"
+            else:
+                failed = [c for c in UNANSWERABLE_CHECKS if not getattr(p, c)]
+                if p.answerable:
+                    failed.append("reviewer finds it answerable")
+                kept_as = "" if failed else "unanswerable"
+            reasons += [f"review: {c}" if " " in c else f"review: not {c}" for c in failed]
+        rec["set"] = kept_as
+        rec["rejected_by"] = "; ".join(reasons)
         out.append(rec)
     return pd.DataFrame(out)
+
+
+def keep_rates(table: pd.DataFrame, by: str) -> pd.DataFrame:
+    """Per group: articles, questions drafted, kept answerable, kept unanswerable, keep rate."""
+    g = table.groupby(by)
+    return pd.DataFrame({
+        "articles": g["doc_id"].nunique(),
+        "questions": g.size(),
+        "answerable": g["set"].apply(lambda s: int((s == "answerable").sum())),
+        "unanswerable": g["set"].apply(lambda s: int((s == "unanswerable").sum())),
+        "keep_rate": g["set"].apply(lambda s: round(float((s != "").mean()), 2)),
+    })
 
 
 def diversity(questions: Sequence[str], sources: np.ndarray, embedder: Embedder) -> dict[str, float]:

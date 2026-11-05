@@ -5,8 +5,8 @@ from datetime import date
 from pathlib import Path
 
 from driftmon.data import iter_records
+from driftmon.periods import Period
 from scripts.exploration.compare_baselines import (
-    Period,
     count_categories,
     main,
     mix_difference,

@@ -22,6 +22,13 @@ chart, and whether it supports or contradicts what we expected.
 ## F1. HuffPost exploration: known drift is clearly present, but volume and labels change sharply after 2017
 - **Date:** 2026-11-04
 - **Result:**
+  - **Provenance (checked 2026-11-04):** the dataset linked in the assignment
+    (`kaggle.com/datasets/rmisra/news-category-dataset`, "News Category
+    Dataset" by rmisra, CC BY 4.0). Kaggle's API lists one file,
+    `News_Category_Dataset_v3.json`, 87,295,572 bytes. The local copy has
+    exactly that size, so it is the full dataset, not a sample. SHA-256
+    `2cfc51fa4a82a96ecbe251fa383737aa1dea2e0a517f61dece633fcc25a4a065`
+    (also in the config).
   - 209,527 records, 0 malformed, 2012-01-28 to 2022-09-23, 42 categories.
     Median 28 words per record (headline + description); 19,712 records
     (9.41%) have an empty description.
@@ -56,7 +63,7 @@ chart, and whether it supports or contradicts what we expected.
 - **Implication:**
   1. Periods after 2018 hold about 2,000 articles each, so `sample_per_period`
      (2,000) cannot be met for 2022, and later periods will mostly be the full
-     year, not a sample.
+     year, not a sample. *(Resolved in F3: the sample is 1,398.)*
   2. A baseline from 2014–2015 (the earlier proposal) would mix two problems:
      real drift, and a jump in the politics share from 10% to almost 40%.
      Raw embedding drift would mostly measure the mix change. The baseline
@@ -125,3 +132,50 @@ chart, and whether it supports or contradicts what we expected.
   - We say openly what the baseline does not solve (the U.S. NEWS section,
     the shift in mix) and how the design handles it (within-category
     comparisons, structural change reported separately).
+
+## F3. Cleaning removes 2.3% of the baseline and almost nothing from later years
+- **Date:** 2026-11-04
+- **Result:** retention table (rules applied in this order; each sees only
+  what the previous ones kept):
+
+  | Period | Raw | Empty description | Under 8 words | Over 80 words | Near-duplicate (cosine ≥ 0.95) | **Kept** | Kept % | Drift sample |
+  |---|---|---|---|---|---|---|---|---|
+  | 2016–17 | 61,987 | 1,034 | 44 | 34 | 284 | **60,591** | 97.7 | 1,398 |
+  | 2018 | 9,734 | 0 | 2 | 0 | 4 | **9,728** | 99.9 | 1,398 |
+  | 2019 | 2,005 | 0 | 0 | 0 | 1 | **2,004** | 100.0 | 1,398 |
+  | 2020 | 2,054 | 0 | 0 | 0 | 1 | **2,053** | 100.0 | 1,398 |
+  | 2021 | 2,066 | 0 | 0 | 0 | 0 | **2,066** | 100.0 | 1,398 |
+  | 2022 | 1,398 | 0 | 0 | 0 | 0 | **1,398** | 100.0 | 1,398 |
+  | Total | 79,244 | 1,034 | 46 | 34 | 290 | **77,840** | 98.2 | 8,388 |
+
+  - **Every rule mostly affects the baseline.** Empty descriptions, very
+    short and very long records all exist (almost) only in 2016–17; later
+    years have none. Left in, they would be an artificial difference between
+    baseline and later years that the drift detector could flag.
+  - **Near-duplicates are templated columns and reposts.** The most removed
+    are "The 20 Funniest Tweets From Women This Week" (46), "HuffPost Rise:
+    What You Need To Know On <date>" (134 of the 290) and "The
+    Funniest Tweets From Parents This Week" (18). Hand-checked pairs: at
+    cosine ≥ 0.97 almost all are identical reposts or templates; 0.95–0.97 is
+    mostly templates; 0.93–0.95 is genuinely different articles about the same
+    event (e.g. two reports of Hong Kong airport reopening), which are kept.
+  - **The length gap survives cleaning:** median 24 words in the baseline,
+    25 in 2018, 29–31 in 2019–2022 (same in the drift samples). This is a
+    real change in document characteristics and may inflate embedding drift
+    (D6, check 5).
+  - Renamed sections merged: 41 raw categories become 32.
+  - The scratch simulation of these rules, written separately before the
+    real code, gave identical counts for every rule and period.
+- **Reproduce:** `python scripts/prepare_data.py` (tables in
+  `runs/prepare/retention.csv`; every removed document and its rule in
+  `runs/prepare/removed.csv`; output `data/processed/documents.parquet`).
+  The first run embeds 78,130 texts (about 78,000 distinct) and takes about
+  80 s in total on the GPU; reruns take about 14 s, using the cache.
+- **Chart:** none.
+- **Expectation:** small removals; exact duplicates rare (F1 found 103).
+- **Verdict:** Supports. Not expected: that every rule falls almost entirely
+  on the baseline, and that templated columns make up most near-duplicates.
+- **Implication:** the cleaned periods are comparable in format. The drift
+  sample is 1,398 per period (all of 2022). Templated columns that survive
+  (e.g. "Daily Meditation", "Headline Quiz") should be excluded when
+  generating test questions, because they have no single right answer.

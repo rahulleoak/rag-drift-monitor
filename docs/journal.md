@@ -16,6 +16,51 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-04 (late): Data cleaning built and run
+- **Built:**
+  - `driftmon/embeddings.py`: embeddings with a disk cache keyed on model and
+    exact text; queries get the model's prefix; interrupted saves cannot
+    misalign the cache.
+  - `driftmon/cleaning.py`: the rules as plain functions; exact greedy
+    near-duplicate removal that keeps the earliest copy.
+  - `driftmon/periods.py`: periods from the config (now shared with the
+    baseline comparison script, which had its own copy).
+  - `scripts/prepare_data.py`: checks the raw file against the recorded
+    fingerprint, applies the rules, writes `data/processed/documents.parquet`
+    and the retention table.
+  - 17 new tests (36 in total, all pass).
+- **Checked:** the dataset is the one linked in the assignment and complete
+  (one file, byte-for-byte the size Kaggle lists); fingerprint recorded in
+  the config and F1.
+- **Results:** F3. Cleaning keeps 98.2% overall; nearly all removals are in
+  the baseline. Drift sample: 1,398 per period.
+- **Surprises:** every rule falls almost entirely on the baseline; most
+  near-duplicates are templated columns. The length gap (median 24 vs 29–31
+  words) survives cleaning, so it is added as check 5 in D6.
+- **Tried and abandoned:** a 0.93 duplicate threshold; it removes distinct
+  articles about the same event.
+- **Open questions:** rules are a first version (D8 lists when to revisit).
+  Exclude surviving templated columns when generating test questions.
+- **Next:** the stale and refreshed indexes (`driftmon/index.py`), then the
+  first drift statistics on the drift samples.
+
+## 2026-11-04 (night): Design checked against the assignment
+- **Built:** `docs/requirements-coverage.md`, mapping every bullet of the
+  original assignment to the part of the system that meets it, with a
+  status. D7 records six additions; the architecture and its diagram are
+  updated.
+- **Surprises:**
+  - The earlier notes had paraphrased "trigger model evaluation or
+    retraining" as "trigger model retraining", and so set it aside. Spotted by
+    the author. The evaluation half is now something the system actually
+    does.
+  - Two brief requirements had been marked stretch goals: shifts in semantic
+    relationships (Q7) and the second embedding model (Q12). Both are now
+    required.
+- **Open questions:** whether to let the LLM propose what to investigate
+  (waits for stakeholder question 2).
+- **Next:** data cleaning (P5) on a new branch.
+
 ## 2026-11-04 (evening): Environment set up
 - **Built:** `.venv` (Python 3.13) with the CUDA build of PyTorch and all of
   `requirements.txt`; the project installed in editable mode. `pip check` is

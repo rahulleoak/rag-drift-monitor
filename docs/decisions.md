@@ -264,4 +264,119 @@ date and reason, and add a new entry that supersedes it.
      structure (volume, new sections) rather than content.
   4. *U.S. NEWS is mostly politics in disguise* (checked with embeddings).
      Response: map it to POLITICS, which shrinks the unmatched share.
+  5. *Length explains the drift* (added 2026-11-04, F3): baseline articles
+     have a median of 24 words, 2019–2022 have 29–31. If embedding drift
+     largely disappears when the baseline sample is matched to later
+     lengths, length (format) rather than meaning is driving it. Response:
+     length-matched baseline samples.
 - **Evidence:** F2; `python scripts/exploration/compare_baselines.py`.
+
+## D7. Close the gaps found by checking the design against the assignment
+- **Date:** 2026-11-04
+- **Status:** Accepted (approved 2026-11-04)
+- **Context:** before building, every bullet in the original assignment
+  (.docx) was mapped to the design (`docs/requirements-coverage.md`). Most
+  were covered. Six were missing, under-specified, or had been set aside as
+  stretch goals although the brief requires them.
+- **Choices:**
+  1. **Shifts in semantic relationships (Agent B) are required, not a
+     stretch goal.** Term-context shift: for key terms ("mask", "remote",
+     "vaccine", "zoom", plus the top emerging terms) measure how far the
+     meaning of the articles containing them moves between periods, and show
+     their neighbouring words before and after. Reuses the embeddings.
+     Replaces the "stretch" status of Q7.
+  2. **Query drift (Agents A and B).** B's techniques also run on the query
+     stream. The simulator also writes some questions in newer wording about
+     older topics (users' language ahead of the archive), so query drift is
+     not just a copy of document drift.
+  3. **Ranking changes (Agent C).** Top-K overlap and rank correlation
+     between the stale and refreshed indexes, and which older articles were
+     displaced by newer ones. Covers "changes in retrieval rankings".
+  4. **Emerging topics across categories (Agent B).** Cluster each period's
+     most novel articles and label each cluster with its top terms, so a topic
+     such as COVID that spans several sections is reported as one topic.
+  5. **Historical evaluation set (simulator, Agents C and D).** Questions
+     are also generated from baseline articles. They are the control: they
+     should score about the same on both indexes. Covers "compare answer
+     quality across historical and recent evaluation datasets".
+  6. **One rule per recommended action (Agent E, `policy.py`)**, so every
+     action in the brief can be triggered by evidence:
+     - *Continue monitoring:* drift, but no material quality loss.
+     - *Update or re-index:* quality recovers on the refreshed index.
+     - *Trigger model evaluation:* quality is still poor on the refreshed
+       index (the articles are there but the model does not handle them), or
+       the LLM judge's agreement with the hand labels is low. **The system
+       carries this out**: it sends Retrieval Evaluation back once to re-run
+       the affected segments with a second, ready-made embedding model, and
+       the result becomes evidence. No model is built or trained.
+     - *Recommend retraining:* that evaluation shows neither model handles the
+       new vocabulary even with a fresh index. Output is a recommendation to
+       fine-tune the embedding model on recent data, with the evidence. We do
+       not run the retraining (a small fine-tune is a possible stretch goal,
+       with training and test data from different periods to avoid leakage).
+     - *Update retrieval configuration:* the right article is usually found
+       just outside the top K.
+     - *Improve prompts:* retrieval is fine but answers are wrong or not
+       grounded in the retrieved articles.
+     - *Escalate for human review:* quality drops without measurable drift,
+       or the evidence is inconclusive.
+     - *Improve chunking:* the rule exists but is documented as not
+       applicable, since articles are one to two sentences.
+- **Consequences:** the second embedding model (Q12) moves from stretch goal
+  to required; it costs about a minute of extra embedding on the GPU. The
+  architecture and diagram now include the model-evaluation loop from E back
+  to C. Estimated extra build time: about half a day, mostly for items 2
+  and 4.
+- **Not adopted yet:** letting the LLM propose what to investigate (for
+  example, which terms to test) while code tests it. This would make the
+  agents more visibly "agentic" without letting the LLM decide. It waits
+  for the stakeholder answer on what counts as agentic (questions.md,
+  stakeholder question 2).
+- **Correction:** questions.md Part 3, item 6 had paraphrased the requirement
+  as "trigger model retraining", which dropped "evaluation"; it is now
+  marked Revised.
+- **Evidence:** `docs/requirements-coverage.md`.
+
+## D8. Data cleaning rules, first version
+- **Date:** 2026-11-04
+- **Status:** Accepted (approved 2026-11-04) as a **first version, to be
+  revisited** as later findings come in (author's request; triggers below).
+- **Context:** proposal P5 (tiered cleaning with a retention table) needed
+  thresholds. They were chosen by looking at the data per period (lengths,
+  empty descriptions, exact and near-duplicates, hand-checked examples at
+  several similarity levels) before writing the cleaning code.
+- **Choice** (in `config/config.yaml`, `data_cleaning`; applied in order):
+  1. **Drop empty descriptions.** *Revises Q2*, which proposed keeping them:
+     all 1,034 are in the baseline and later years have none, so keeping
+     them adds a baseline-only format. Their rate is still reported by Data
+     Monitoring.
+  2. **Drop records under 8 words** (title + description): 46 records with
+     too little text to embed meaningfully (e.g. "Impeach! We can't wait
+     until November 2020.").
+  3. **Drop records over 80 words:** 34 records, all in the baseline; later
+     years never exceed 53. Mostly "Sunday Roundup" newsletters.
+  4. **Drop near-duplicates within a period at cosine ≥ 0.95,** keeping the
+     earliest copy. Exact (not approximate) comparison against every kept
+     document.
+  5. **Equal drift samples of 1,398 per period** (all of 2022), random with
+     the project seed. Used for drift statistics only; the indexes use
+     every cleaned document.
+- **Options considered for the near-duplicate threshold:** 0.97 (keeps most
+  templated columns, e.g. "Daily Meditation" variants), 0.95 (chosen), 0.93
+  (starts removing distinct articles about the same event, which are real
+  content).
+- **Why:** the rules remove formats that exist only in the baseline, so
+  they cannot pass for drift, and they remove templated copies that would
+  crowd retrieval results. Together they remove 1.8% overall.
+- **Revisit the rules if:**
+  1. the most novel or most drifted examples are dominated by a format
+     (templates, boilerplate) rather than content: tighten the duplicate
+     rule or add a template filter;
+  2. the length gap explains a large part of embedding drift (D6, check 5):
+     sample the baseline to match later lengths;
+  3. retrieval results are crowded by near-identical templated articles:
+     consider 0.93 with a hand check;
+  4. 2022 being a partial year (January to September) shows up as a
+     seasonal artefact.
+- **Evidence:** F3; `python scripts/prepare_data.py`; tests in
+  `tests/test_cleaning.py` and `tests/test_prepare_data.py`.

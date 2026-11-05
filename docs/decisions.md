@@ -626,3 +626,37 @@ date and reason, and add a new entry that supersedes it.
 - **Evidence:** `tests/test_llm.py` (7 tests with a fake API: strict
   schemas, caching across restarts, the budget refusing before any call,
   live and batch refusals, broken replies retried, batch at half price).
+
+## D16. How test questions are written and accepted
+- **Date:** 2026-11-05
+- **Status:** Accepted (first version; the pilot decides what to tune)
+- **Context:** every retrieval and answer-quality number rests on the test
+  questions. The author's concern: do not build on low-quality questions.
+- **Choices:**
+  1. **Source articles:** sampled per period, baseline included (the
+     control). Excluded: templated columns ("HuffPost Rise", "Funniest
+     Tweets", "Daily Meditation", "What to watch", ...; list in the config)
+     and records under 15 words, which rarely state an answerable fact.
+     72,288 of 77,840 cleaned articles remain eligible.
+  2. **Writer (Sonnet 5.5):** one question per article, as a journalist or
+     editor would ask the archive assistant: specific, self-contained,
+     paraphrased (not the headline), 6–30 words; a reference answer from the
+     article only; evergreen or time-sensitive; and an honest "answerable
+     from the article" flag.
+  3. **Checks in code, before review:** length; no run of 4 consecutive
+     headline words; at most 70% of content words from the headline;
+     the writer's own "not answerable" flag; near-duplicate questions
+     (embedding cosine ≥ 0.95).
+  4. **Reviewer (Opus 5.5):** five yes/no checks per surviving question:
+     answerable from the article alone, unambiguous, needs the article,
+     reference answer correct, natural. **Code keeps a question only if
+     every check is yes**; the reviewer gives a short reason either way.
+  5. **Everything is kept for inspection:** every draft, its check results
+     and the reason it was rejected.
+  6. **Diversity check (P3):** the spread of kept questions vs the spread of
+     their source articles, to catch generic, collapsed phrasing.
+- **Why:** a stronger, different model checks the cheaper model's work
+  (D9), and the decision stays in code. Rejections are visible, so the
+  prompt can be tuned on evidence.
+- **Evidence:** `tests/test_simulate.py`; the pilot (F7) will measure the
+  keep rate, the reasons and the cost.

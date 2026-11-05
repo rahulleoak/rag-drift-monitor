@@ -16,6 +16,16 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (night): Question generator built (checkpoint 2 of 3)
+- **Built:** `driftmon/prompts.py` (writer and reviewer prompts with
+  versions and schemas), `driftmon/simulate.py` (select, write, check,
+  review, decide), `scripts/generate_questions.py` (with `--dry-run`),
+  simulation settings in the config (D16). 4 new tests (72 in total).
+- **Dry run:** 20 pilot articles across all six periods; estimated cost
+  $0.51 (a cautious upper bound); nothing spent.
+- **Next:** checkpoint 3, the live pilot, then review the questions with the
+  author before generating more.
+
 ## 2026-11-05 (night): LLM layer built (checkpoint 1 of 3)
 - **Context:** the author set a $150 total budget ($20 loaded now) and asked
   to start the LLM work on a small scale while waiting for the stakeholder

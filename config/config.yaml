@@ -67,6 +67,21 @@ periods:
   sample_per_period: 1398
   min_segment_size: 50      # smallest period x category group that gets analysed
 
+# D16: the simulator writes the golden evaluation set (one question per article).
+simulation:
+  min_words: 15            # articles shorter than this rarely state an answerable fact
+  # Templated columns have no single right answer (F3): never used as sources.
+  exclude_title_patterns: ["funniest tweets", "tweets from", "huffpost rise", "daily meditation",
+                           "headline quiz", "what to watch", "sunday roundup", "morning email",
+                           "what you need to know"]
+  pilot_counts: {"2016-17": 5, "2018": 3, "2019": 3, "2020": 3, "2021": 3, "2022": 3}
+  question_checks:
+    min_words: 6
+    max_words: 30
+    copy_ngram: 4              # reject a question repeating 4 consecutive headline words
+    max_headline_overlap: 0.7  # reject if most of its content words come from the headline
+    duplicate_cosine: 0.95
+
 # HuffPost renamed several sections over the years (F1). Old label -> label
 # used from 2018 on, so the same section can be compared across periods.
 # Applied for analysis only; raw labels are kept and their changes reported.

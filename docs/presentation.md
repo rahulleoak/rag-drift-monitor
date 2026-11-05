@@ -9,7 +9,7 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-05 (Agent B complete except query drift).
+Last updated: 2026-11-05 (charts and dashboard skeleton added).
 
 ---
 
@@ -403,21 +403,29 @@ Honest moments that show judgement, good for a "what we learned" slide:
   wording-vs-meaning hypothesis; fine-tuning experiment for the retraining
   recommendation; longer documents to show chunking.
 
-## 15. Chart wish list
+## 15. Charts
 
-| Chart | Data | Status |
+Ready-made PNGs in two themes based on the Rivvun AI brand (D14): light
+(cream) in `docs/figures/`, dark (navy, matching rivvun.ai) in
+`docs/figures/dark/`, which suits dark slides. Regenerate both with
+`python scripts/make_charts.py` after a pipeline run. Every palette was
+checked for colour-blind safety and contrast with the dataviz validator.
+
+| Chart | File | Use it for |
 |---|---|---|
-| COVID terms per year | `runs/explore/huffpost/watch_term_rates.csv` | data ready |
-| Baseline candidates (mean mix difference) | `runs/explore/huffpost/baselines/mix_difference.csv` | data ready |
-| Category shares per period | `runs/explore/huffpost/baselines/category_shares.csv` | data ready |
-| Retention table | `runs/prepare/retention.csv` | data ready |
-| Drift per period vs baseline and vs previous year, with ordinary-year line | `runs/drift/period_drift.csv` | data ready |
-| Emerging / declining terms per year | `runs/drift/terms_<period>.csv` | data ready |
-| COVID articles: nearest baseline neighbours | F4 (`scripts/run_drift.py` + check) | data ready |
-| Drift by section × year (band heatmap) | `runs/<run_id>/drift_segments.csv` | data ready |
-| Drift-metric correlation heatmap (P6) | `runs/<run_id>/correlations.csv` | data ready |
-| Words that changed meaning (before / after context) | `runs/<run_id>/term_shifts.csv` | data ready |
-| Emerging topics per year | `runs/<run_id>/topics.csv` | data ready |
-| Stale vs refreshed quality per segment | Agents C, D | 🔨 |
-| Drift vs quality loss scatter (which drift matters) | Agent D | 🔨 |
-| Four-way classification of segments | Agent D | 🔨 |
+| COVID words per year | `pandemic_words.png` | Section 3: the known drift is in the data |
+| Drift per year, vs baseline and vs previous year | `drift_per_year.png` | Sections 7b–7c: 2020 peak, Boiling Frog |
+| Severity by section × year | `severity_by_section.png` | Section 7c: lifestyle sections, the politics paradox |
+| Emerging topics | `emerging_topics.png` | Section 7d: found by growth, not novelty |
+| Words that changed meaning | `words_that_changed_meaning.png` | Section 7d: cases, test, home, virus |
+| How the drift measures relate | `measure_correlations.png` | Section 7d: three families of drift (P6) |
+
+Still to make: baseline candidates (F2, from
+`runs/explore/huffpost/baselines/mix_difference.csv`); stale vs refreshed
+quality per segment, drift vs quality loss, and the four-way classification
+(after Agents C and D).
+
+**Live demo:** `streamlit run app/streamlit_app.py` (Rivvun dark theme): Overview (stat tiles,
+interactive drift charts, most drifted segments), Data monitoring (Agent A),
+Drift (interactive severity grid with hover, a drill-down into any segment,
+topics, shifted words, correlations), and placeholder pages for Agents C–E.

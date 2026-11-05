@@ -55,7 +55,7 @@ chart, and whether it supports or contradicts what we expected.
 - **Reproduce:** `python scripts/exploration/explore_data.py --dataset huffpost` (tables in
   `runs/explore/huffpost/`; the term rates are `watch_term_rates.csv`, with
   terms set in `config/config.yaml` under `exploration.watch_terms`).
-- **Chart:** none yet.
+- **Chart:** `docs/figures/pandemic_words.png` (coronavirus, covid, vaccine per year).
 - **Expectation:** a volume cliff after mid-2018 (from the dataset card) and
   visible COVID vocabulary in 2020.
 - **Verdict:** Supports both expectations. The label changes and the size of
@@ -230,8 +230,7 @@ chart, and whether it supports or contradicts what we expected.
      novel 2020 articles are one-off human-interest stories.
 - **Reproduce:** `python scripts/run_drift.py` (tables in `runs/drift/`;
   about 10 s after the first run).
-- **Chart:** none yet. Suggested: MMD² vs baseline and vs previous year per
-  period, with the ordinary-year reference line; emerging-term bars per year.
+- **Chart:** `docs/figures/drift_per_year.png` (vs baseline and vs previous year, with the medium/high thresholds).
 - **Expectation:** 2020 the largest drift; COVID articles among the most
   novel.
 - **Verdict:** Mixed. 2020 is the largest shift as expected, but per-article
@@ -296,8 +295,7 @@ chart, and whether it supports or contradicts what we expected.
 - **Reproduce:** `python scripts/run_pipeline.py` (about 60 s; reports in
   `runs/<run_id>/`: `monitoring.json`, `drift.json`, `drift_whole.csv`,
   `drift_segments.csv`, `route.txt`).
-- **Chart:** none yet. Suggested: heatmap of section × year bands; the 2020
-  lifestyle sections as the headline example.
+- **Chart:** `docs/figures/severity_by_section.png` (section × year severity grid).
 - **Expectation:** 2020 flagged; politics among the most drifted sections.
 - **Verdict:** Mixed. 2020 flagged as expected; politics not flagged at all.
 - **Implication:**
@@ -347,8 +345,7 @@ chart, and whether it supports or contradicts what we expected.
      novelty and new-term rate 0.68.
 - **Reproduce:** `python scripts/run_pipeline.py` (`runs/<run_id>/topics.csv`,
   `term_shifts.csv`, `correlations.csv`).
-- **Chart:** none yet. Suggested: the P6 correlation heatmap; a "before /
-  after" word panel for home, virus, cases, test.
+- **Chart:** `docs/figures/emerging_topics.png`, `docs/figures/words_that_changed_meaning.png`, `docs/figures/measure_correlations.png`.
 - **Expectation:** COVID visible as an emerging topic; several words with
   shifted meaning; the two techniques only moderately correlated.
 - **Verdict:** Supports all three. Not expected: how cleanly ordinary words

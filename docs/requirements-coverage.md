@@ -82,10 +82,10 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 
 | Deliverable | Where | Status |
 |---|---|---|
-| Working application | LangGraph pipeline + Streamlit dashboard | To do |
+| Working application | LangGraph pipeline + Streamlit dashboard | In progress (A, B and the dashboard skeleton run) |
 | Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (D1) | In progress |
 | Agent architecture diagram | `docs/architecture.md` (Mermaid) | **Done**, kept up to date |
-| Drift analysis: metrics, visualisations, explanations, examples | Agent B outputs, charts, dashboard | To do |
+| Drift analysis: metrics, visualisations, explanations, examples | Agent B outputs, charts, dashboard | Metrics, charts, examples **done** (F4–F6, `docs/figures/`); LLM explanations to do |
 | RAG evaluation across periods | Agent C and D outputs | To do |
 | Impact assessment evidence | Agent D output, findings | To do |
 | Recommendations with evidence | Agent E output | To do |
@@ -102,5 +102,5 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 | Measurable retrieval and answer quality | Retrieval metrics and judged answer quality, with confidence intervals | Designed |
 | Evidence-based impact assessment | Stale vs refreshed experiment; historical control set | Designed |
 | Intelligent recommendations and decision-making | Evidence-triggered rules; model evaluation actually run | Designed |
-| Sound engineering practices | Tested pure modules, config file, disk caches, documented decisions | In progress (57 tests) |
+| Sound engineering practices | Tested pure modules, config file, disk caches, documented decisions | In progress (61 tests) |
 | Translate research into practice | MMD (Gretton et al.), Fightin' Words (Monroe et al.), TREC pooling, ideas from the author's paper (D5) | Designed |

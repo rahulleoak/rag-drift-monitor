@@ -192,7 +192,7 @@ become entries in `docs/decisions.md`.
 - **C. Skip it.** Leaves a brief requirement unmet.
 - **Recommendation: A**, with candidate terms taken from technique 2's top
   emerging terms plus a few known ones. Build it after the thin end-to-end loop
-  works.
+  works. *Revised 2026-11-04 (D7): required by the brief, not a stretch goal.*
 
 ### Q8. Simulated user queries
 - **A. LLM writes a question and reference answer from a sampled article,**
@@ -259,9 +259,9 @@ stale-vs-refreshed comparison trivial.
   and older training data.
 - **B. bge-small-en-v1.5.** Same size class (384 dimensions), generally stronger
   on retrieval benchmarks. Needs a query instruction prefix; slightly slower.
-- **Recommendation: B** as the production retriever. Keep A as an optional
-  second model so an "evaluate a different embedding model" recommendation can
-  be backed by evidence (stretch goal).
+- **Recommendation: B** as the production retriever. Keep A as a second
+  model so an "evaluate a different embedding model" recommendation can be
+  backed by evidence. *Revised 2026-11-04 (D7): required, not a stretch goal.*
 
 ### Q13. Vector store
 - **A. FAISS exact search (IndexFlatIP).** Exact and deterministic (no
@@ -326,8 +326,13 @@ stale-vs-refreshed comparison trivial.
    segments A marked as having enough data.
 5. **"Improve document chunking"** cannot be meaningfully shown on one to two
    sentence documents. We will say so rather than fake it.
-6. **"Trigger model retraining":** we do not train models. The closest honest
-   analogue is "evaluate an alternative embedding model" (Q12).
+6. **"Trigger model evaluation or retraining":** **Revised 2026-11-04 (D7).**
+   This item first read "trigger model retraining", which dropped the
+   "evaluation" half of the requirement. Now: the system triggers and runs a
+   model evaluation (a second, ready-made embedding model on the affected
+   segments) when re-indexing does not fix quality, and recommends
+   retraining, with evidence, when neither model copes. We do not train
+   models ourselves.
 7. **"Relationship between drift scores and quality"** needs enough data points;
    period level gives about 7 (Q4).
 8. **Recall@K** needs complete relevance judgements, which do not exist.

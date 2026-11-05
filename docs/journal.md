@@ -16,6 +16,23 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-04 (night): Design checked against the assignment
+- **Built:** `docs/requirements-coverage.md`, mapping every bullet of the
+  original assignment to the part of the system that meets it, with a
+  status. D7 records six additions; the architecture and its diagram are
+  updated.
+- **Surprises:**
+  - The earlier notes had paraphrased "trigger model evaluation or
+    retraining" as "trigger model retraining", and so set it aside. Spotted by
+    the author. The evaluation half is now something the system actually
+    does.
+  - Two brief requirements had been marked stretch goals: shifts in semantic
+    relationships (Q7) and the second embedding model (Q12). Both are now
+    required.
+- **Open questions:** whether to let the LLM propose what to investigate
+  (waits for stakeholder question 2).
+- **Next:** data cleaning (P5) on a new branch.
+
 ## 2026-11-04 (evening): Environment set up
 - **Built:** `.venv` (Python 3.13) with the CUDA build of PyTorch and all of
   `requirements.txt`; the project installed in editable mode. `pip check` is

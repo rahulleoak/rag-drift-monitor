@@ -9,7 +9,7 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-05.
+Last updated: 2026-11-05 (after first drift results).
 
 ---
 
@@ -179,6 +179,33 @@ a measurement, not an opinion.
   (Benjamini–Hochberg); low / medium / high bands set from normal 2016-vs-2017
   variation, not invented constants (P7).
 
+### 7b. First drift results (F4) ✅
+
+- **COVID is the biggest shift:** 2020 drifts **5.7× more than an ordinary
+  year** (2017 vs 2016) from the baseline, and has the biggest single-year
+  jump (4.2×). Its articles are also the least spread out: one story
+  dominated the year.
+- **The Boiling Frog, measured:** 2022 vs 2021 looks almost ordinary (1.2×),
+  but 2022 vs the baseline is 4.7×. Year-on-year monitoring alone would miss
+  it. (Direct link to the author's paper, P1.)
+- **The two techniques disagree, usefully:** embedding drift peaks in 2020
+  and eases; word drift keeps rising. Evidence they are complementary.
+- **Emerging terms read like a news timeline:** 2020 coronavirus, covid-19,
+  biden; 2021 vaccine, shot, jan (6th); 2022 russia, putin, invasion,
+  abortion.
+- **Headline surprise for the talk:** to the embedding model, **COVID is not
+  new.** COVID articles are no more "novel" than ordinary baseline articles
+  (5.0%), because they land next to older stories on bird flu, Zika and
+  Trump's health policy ("China's Coronavirus Infections Top 40,000" →
+  "H7N9 Bird Flu Epidemic In China"). The most novel 2020 articles are
+  quirky one-offs. **Why it matters:** a stale index will confidently
+  retrieve related but wrong articles for COVID questions: fluent,
+  grounded-looking, and wrong. That is harmful drift the embedding space
+  does not flag, and exactly what the impact experiment will test. 🔨
+- **"Everything is significant":** at 1,398 articles per side even 2017 vs
+  2016 is significant. So the system judges drift by size relative to
+  ordinary change, not by p-values.
+
 ## 8. Measuring quality honestly (🔨)
 
 - **A subtle trap (D2):** a stale index cannot contain a 2020 article, so
@@ -275,6 +302,11 @@ Honest moments that show judgement, good for a "what we learned" slide:
   replaced it.
 - **A cost-free alternative to temperature:** current models reject the
   temperature setting, so reproducibility comes from caching every response.
+- **Expected COVID to be the most novel content; it was not** (F4). Instead of
+  hiding it, it became the central hypothesis for the impact experiment.
+- **A metric that looked fine was mostly noise:** raw word-distribution
+  divergence scored 2018 below an ordinary year. Subtracting what random
+  shuffling gives ("excess") fixed it (D10).
 
 ## 13. Limitations to state up front
 
@@ -314,6 +346,9 @@ Honest moments that show judgement, good for a "what we learned" slide:
 | Baseline candidates (mean mix difference) | `runs/explore/huffpost/baselines/mix_difference.csv` | data ready |
 | Category shares per period | `runs/explore/huffpost/baselines/category_shares.csv` | data ready |
 | Retention table | `runs/prepare/retention.csv` | data ready |
+| Drift per period vs baseline and vs previous year, with ordinary-year line | `runs/drift/period_drift.csv` | data ready |
+| Emerging / declining terms per year | `runs/drift/terms_<period>.csv` | data ready |
+| COVID articles: nearest baseline neighbours | F4 (`scripts/run_drift.py` + check) | data ready |
 | Drift by period and category (heatmap) | Agent B | 🔨 |
 | Drift-metric correlation heatmap (P6) | Agent B | 🔨 |
 | Stale vs refreshed quality per segment | Agents C, D | 🔨 |

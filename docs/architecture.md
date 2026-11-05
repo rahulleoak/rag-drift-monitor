@@ -7,8 +7,11 @@ diagram up to date whenever the agent design or data flow changes.
 **Status (2026-11-04):** proposed design. The folder structure and module
 stubs exist. Implemented: data loading (`driftmon/data.py`), exploration
 (`scripts/exploration/`), periods (`driftmon/periods.py`), cleaning
-(`driftmon/cleaning.py`, `scripts/prepare_data.py`) and cached embeddings
-(`driftmon/embeddings.py`). Items marked *(proposal Pn)* come
+(`driftmon/cleaning.py`, `scripts/prepare_data.py`), cached embeddings
+(`driftmon/embeddings.py`), the stale and cumulative refreshed indexes
+(`driftmon/index.py`, D10) and whole-period drift statistics for both
+techniques (`driftmon/drift/`, `scripts/run_drift.py`, F4). The agents
+themselves are not wired yet. Items marked *(proposal Pn)* come
 from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
 marked *(D7)* were added after checking the design against every requirement
 in the assignment (`docs/requirements-coverage.md`).

@@ -421,3 +421,34 @@ date and reason, and add a new entry that supersedes it.
      run.
 - **Evidence:** price list checked 2026-11-04; cost figures are estimates
   until the pilot.
+
+## D10. Indexes and first drift statistics: setup choices
+- **Date:** 2026-11-05
+- **Status:** Accepted as the thin first version; within-category
+  comparisons and severity bands follow after review.
+- **Choices:**
+  1. **The refreshed index is cumulative:** for period P it holds the
+     baseline plus every later period up to P, like an archive that is kept
+     up to date. *Alternative:* baseline + P only, which is simpler but
+     unrealistic (the 2021 archive would forget 2020).
+  2. **One kernel width for all comparisons:** the RBF width comes from the
+     baseline sample (median heuristic) and is reused, so MMD values are on
+     one scale across periods.
+  3. **Novelty** = 1 − similarity to the nearest article in the full stale
+     index (all 60,591 baseline articles). "Novel" means above the 95th
+     percentile of the baseline's own novelty (each baseline article against
+     the others), so 5% is the expected rate with no drift.
+  4. **Word drift reported as excess JSD** (JSD minus its average under
+     shuffling). Raw JSD on word counts is mostly sampling noise at this
+     size (2018 scored below the ordinary-year reference).
+  5. **Emerging terms** by log-odds with an informative Dirichlet prior from
+     the whole cleaned collection (prior strength 1,000 pseudo-counts;
+     terms seen fewer than 5 times dropped).
+  6. **500 permutations** for each test, then Benjamini–Hochberg across all
+     comparisons.
+  7. **Reference for "ordinary change":** 2017 vs 2016, both inside the
+     baseline, at the same sample size.
+- **Why:** each choice keeps numbers comparable across periods, and ties the
+  measures to what retrieval experiences (the stale index).
+- **Evidence:** F4; tests in `tests/test_drift.py` (including a direct check
+  of the MMD formula and that shuffling removes the noise in JSD).

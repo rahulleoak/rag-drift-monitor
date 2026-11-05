@@ -25,9 +25,9 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 | Requirement | How it is met | Status |
 |---|---|---|
 | Detect changes in semantic representations of historical and recent documents | Embedding drift per period and per category | Designed |
-| Compare embedding distributions using distance or similarity metrics | MMD with a permutation test; centroid distance; per-document novelty; dispersion (P3) | Designed |
+| Compare embedding distributions using distance or similarity metrics | MMD with a permutation test; centroid distance; per-document novelty; dispersion (P3) | **Done** for whole periods (F4) |
 | Identify emerging topics | Ranked emerging terms; clusters of novel articles labelled by top terms (D7) | Designed |
-| Identify changing terminology | Jensen–Shannon divergence and log-odds emerging / declining terms (e.g. coronavirus → covid) | Designed (visible in F1) |
+| Identify changing terminology | Jensen–Shannon divergence and log-odds emerging / declining terms (e.g. coronavirus → covid) | **Done** for whole periods (F4) |
 | Identify shifts in semantic relationships | Term-context shift for key terms (D7) | Designed |
 | Quantify drift; identify affected categories or topics | Per period × category scores, p-values with Benjamini–Hochberg, severity bands (P7) | Designed |
 | Generate explanations and supporting examples | LLM explains from the computed numbers; most novel articles and top terms as examples | Designed |

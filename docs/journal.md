@@ -16,6 +16,25 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (later): Indexes and first drift results
+- **Built:** `driftmon/index.py` (stale and cumulative refreshed indexes),
+  `driftmon/corpus.py` (documents + cached vectors), the embedding drift
+  measures (MMD with permutations, centroid shift, dispersion, novelty), the
+  word drift measures (JSD with permutations and excess over shuffling,
+  log-odds emerging terms, new-term rate), Benjamini–Hochberg, and
+  `scripts/run_drift.py`. 11 new tests (47 in total).
+- **Results:** F4. 2020 is the largest drift (5.7× an ordinary year); the
+  Boiling Frog pattern shows in 2022; the techniques disagree after 2020.
+- **Surprises:** COVID articles are not novel to the embedding model (their
+  nearest baseline articles are about flu, Zika and Trump's health policy).
+  Every comparison was significant, including 2017 vs 2016. Raw JSD was
+  mostly noise; excess JSD fixed it.
+- **Tried and abandoned:** raw JSD as the word-drift score.
+- **Open questions (for review before building):** within-category
+  comparisons (sample design), severity bands (how to build the null
+  distribution), Agent A's monitoring statistics.
+- **Next:** those three, then wiring Agents A and B in LangGraph.
+
 ## 2026-11-05: LLM setup chosen; presentation notes started
 - **Built:** D9 (Sonnet 5.5 writes, Opus 5.5 judges; temperature removed from
   the config); `docs/presentation.md`, the running notes for the walkthrough,

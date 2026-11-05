@@ -179,3 +179,69 @@ chart, and whether it supports or contradicts what we expected.
   sample is 1,398 per period (all of 2022). Templated columns that survive
   (e.g. "Daily Meditation", "Headline Quiz") should be excluded when
   generating test questions, because they have no single right answer.
+
+## F4. Whole-period drift: COVID is the biggest shift, but not where expected
+- **Date:** 2026-11-05
+- **Setup:** drift samples of 1,398 articles per period; each later year
+  compared with the 2016–17 baseline and with the previous year; 500
+  permutations per test; a reference row compares 2017 with 2016 (one
+  ordinary year of change inside the baseline). Settings in D10.
+- **Result:**
+
+  | Period | vs | MMD² | × ordinary year | Word drift (excess JSD) | New-term rate | Spread (dispersion) | Novel articles |
+  |---|---|---|---|---|---|---|---|
+  | 2017 (reference) | 2016 | 0.0021 | 1.0 | 0.031 | – | 0.545 | 5.0% (by definition) |
+  | 2018 | baseline | 0.0037 | 1.8 | 0.035 | 3.0% | 0.561 | 8.2% |
+  | 2019 | baseline | 0.0071 | 3.4 | 0.067 | 3.7% | 0.561 | 9.5% |
+  | **2020** | **baseline** | **0.0119** | **5.7** | 0.073 | **5.5%** | **0.539** | 8.9% |
+  | 2021 | baseline | 0.0091 | 4.3 | 0.077 | 5.1% | 0.554 | 10.9% |
+  | 2022 | baseline | 0.0099 | 4.7 | 0.077 | 4.8% | 0.561 | 10.6% |
+  | 2019 | 2018 | 0.0036 | 1.7 | 0.048 | | | |
+  | **2020** | **2019** | **0.0088** | **4.2** | 0.072 | | | |
+  | 2021 | 2020 | 0.0044 | 2.1 | 0.047 | | | |
+  | 2022 | 2021 | 0.0025 | 1.2 | 0.038 | | | |
+
+  1. **Every comparison is "statistically significant",** including 2017 vs
+     2016 (all q = 0.002, the smallest possible with 500 permutations). At
+     1,398 articles per side any difference is detectable, so significance
+     alone cannot separate drift from ordinary change. Effect size against
+     an ordinary year is what matters (supports Q11 and P7).
+  2. **2020 is the largest embedding shift:** 5.7× an ordinary year against
+     the baseline, and the largest single-year jump (4.2× from 2019). Its
+     articles are also the least spread out (0.539), consistent with one
+     story dominating the year (P3's prediction).
+  3. **The Boiling Frog pattern appears (P1):** 2022 vs 2021 looks almost
+     ordinary (1.2×), yet 2022 vs the baseline is 4.7×. Monitoring only
+     year-on-year change would miss how far the archive has moved.
+  4. **The two techniques disagree after 2020:** embedding drift peaks in 2020
+     and eases, while word drift keeps rising (0.073 → 0.077). They measure
+     different things (supports "complementary"; P6 will quantify it).
+  5. **Emerging terms match real events** (log-odds z-scores vs the baseline):
+     2020: biden, coronavirus, virus, covid-19; 2021: vaccine, shot, jan,
+     gop; 2022: russia, putin, invasion, abortion. Declining: clinton,
+     hillary, then trump (2021–22). "said" rises every year: a shift towards
+     wire-style reporting.
+  6. **Surprise: COVID articles are not "novel" to the embedding model.**
+     Only 5.0% of 2020's 539 COVID articles have no close baseline match,
+     exactly the baseline's own rate, against 10.1% for other 2020
+     articles. Their nearest baseline articles are about Trump (146), health
+     (55), flu (30) and Zika (27), e.g. "China's Coronavirus Infections Top
+     40,000" → "H7N9 Bird Flu Epidemic In China Worst Since 2013". The most
+     novel 2020 articles are one-off human-interest stories.
+- **Reproduce:** `python scripts/run_drift.py` (tables in `runs/drift/`;
+  about 10 s after the first run).
+- **Chart:** none yet. Suggested: MMD² vs baseline and vs previous year per
+  period, with the ordinary-year reference line; emerging-term bars per year.
+- **Expectation:** 2020 the largest drift; COVID articles among the most
+  novel.
+- **Verdict:** Mixed. 2020 is the largest shift as expected, but per-article
+  novelty does not flag COVID at all.
+- **Implication:**
+  - Drift will be judged by effect size relative to ordinary change, with
+    bands calibrated on the baseline (next step), not by p-values.
+  - **Key hypothesis for the impact experiment:** COVID questions on the
+    stale index will retrieve related but wrong articles (bird flu, Zika,
+    Trump health policy): harmful drift that the embedding model does not
+    register as new. Word drift and distribution-level MMD catch it;
+    article-level novelty does not. This is the clearest "which drift
+    matters" case to test with Agents C and D.

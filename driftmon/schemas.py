@@ -74,6 +74,10 @@ class DriftReport(BaseModel):
     control_segments: list[str]                # low-severity segments, for comparison in C and D
     reference: dict[str, Any]                  # ordinary-year row and band thresholds used
     any_flagged: bool
+    topics: list[dict[str, Any]] = Field(default_factory=list)        # emerging topics (D12)
+    term_shifts: list[dict[str, Any]] = Field(default_factory=list)   # term-context shifts (D12)
+    metric_correlations: list[dict[str, Any]] = Field(default_factory=list)  # P6, across segments
+    query_drift: str = "not available yet (needs the LLM query stream)"
 
 
 class PipelineState(TypedDict, total=False):

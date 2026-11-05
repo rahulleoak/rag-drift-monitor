@@ -9,7 +9,7 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-05 (Agents A and B running in LangGraph).
+Last updated: 2026-11-05 (Agent B complete except query drift).
 
 ---
 
@@ -235,6 +235,37 @@ a measurement, not an opinion.
   including sections that existed before 2016 and *came back* (MONEY,
   HOME & LIVING, WEDDINGS).
 
+### 7d. Topics and words that changed meaning (F6) ✅
+
+- **Emerging topics fix the novelty blind spot:** grouping all articles into
+  topics and looking for *growth* finds three COVID topics in 2020 with no
+  baseline counterpart (political, lifestyle, world outbreak), then
+  vaccines (2021) and the Ukraine war (2022). Lesson for the talk: "new" is
+  not the same as "unlike anything before"; COVID was new by volume, not by
+  vocabulary neighbourhood.
+- **Everyday words changed meaning** (best slide material):
+  - "cases": court cases → COVID cases
+  - "test": North Korean missile tests → positive coronavirus tests
+  - "home": refugees and family → hair, products, staying home
+  - "virus": Zika → coronavirus; "outbreak": Ebola → pandemic
+  - "russia": election probe → Ukraine war; "capitol": Capitol Hill →
+    January 6th
+- **Why it matters for RAG:** a 2017 archive will answer "how many cases
+  this week?" with court cases. Same word, different meaning: a retrieval
+  failure no keyword filter would catch. 🔨 (to be tested in Agent C)
+- **Three families of drift, measured (P6):** distribution shift (MMD and
+  centroid, 0.93: near-redundant), word drift (0.68 with MMD: related but
+  distinct) and article novelty (0.07 with MMD: unrelated). Supports
+  "complementary techniques" with a number.
+
+### 7e. Plan: catching harm that drift measures miss (D13) 🔨
+
+- Politics is never flagged, yet a 2017 archive cannot answer questions
+  about the Biden administration. So the system always evaluates some
+  undrifted sections and historical control questions, classifies every
+  section on drift × quality loss, and diagnoses the cause (missed drift,
+  prompt, model, pipeline, or superseded facts) before escalating.
+
 ## 8. Measuring quality honestly (🔨)
 
 - **A subtle trap (D2):** a stale index cannot contain a 2020 article, so
@@ -335,6 +366,9 @@ Honest moments that show judgement, good for a "what we learned" slide:
   hiding it, it became the central hypothesis for the impact experiment.
 - **Expected politics to be the most drifted section; it never was** (F5),
   which exposed how the election year inflates "normal" for that section.
+- **Two of our own measures needed correcting** (D12): a word-shift ratio
+  inflated for small groups, and a prior summed over the wrong vocabulary.
+  Both caught by tests and checks before any result was reported.
 - **A metric that looked fine was mostly noise:** raw word-distribution
   divergence scored 2018 below an ordinary year. Subtracting what random
   shuffling gives ("excess") fixed it (D10).
@@ -381,7 +415,9 @@ Honest moments that show judgement, good for a "what we learned" slide:
 | Emerging / declining terms per year | `runs/drift/terms_<period>.csv` | data ready |
 | COVID articles: nearest baseline neighbours | F4 (`scripts/run_drift.py` + check) | data ready |
 | Drift by section × year (band heatmap) | `runs/<run_id>/drift_segments.csv` | data ready |
-| Drift-metric correlation heatmap (P6) | Agent B | 🔨 |
+| Drift-metric correlation heatmap (P6) | `runs/<run_id>/correlations.csv` | data ready |
+| Words that changed meaning (before / after context) | `runs/<run_id>/term_shifts.csv` | data ready |
+| Emerging topics per year | `runs/<run_id>/topics.csv` | data ready |
 | Stale vs refreshed quality per segment | Agents C, D | 🔨 |
 | Drift vs quality loss scatter (which drift matters) | Agent D | 🔨 |
 | Four-way classification of segments | Agent D | 🔨 |

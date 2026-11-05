@@ -16,6 +16,25 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (evening): Agent B finished (except query drift)
+- **Built:** `driftmon/drift/topics.py` (emerging topics by growth),
+  `driftmon/drift/relations.py` (term-context shift with size-matched
+  ordinary shift), the P6 correlation table, all in the DriftReport and
+  saved by `run_pipeline.py`. 3 new tests (57 in total); the suite also
+  passes with runtime warnings treated as errors.
+- **Results:** F6. Three COVID topics in 2020; everyday words change
+  meaning (cases, test, home, virus); MMD vs word drift 0.68, MMD vs
+  novelty 0.07.
+- **Fixed:** log-odds prior summed over the wrong vocabulary (found via a
+  warning in a degenerate test); term-shift ratio inflated for small groups
+  ("home" 2020 9.6× → 4.6×).
+- **Planned:** D13, how quality loss without drift is detected (answers
+  the author's question; built with C and D).
+- **Open questions:** stakeholder answers (LLM work waits); charts come
+  with the dashboard.
+- **Next:** PR for this branch; then the LLM simulator and Agent C once the
+  answers arrive.
+
 ## 2026-11-05 (afternoon): Agents A and B running in LangGraph
 - **Built:** `driftmon/monitoring.py` (Agent A statistics: volume, length,
   category mix with Cramér's V, new and renamed sections, new-term rate);

@@ -11,6 +11,8 @@ Steps:
     4. a comparison is *flagged* when both techniques are significant and
        the severity is at least medium; drifted segments go to Agents C and
        D, low-severity ones are kept as controls
+    5. context for explanations (D12): emerging topics across sections,
+       term-context shifts, and how the drift measures correlate (P6)
 
 No LLM calls: explanations are added later from these numbers.
 """
@@ -23,11 +25,38 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from scipy.stats import spearmanr
+
 from driftmon.drift import lexical as lex
+from driftmon.drift import relations as rel
 from driftmon.drift import severity as sev
+from driftmon.drift import topics as top
 from driftmon.drift.compare import DriftInputs, prepare, segment_table, whole_period_table
 from driftmon.evaluation.stats import benjamini_hochberg
 from driftmon.schemas import DriftReport, MonitoringReport, SegmentDrift
+
+
+CORRELATED_MEASURES = ["mmd2", "centroid_shift", "jsd_excess", "novelty_mean", "novel_share",
+                       "new_term_rate"]
+
+
+def _records(df: pd.DataFrame) -> list[dict[str, Any]]:
+    return df.astype(object).where(pd.notna(df), None).to_dict("records")
+
+
+def metric_correlations(segments: list[SegmentDrift]) -> pd.DataFrame:
+    """Spearman rank correlation of the drift measures across segments (P6).
+
+    Low correlation between the embedding and word measures supports the
+    claim that the two techniques are complementary; high correlation would
+    mean one is redundant.
+    """
+    table = pd.DataFrame([s.model_dump() for s in segments], columns=SegmentDrift.model_fields)
+    table = table[CORRELATED_MEASURES].astype(float)
+    if len(table) < 3 or (table.nunique() < 2).any():  # a correlation needs variation
+        return pd.DataFrame(np.nan, index=CORRELATED_MEASURES, columns=CORRELATED_MEASURES)
+    rho, _ = spearmanr(table, nan_policy="omit")
+    return pd.DataFrame(np.atleast_2d(rho), index=CORRELATED_MEASURES, columns=CORRELATED_MEASURES)
 
 
 def _terms(inp: DriftInputs, rows: np.ndarray, ref_rows: np.ndarray, prior, k: int = 5
@@ -128,6 +157,23 @@ def build_drift_report(config: Mapping[str, Any], docs: pd.DataFrame, vectors: n
     vs_baseline = [s for s in whole_out + seg_out if s.compared_with == base]
     drifted = sorted((s for s in vs_baseline if s.flagged), key=strength, reverse=True)
     controls = sorted((s for s in seg_out if s.severity == "low"), key=strength)
+    # emerging topics: cluster all drift samples together, look for growth
+    sample_rows = np.where(inp.docs["in_drift_sample"].to_numpy())[0]
+    topic = top.cluster_documents(inp.vectors[sample_rows], int(d.get("topics_k", 40)), inp.seed)
+    labels = top.topic_labels(topic, [inp.tokens[i] for i in sample_rows])
+    topics = top.emerging_topics(
+        topic, inp.docs["period"].to_numpy()[sample_rows], inp.docs["category"].to_numpy()[sample_rows],
+        base, [p.name for p in inp.later], labels, inp.docs["title"].to_numpy()[sample_rows],
+        min_ratio=float(d.get("topic_min_ratio", 3.0)), min_docs=int(d.get("topic_min_docs", 15)),
+        alpha=alpha)
+    shifts = rel.term_context_shifts(
+        d.get("context_terms", []), docs, vectors, inp.tokens, base, inp.baseline.halves(),
+        [p.name for p in inp.later], min_docs=int(d.get("context_min_docs", 20)),
+        permutations=inp.permutations, seed=inp.seed)
+    if len(shifts):
+        shifts["q_value"] = benjamini_hochberg(shifts["p_value"])
+    corr = metric_correlations(vs_baseline)
+
     ref = whole.iloc[0].to_dict()
     reference = {"ordinary_year": {k: (None if isinstance(v, float) and np.isnan(v) else v)
                                    for k, v in ref.items()},
@@ -139,5 +185,8 @@ def build_drift_report(config: Mapping[str, Any], docs: pd.DataFrame, vectors: n
     report = DriftReport(whole_period=whole_out, segments=seg_out,
                          drifted_segments=[s.segment_id for s in drifted],
                          control_segments=[s.segment_id for s in controls],
-                         reference=reference, any_flagged=bool(drifted))
-    return report, inp, {"whole_period": whole, "segments": segs}
+                         reference=reference, any_flagged=bool(drifted),
+                         topics=_records(topics[topics["emerging"]]), term_shifts=_records(shifts),
+                         metric_correlations=_records(corr.reset_index(names="measure")))
+    return report, inp, {"whole_period": whole, "segments": segs, "topics": topics,
+                         "term_shifts": shifts, "correlations": corr}

@@ -308,3 +308,58 @@ chart, and whether it supports or contradicts what we expected.
     politics questions lose quality on the stale index although no drift
     was flagged, the system must still catch it (the regression check and
     the "escalate" rule exist for this).
+
+## F6. Emerging topics, changing word meanings, and how the drift measures relate
+- **Date:** 2026-11-05
+- **Result:**
+  1. **Emerging topics find COVID where article novelty could not (F4).**
+     Clustering all drift samples together (40 topics) and looking for
+     *growth* gives 17 emerging topic-years. In 2020, three COVID topics with
+     almost no baseline counterpart: political COVID (117 articles vs 0),
+     lifestyle COVID across wellness, style and food (104 vs 0, 3 sections)
+     and the world outbreak (89 vs 5). Later: vaccines (2021, 79 vs 8),
+     the Ukraine war (2022, 135 vs 8), the Hong Kong protests (2019), Biden
+     (2020–21), the royals (2021). One "topic" is a format, not news: weekly
+     funny-tweets roundups (25 in 2020 vs 1).
+  2. **Words that changed meaning** (centroid shift of the articles using a
+     word, vs the same word's shift between 2016 and 2017 at matched group
+     size; 44 term-years for 17 terms):
+
+     | Term | Year | × ordinary | Context before (baseline) | Context after |
+     |---|---|---|---|---|
+     | home | 2020 | 4.6 | refugees, world, state | hair, coronavirus, products, clothes |
+     | virus | 2020 | 3.5 | zika, florida, congress | china, coronavirus, covid-19 |
+     | cases | 2020 | 2.9 | sexual, assault, supreme (court) | coronavirus, covid-19, spread |
+     | biden | 2022 | 2.9 | joe, vice, obama | russian, administration, ukraine |
+     | russia | 2022 | 2.5 | trump, election, campaign | ukraine, war, europe, aid |
+     | test | 2020 | 2.4 | north korea, nuclear, missile | positive, coronavirus |
+     | outbreak | 2020 | 2.3 | ebola, zika | coronavirus, china, pandemic |
+
+     "mask" changes clearly (wore, campaign → face, coronavirus, wearing) but
+     has too few baseline articles per half (under 10) for an ordinary
+     estimate, so it is reported without a ratio. All 44 shifts are
+     "significant", the same large-sample effect as in F4, so the ratio is
+     what matters.
+  3. **Correlation of the drift measures across 42 comparisons with the baseline (P6,
+     Spearman):** MMD and centroid shift 0.93 (two views of the same
+     embedding shift, near-redundant); MMD and word drift (excess JSD) 0.68
+     (related but distinct); MMD and article novelty 0.07 (unrelated);
+     novelty and new-term rate 0.68.
+- **Reproduce:** `python scripts/run_pipeline.py` (`runs/<run_id>/topics.csv`,
+  `term_shifts.csv`, `correlations.csv`).
+- **Chart:** none yet. Suggested: the P6 correlation heatmap; a "before /
+  after" word panel for home, virus, cases, test.
+- **Expectation:** COVID visible as an emerging topic; several words with
+  shifted meaning; the two techniques only moderately correlated.
+- **Verdict:** Supports all three. Not expected: how cleanly ordinary words
+  ("home", "cases", "test") change meaning, and that article novelty is
+  almost unrelated to distribution-level drift.
+- **Implication:**
+  - Three families of drift signal, not two: distribution shift (MMD,
+    centroid), word drift (JSD, new terms) and article novelty. Agent D will
+    test which family predicts quality loss (P4).
+  - Centroid shift adds little beyond MMD; it stays as the intuitive number.
+  - Shifted words make concrete retrieval tests: "how many COVID cases" on a
+    stale index should retrieve court cases. 🔨
+  - A first version of the term-shift ratio was inflated for small groups
+    (noisy centroids); fixed by matching group sizes (D12).

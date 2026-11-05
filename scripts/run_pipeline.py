@@ -8,6 +8,9 @@ Writes:
     drift.json         Agent B's DriftReport
     drift_whole.csv    whole-period drift with bands (one row per comparison)
     drift_segments.csv period x category drift with bands
+    topics.csv         emerging topics across sections
+    term_shifts.csv    term-context shifts
+    correlations.csv   how the drift measures correlate across segments (P6)
     route.txt          the routing decision after Agent B
 
 Usage (from the repository root):
@@ -51,6 +54,12 @@ def main(argv: list[str] | None = None) -> int:
     whole.to_csv(run_dir / "drift_whole.csv", index=False)
     segs.to_csv(run_dir / "drift_segments.csv", index=False)
     (run_dir / "route.txt").write_text(state["next_step"] + "\n", encoding="utf-8")
+    topics = pd.DataFrame(drift.topics)
+    shifts = pd.DataFrame(drift.term_shifts)
+    corr = pd.DataFrame(drift.metric_correlations)
+    topics.to_csv(run_dir / "topics.csv", index=False)
+    shifts.to_csv(run_dir / "term_shifts.csv", index=False)
+    corr.to_csv(run_dir / "correlations.csv", index=False)
 
     pd.set_option("display.width", 250)
     pd.set_option("display.max_colwidth", 60)
@@ -64,6 +73,17 @@ def main(argv: list[str] | None = None) -> int:
     print(whole[SHOW].round(1).to_string(index=False))
     print(f"\n=== Agent B: segments ({len(segs)}) ===")
     print(segs[SHOW].round(1).to_string(index=False))
+    if len(topics):
+        print(f"\n=== Agent B: emerging topics ({len(topics)}) ===")
+        print(topics[["period", "label", "docs_period", "docs_baseline", "ratio", "sections",
+                      "top_sections"]].round(1).to_string(index=False))
+    if len(shifts):
+        print("\n=== Agent B: term-context shifts (q <= alpha) ===")
+        sig = shifts[shifts["q_value"] <= config["drift"]["alpha"]]
+        print(sig[["term", "period", "docs_baseline", "docs_period", "times_ordinary",
+                   "context_before", "context_after"]].round(1).to_string(index=False))
+    print("\n=== Agent B: correlation of drift measures across segments (Spearman) ===")
+    print(corr.set_index("measure").round(2).to_string())
     print(f"\nFlagged (vs baseline): {len(drift.drifted_segments)}; controls: "
           f"{len(drift.control_segments)}; next step: {state['next_step']}")
     print(f"Reports in {run_dir} ({time.time() - t0:.0f} s)")

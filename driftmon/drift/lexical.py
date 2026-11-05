@@ -143,12 +143,16 @@ def log_odds_dirichlet(target: Counter, reference: Counter, prior: Counter,
         DataFrame indexed by term with columns ``z``, ``log_odds``,
         ``count_target``, ``count_reference``, sorted by ``z`` descending.
     """
+    # The prior is defined over the whole vocabulary (alpha_0 = prior_size), as in
+    # Monroe et al.; min_count only decides which terms are *reported*.
+    full_vocab = prior.keys() | target.keys() | reference.keys()
+    floor = 0.01  # tiny pseudo-count so a term absent from the prior still has one
+    prior_total = sum(prior.values()) + floor * len(full_vocab)
     vocab = [t for t in (target.keys() | reference.keys())
              if target.get(t, 0) + reference.get(t, 0) >= min_count]
-    prior_total = sum(prior.values())
     a = np.array([prior.get(t, 0) for t in vocab], dtype=np.float64)
-    a = prior_size * (a + 0.01) / (prior_total + 0.01 * len(vocab))  # tiny floor for unseen terms
-    a0 = a.sum()
+    a = prior_size * (a + floor) / prior_total
+    a0 = float(prior_size)
     yt = np.array([target.get(t, 0) for t in vocab], dtype=np.float64)
     yr = np.array([reference.get(t, 0) for t in vocab], dtype=np.float64)
     nt, nr = sum(target.values()), sum(reference.values())

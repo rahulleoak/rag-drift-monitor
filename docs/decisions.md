@@ -493,3 +493,70 @@ date and reason, and add a new entry that supersedes it.
   months to quarters; the graph flags a shifted synthetic period and routes
   to full evaluation, and routes to the regression check when nothing
   changed).
+
+## D12. Emerging topics, term-context shift and the correlation check
+- **Date:** 2026-11-05
+- **Status:** Accepted (approved as part of finishing Agent B, 2026-11-05)
+- **Choices:**
+  1. **Emerging topics by growth, not novelty.** F4 showed COVID articles are
+     not individually novel, so clustering only novel articles would miss
+     them. Instead, k-means with 40 clusters over all drift samples
+     (baseline and every later period, equal sizes); a topic is emerging
+     when its share of a period is at least 3× its baseline share (add-one
+     smoothing), with at least 15 articles and a significant one-sided
+     Fisher test after Benjamini–Hochberg. Labelled by log-odds words;
+     "sections" counts sections holding at least 10% of the topic.
+     Clusters depend on the seed and k, so topics explain drift; they do not
+     drive the flags.
+  2. **Term-context shift:** centroid distance between the articles using a
+     word in the baseline and in a later period, with a permutation
+     p-value; "× ordinary" against the same word's 2016-vs-2017 shift with
+     the second group sampled to the later period's size (20 draws). Terms
+     are a curated list in the config (needing 20 articles on both sides);
+     context words by log-odds, excluding the word itself.
+  3. **Correlation check (P6):** Spearman correlation of six measures across
+     all baseline comparisons; returned as a table (a chart will follow with
+     the dashboard).
+  4. **Query drift** waits for the LLM query stream; the report says so.
+- **Corrections made while building:**
+  - The log-odds prior now sums over the whole vocabulary, as in Monroe et
+    al.; it had summed only over the reported terms, which broke in a
+    degenerate test case. Real-data term lists were unchanged.
+  - The first term-shift ratio compared a small later group against large
+    baseline halves, so small groups looked shifted by noise ("home" 2020:
+    9.6× before, 4.6× after matching).
+- **Evidence:** F6; `tests/test_topics_relations.py` (a topic that grows
+  from 5% to 60% is found and spans two sections; a word whose contexts
+  change is detected while a stable one is not; correlations need
+  variation).
+
+## D13. Plan: detecting quality loss without drift
+- **Date:** 2026-11-05
+- **Status:** Proposed (built with Agents C and D, after the stakeholder
+  answers)
+- **Context:** F5 found politics is never flagged as drifted, yet questions
+  about the Biden administration or January 6th cannot be answered from a
+  2017 archive. Harm without measurable drift must still be caught.
+- **Plan:**
+  1. **Always evaluate some undrifted segments.** Agent C tests control
+     segments (low drift) next to drifted ones, and the regression check
+     runs even when nothing is flagged. Without this, quality loss without
+     drift is invisible by construction.
+  2. **Historical control questions** (from baseline articles) should score
+     the same on both indexes; a drop there points to the pipeline itself
+     (model, prompt, retrieval settings, the judge), not to drift.
+  3. **Classify every evaluated segment** in Agent D on two axes: drift
+     flagged (from B) × material quality loss (confidence interval excludes
+     zero and the loss exceeds a threshold set before results). "Quality
+     loss without drift" is one of the four classes.
+  4. **Diagnose the cause** with checks that already exist in the design:
+     refreshed index recovers quality → the content changed but the drift
+     measures missed it (review that section's calibration, as with
+     politics); retrieval fine but answers wrong → prompt or generation;
+     both indexes poor → embedding model (trigger model evaluation);
+     historical questions also drop → pipeline or judge; time-sensitive
+     questions only → facts were superseded (who holds an office), which
+     no distribution measure can see.
+  5. **Agent E** maps the class and diagnosis to an action, by default
+     "escalate to a human" with the evidence.
+- **First test case:** politics, 2020–2022.

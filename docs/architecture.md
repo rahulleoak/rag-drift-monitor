@@ -13,8 +13,10 @@ stubs exist. Implemented: data loading (`driftmon/data.py`), exploration
 techniques (`driftmon/drift/`, `scripts/run_drift.py`, F4). **Agents A and B
 run in LangGraph** (`driftmon/graph.py`, `scripts/run_pipeline.py`) with typed
 reports (`MonitoringReport`, `DriftReport`), within-category comparisons and
-severity bands (D11, F5), and the routing decision after B. C, D and E are
-not built yet, so both routes currently end the run. Items marked *(proposal Pn)* come
+severity bands (D11, F5), emerging topics, term-context shifts and the
+measure-correlation check (D12, F6), and the routing decision after B.
+Query drift waits for the LLM query stream. C, D and E are not built yet,
+so both routes currently end the run. Items marked *(proposal Pn)* come
 from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
 marked *(D7)* were added after checking the design against every requirement
 in the assignment (`docs/requirements-coverage.md`).

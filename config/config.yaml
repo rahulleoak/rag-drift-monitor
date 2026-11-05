@@ -120,6 +120,14 @@ drift:
   # (Jan 2016 vs Jan 2017, ...), each pair re-sampled null_draws times.
   null_draws: 5
   null_permutations: 50      # only to estimate the shuffled JSD average for "excess"
+  # D12: emerging topics = clusters whose share of a period grows vs the baseline
+  topics_k: 40               # number of clusters over all drift samples
+  topic_min_ratio: 3.0       # period share at least 3x the baseline share
+  topic_min_docs: 15
+  # D12: term-context shift; terms need >= context_min_docs articles on both sides
+  context_terms: [mask, virus, vaccine, outbreak, cases, test, home, biden, ukraine, russia,
+                  capitol, abortion, impeachment, police, climate, border, election]
+  context_min_docs: 20
 
 evaluation:
   queries_per_segment: null      # set once the LLM budget is known

@@ -16,6 +16,25 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (night): Charts and dashboard skeleton
+- **Built:** `driftmon/charts.py` and `scripts/make_charts.py` (six PNG
+  charts from a saved run, copied to `docs/figures/`);
+  `driftmon/dashboard_data.py` (loads saved runs) and
+  `app/streamlit_app.py` (Overview, Data monitoring, Drift with drill-down,
+  placeholder pages for C–E; interactive charts with hover). 4 new tests
+  (61 in total), including the whole dashboard rendered headless on a run
+  built from a synthetic archive.
+- **Process:** colours validated with the dataviz palette validator
+  (categorical slots all-pairs colour-blind safe; ordinal ramp passes);
+  every chart rendered and inspected, which caught overlapping labels, a
+  subtitle colliding with a legend, gridlines over bars and an empty row in
+  the correlation grid. All fixed.
+- **Fixed:** `make_charts.py` crashed on an empty results file (a run with
+  no shifted words); found by the synthetic-run test.
+- **Next:** wait for the stakeholder answers, then the LLM simulator and
+  Agent C. Charts for C and D, and the baseline-candidates chart (F2), come
+  later.
+
 ## 2026-11-05 (evening): Agent B finished (except query drift)
 - **Built:** `driftmon/drift/topics.py` (emerging topics by growth),
   `driftmon/drift/relations.py` (term-context shift with size-matched

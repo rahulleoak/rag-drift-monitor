@@ -16,7 +16,9 @@ reports (`MonitoringReport`, `DriftReport`), within-category comparisons and
 severity bands (D11, F5), emerging topics, term-context shifts and the
 measure-correlation check (D12, F6), and the routing decision after B.
 Query drift waits for the LLM query stream. C, D and E are not built yet,
-so both routes currently end the run. Items marked *(proposal Pn)* come
+so both routes currently end the run. Charts (`driftmon/charts.py`,
+`scripts/make_charts.py`) and a dashboard skeleton (`app/streamlit_app.py`,
+reading saved runs via `driftmon/dashboard_data.py`) show A and B's results. Items marked *(proposal Pn)* come
 from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
 marked *(D7)* were added after checking the design against every requirement
 in the assignment (`docs/requirements-coverage.md`).
@@ -123,6 +125,8 @@ agent breaks the next one.
 | Embeddings (`cache/embeddings/<model>/`) and LLM responses | `cache/` | No |
 | Run outputs (reports, charts) | `runs/<run_id>/` | No |
 | Exploration tables | `runs/explore/<dataset>/` (CSV) | No |
+| Charts for a run | `runs/<run_id>/charts/` (PNG) | No |
+| Charts for the docs and slides | `docs/figures/` (PNG, copies of the latest run) | Yes |
 | Settings, periods, thresholds | `config/config.yaml` | Yes |
 
 Every dataset is mapped onto one record shape (`doc_id, date, category,

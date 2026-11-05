@@ -21,7 +21,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon import charts as style  # noqa: E402  (shared palette)
+from driftmon.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.dashboard_data import list_runs, load_run, severity_grid  # noqa: E402
 
@@ -40,7 +40,17 @@ run_id = st.sidebar.selectbox("Pipeline run", runs, help="Saved runs, newest fir
 run = load_run(runs_dir, run_id)
 st.sidebar.caption(f"Baseline: {run.baseline}\n\nPeriods: {', '.join(run.monitoring.periods)}")
 
-ORDINAL = alt.Scale(domain=["low", "medium", "high"], range=list(style.BANDS.values()))
+ORDINAL = alt.Scale(domain=["low", "medium", "high"], range=list(T.bands.values()))
+
+
+def themed(chart: alt.Chart) -> alt.Chart:
+    """Rivvun dark styling: navy surface, off-white ink, hairline slate grid."""
+    return (chart.configure(background=T.surface, font="Inter, Segoe UI, sans-serif")
+            .configure_view(strokeWidth=0)
+            .configure_axis(labelColor=T.ink_2, titleColor=T.ink_2, gridColor=T.grid,
+                            domainColor=T.axis, tickColor=T.axis)
+            .configure_legend(labelColor=T.ink_2, titleColor=T.ink_2)
+            .configure_title(color=T.ink, anchor="start", fontWeight=600))
 
 
 def drift_line(whole: pd.DataFrame, col: str, measure: str, title: str) -> alt.Chart:
@@ -51,15 +61,15 @@ def drift_line(whole: pd.DataFrame, col: str, measure: str, title: str) -> alt.C
     d = whole.assign(vs=lambda x: x["compared_with"].map(
         lambda c: "vs baseline" if c == run.baseline else "vs previous year"))
     color = alt.Color("vs:N", scale=alt.Scale(domain=["vs baseline", "vs previous year"],
-                                              range=style.SERIES[:2]), title=None)
+                                              range=list(T.series[:2])), title=None)
     base = alt.Chart(d).encode(x=alt.X("period:O", title=None), y=alt.Y(f"{col}:Q", title="× ordinary change"),
                                color=color)
-    lines = base.mark_line(strokeWidth=2) + base.mark_point(filled=True, size=70, stroke=style.SURFACE,
+    lines = base.mark_line(strokeWidth=2) + base.mark_point(filled=True, size=70, stroke=T.surface,
                                                             strokeWidth=2).encode(
         tooltip=["period", "vs", alt.Tooltip(f"{col}:Q", format=".2f", title="× ordinary"),
                  "embedding_band", "lexical_band", "kind"])
-    rules = alt.Chart(th).mark_rule(color=style.MUTED, strokeWidth=1).encode(y="y:Q", tooltip=["band"])
-    labels = alt.Chart(th).mark_text(align="left", dx=4, color=style.INK_2, fontSize=11).encode(
+    rules = alt.Chart(th).mark_rule(color=T.muted, strokeWidth=1).encode(y="y:Q", tooltip=["band"])
+    labels = alt.Chart(th).mark_text(align="left", dx=4, color=T.ink_2, fontSize=11).encode(
         y="y:Q", x=alt.value(0), text="band")
     return (rules + labels + lines).properties(title=title, height=280)
 
@@ -69,13 +79,15 @@ def severity_heatmap(grid: pd.DataFrame) -> alt.Chart:
              .sort_values(ascending=False).index.tolist())
     y = alt.Y("category:N", sort=["ALL SECTIONS"] + order, title=None)
     base = alt.Chart(grid).encode(x=alt.X("period:O", title=None), y=y)
-    rect = base.mark_rect(stroke=style.SURFACE, strokeWidth=2).encode(
+    rect = base.mark_rect(stroke=T.surface, strokeWidth=2).encode(
         color=alt.Color("severity:N", scale=ORDINAL, title="severity"),
         tooltip=["category", "period", "severity", "kind",
                  alt.Tooltip("times_ordinary_embedding:Q", format=".1f", title="embedding ×"),
                  alt.Tooltip("times_ordinary_lexical:Q", format=".1f", title="words ×"),
                  alt.Tooltip("n_period:Q", title="articles")])
-    text = base.transform_filter("datum.flagged").mark_text(fontSize=11, color="#ffffff").encode(text="kind")
+    text = base.transform_filter("datum.flagged").mark_text(fontSize=11).encode(
+        text="kind", color=alt.Color("severity:N", scale=alt.Scale(
+            domain=["low", "medium", "high"], range=[T.on(c) for c in T.bands.values()]), legend=None))
     return (rect + text).properties(height=24 * grid["category"].nunique() + 20)
 
 
@@ -89,9 +101,9 @@ with tabs[0]:
     c[2].metric("Control segments", len(run.drift.control_segments))
     c[3].metric("Next step", run.next_step.replace("_", " "))
     left, right = st.columns(2)
-    left.altair_chart(drift_line(run.whole, "times_ordinary_embedding", "mmd2", "Embedding drift"),
+    left.altair_chart(themed(drift_line(run.whole, "times_ordinary_embedding", "mmd2", "Embedding drift")),
                       width="stretch")
-    right.altair_chart(drift_line(run.whole, "times_ordinary_lexical", "jsd_excess", "Word drift"),
+    right.altair_chart(themed(drift_line(run.whole, "times_ordinary_lexical", "jsd_excess", "Word drift")),
                        width="stretch")
     st.subheader("Most drifted segments")
     st.dataframe(flagged[["category", "period", "severity", "kind", "times_ordinary_embedding",
@@ -115,7 +127,7 @@ with tabs[1]:
 
 with tabs[2]:
     st.subheader("Agent B · drift by section and year")
-    st.altair_chart(severity_heatmap(severity_grid(run)), width="stretch")
+    st.altair_chart(themed(severity_heatmap(severity_grid(run))), width="stretch")
     st.markdown("**Drill down**")
     ids = run.whole["segment_id"].tolist() + run.segments["segment_id"].tolist()
     pick = st.selectbox("Segment", ids, index=ids.index(run.flagged()["segment_id"].iloc[0])
@@ -137,7 +149,7 @@ with tabs[2]:
                               ("How the drift measures relate", "measure_correlations", run.correlations)]:
         st.markdown(f"**{title}**")
         if key in run.charts:
-            st.image(str(run.charts[key]))
+            st.image(str(run.charts.get(f"dark/{key}", run.charts[key])))
         with st.expander("Table"):
             st.dataframe(table.round(3) if len(table) else table, width="stretch")
     st.info("Explanations written by the LLM will appear here once the LLM parts are built.")

@@ -64,7 +64,10 @@ def load_run(runs_dir: Path, run_id: str) -> Run:
     whole = pd.DataFrame([s.model_dump() for s in drift.whole_period])
     segs = pd.DataFrame([s.model_dump() for s in drift.segments])
     corr = pd.DataFrame(drift.metric_correlations)
-    charts = {p.stem: p for p in sorted((path / "charts").glob("*.png"))} if (path / "charts").exists() else {}
+    charts = {}  # "<name>" for light PNGs, "dark/<name>" for the dark theme
+    if (path / "charts").exists():
+        charts = {p.relative_to(path / "charts").with_suffix("").as_posix(): p
+                  for p in sorted((path / "charts").rglob("*.png"))}
     return Run(run_id=run_id, path=path, monitoring=mon, drift=drift,
                next_step=route.read_text(encoding="utf-8").strip() if route.exists() else "unknown",
                whole=whole, segments=segs, topics=pd.DataFrame(drift.topics),

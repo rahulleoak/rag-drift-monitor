@@ -1,0 +1,8 @@
+# Dashboard theme: the Rivvun AI dark site theme (rivvun.ai design tokens, 2026-11-05).
+[theme]
+base = "dark"
+primaryColor = "#C14100"            # Rivvun accent (burnt orange)
+backgroundColor = "#0D1725"         # --rv-bg-1, deep navy
+secondaryBackgroundColor = "#161B24" # --rv-bg-2, cards and sidebar
+textColor = "#F3F1EB"               # --rv-ink, warm off-white
+font = "sans serif"

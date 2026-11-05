@@ -53,6 +53,10 @@ def test_make_all_charts(run_dir, tmp_path):
     for n in names:
         assert (run_dir / "charts" / n).stat().st_size > 5_000
         assert (tmp_path / "copy" / n).exists()
+    dark = make_all(cfg, run_dir, [run_dir / "charts" / "dark"], theme="dark")
+    assert dark == names and (run_dir / "charts" / "dark" / names[0]).exists()
+    run = load_run(run_dir.parent, run_dir.name)
+    assert f"dark/{names[0][:-4]}" in run.charts  # the dashboard finds the dark versions
 
 
 def test_dashboard_renders_every_tab(run_dir, monkeypatch):

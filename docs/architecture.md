@@ -126,7 +126,7 @@ agent breaks the next one.
 | Run outputs (reports, charts) | `runs/<run_id>/` | No |
 | Exploration tables | `runs/explore/<dataset>/` (CSV) | No |
 | Charts for a run | `runs/<run_id>/charts/` (PNG) | No |
-| Charts for the docs and slides | `docs/figures/` (PNG, copies of the latest run) | Yes |
+| Charts for the docs and slides | `docs/figures/` (light) and `docs/figures/dark/` (PNG, copies of the latest run) | Yes |
 | Settings, periods, thresholds | `config/config.yaml` | Yes |
 
 Every dataset is mapped onto one record shape (`doc_id, date, category,

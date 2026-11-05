@@ -405,9 +405,11 @@ Honest moments that show judgement, good for a "what we learned" slide:
 
 ## 15. Charts
 
-Ready-made PNGs in `docs/figures/` (regenerate with
-`python scripts/make_charts.py` after a pipeline run). Colours come from one
-palette checked for colour-blind safety with the dataviz validator.
+Ready-made PNGs in two themes based on the Rivvun AI brand (D14): light
+(cream) in `docs/figures/`, dark (navy, matching rivvun.ai) in
+`docs/figures/dark/`, which suits dark slides. Regenerate both with
+`python scripts/make_charts.py` after a pipeline run. Every palette was
+checked for colour-blind safety and contrast with the dataviz validator.
 
 | Chart | File | Use it for |
 |---|---|---|
@@ -423,7 +425,7 @@ Still to make: baseline candidates (F2, from
 quality per segment, drift vs quality loss, and the four-way classification
 (after Agents C and D).
 
-**Live demo:** `streamlit run app/streamlit_app.py`: Overview (stat tiles,
+**Live demo:** `streamlit run app/streamlit_app.py` (Rivvun dark theme): Overview (stat tiles,
 interactive drift charts, most drifted segments), Data monitoring (Agent A),
 Drift (interactive severity grid with hover, a drill-down into any segment,
 topics, shifted words, correlations), and placeholder pages for Agents C–E.

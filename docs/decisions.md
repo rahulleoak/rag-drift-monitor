@@ -560,3 +560,34 @@ date and reason, and add a new entry that supersedes it.
   5. **Agent E** maps the class and diagnosis to an action, by default
      "escalate to a human" with the evidence.
 - **First test case:** politics, 2020–2022.
+
+## D14. Visual style: the Rivvun AI brand, validated for colour-blind readers
+- **Date:** 2026-11-05
+- **Status:** Accepted (author's request, 2026-11-05)
+- **Context:** the charts and dashboard will be shown to Rivvun AI
+  stakeholders; the author asked for a colour scheme similar to Rivvun's.
+- **Source:** the design tokens in rivvun.ai's stylesheet (read 2026-11-05):
+  dark navy surfaces (`#070A11`, `#0D1725`, `#161B24`), a light cream theme
+  (`#F6F4EF`, `#ECE7DC`), navy / off-white ink, slate and sand lines, one
+  burnt-orange accent (`#C14100`), and the Inter typeface (Segoe UI is used
+  here because Inter is not installed; it is in Rivvun's own fallback list).
+- **Choice:**
+  - The brand accent is series 1 and the hue of the severity ramp. The brand
+    has a single accent, so two supporting series hues were chosen (a blue
+    and a teal / green) and checked with the dataviz palette validator
+    against each theme's own surface:
+    - light (cream): `#C14100 #2F6CB0 #1E9A8A`, worst colour-blind ΔE 13.7,
+      all at least 3:1 contrast; severity ramp `#E39A73 #C14100 #7A2900`.
+    - dark (navy): `#D9581E #6383E0 #1F9E70`, worst colour-blind ΔE 9.8,
+      all at least 3:1; severity ramp `#8A3000 #C9500F #F29A6B`.
+    - Rejected along the way: a violet third colour (indistinguishable from
+      the blue), and two teals that were too close to the blue on navy.
+  - Correlations use a blue ↔ orange diverging scale with a neutral
+    midpoint.
+  - PNGs in both themes: light in `docs/figures/` (README, print), dark in
+    `docs/figures/dark/` (slides on Rivvun's navy). The dashboard uses
+    Rivvun's dark site theme (`.streamlit/config.toml`).
+- **Why:** on-brand for the audience without giving up legibility: every
+  palette passes the colour-blindness and contrast checks, labels sit in ink
+  colours, and the text inside coloured cells switches between white and
+  navy by fill brightness.

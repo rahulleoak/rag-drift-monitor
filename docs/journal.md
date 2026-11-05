@@ -16,6 +16,21 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (late night): Charts and dashboard in the Rivvun style
+- **Checked:** the charts and dashboard commit was complete after the
+  interruption (clean tree, 61 tests, all six charts present).
+- **Built:** a light and a dark chart theme from rivvun.ai's design tokens
+  (D14); both rendered for every chart; the dashboard now uses Rivvun's dark
+  site theme (`.streamlit/config.toml`) and shows the dark charts. One more
+  test (dark charts are made and found by the dashboard).
+- **Process:** five palette candidates validated; two rejected (a violet
+  too close to the blue; teals too close to the blue on navy). Every chart
+  inspected in both themes; the light "low" severity step lightened so low
+  severity recedes.
+- **Note:** "Rivunn" turned out to be Rivvun AI (rivvun.ai), Seattle,
+  enterprise AI for commercial obligations: the likely audience.
+- **Next:** unchanged: the LLM parts once the stakeholder answers arrive.
+
 ## 2026-11-05 (night): Charts and dashboard skeleton
 - **Built:** `driftmon/charts.py` and `scripts/make_charts.py` (six PNG
   charts from a saved run, copied to `docs/figures/`);

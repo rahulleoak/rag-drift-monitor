@@ -346,12 +346,13 @@ stale-vs-refreshed comparison trivial.
     implementations of the specific statistics instead, for transparency and
     fewer heavy dependencies. Worth one sentence in the README.
 11. **Volume cliff after May 2018** (dataset card): the most interesting period,
-    2020, is the sparsest. To verify in step 5.
+    2020, is the sparsest. *Verified (F1): about 2,000 articles a year from 2019.*
 12. **Category labels change over time** (the dataset reportedly has
     near-duplicates such as WORLDPOST / THE WORLDPOST). Drift to report, or noise
     to normalise? Proposed: normalise for segment analysis using a mapping in the
     config, and report the raw label changes as a Data Monitoring finding.
-    To verify in step 5.
+    *Verified and done (F1, D6): 9 renamed sections merged via
+    `categories.normalise`.*
 
 ---
 

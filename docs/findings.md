@@ -63,7 +63,7 @@ chart, and whether it supports or contradicts what we expected.
 - **Implication:**
   1. Periods after 2018 hold about 2,000 articles each, so `sample_per_period`
      (2,000) cannot be met for 2022, and later periods will mostly be the full
-     year, not a sample.
+     year, not a sample. *(Resolved in F3: the sample is 1,398.)*
   2. A baseline from 2014–2015 (the earlier proposal) would mix two problems:
      real drift, and a jump in the politics share from 10% to almost 40%.
      Raw embedding drift would mostly measure the mix change. The baseline

@@ -591,3 +591,38 @@ date and reason, and add a new entry that supersedes it.
   palette passes the colour-blindness and contrast checks, labels sit in ink
   colours, and the text inside coloured cells switches between white and
   navy by fill brightness.
+
+## D15. The LLM layer: budget, cache, structured output, refusals
+- **Date:** 2026-11-05
+- **Status:** Accepted (budget set by the author, 2026-11-05)
+- **Context:** the LLM jobs (D9) spend real money on the author's key, and
+  every quality number depends on them. Budget: **$150 in total**; $20 of
+  credit is loaded now, so the first stretch is planned to spend under about
+  $10. The stakeholder answer on spending (question 4) was not needed to
+  start.
+- **Choices** (all in `driftmon/llm.py`, the only module that calls an LLM):
+  1. **Budget enforced in code, before spending:** each request (or batch)
+     gets a cautious cost estimate; if the running total in the cost ledger
+     (`runs/llm_costs.csv`) plus the estimate would pass `llm.budget_usd`,
+     nothing is sent. Every billed reply is recorded with its real tokens and
+     cost, at published prices (in the config).
+  2. **Disk cache** keyed on model, prompt version, system and user prompt,
+     schema and settings: reruns are free and repeatable. A prompt change
+     bumps its version, so stale answers are never reused.
+  3. **Structured output:** every reply must match a JSON schema generated
+     from a pydantic model (strict: all fields required, no extras) and is
+     validated again in Python.
+  4. **Refusals:** live calls use the API's server-side fallback
+     (`fallbacks: "default"`). The Batch API has none, so a batch refusal is
+     retried live with fallback. Anything still refused is returned as
+     refused and counted, never dropped silently.
+  5. **Broken replies** (cut off at the output cap, or not matching the
+     schema) are recorded in the ledger but not cached, so a rerun retries
+     them.
+  6. **Thinking effort per job** (config): "medium" for question writing and
+     review to begin with; tuned after the pilot measures cost and quality.
+- **Why:** money and reproducibility are controlled in one tested place, and
+  failures are visible rather than silent.
+- **Evidence:** `tests/test_llm.py` (7 tests with a fake API: strict
+  schemas, caching across restarts, the budget refusing before any call,
+  live and batch refusals, broken replies retried, batch at half price).

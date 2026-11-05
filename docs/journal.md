@@ -16,6 +16,23 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (night): LLM layer built (checkpoint 1 of 3)
+- **Context:** the author set a $150 total budget ($20 loaded now) and asked
+  to start the LLM work on a small scale while waiting for the stakeholder
+  answers: a discovery run to find what was not accounted for. Plan in three
+  committed checkpoints so an interruption loses nothing: (1) LLM layer,
+  (2) question generator, checks and Opus review, (3) the 20-question pilot.
+- **Built:** `driftmon/llm.py` (D15) and its config (budget, prices,
+  per-job effort). 7 new tests with a fake API (68 in total). No money
+  spent yet.
+- **Checked against current docs:** structured output via
+  `output_config.format`, server-side fallback (`fallbacks: "default"`,
+  beta `server-side-fallback-2026-07-01`; not available on the Batch API),
+  no temperature, Batch API request shapes; the installed SDK (2.4.0)
+  accepts all of them.
+- **Next:** checkpoint 2, the question generator with its quality checks
+  and the Opus review.
+
 ## 2026-11-05 (late night): Charts and dashboard in the Rivvun style
 - **Checked:** the charts and dashboard commit was complete after the
   interruption (clean tree, 61 tests, all six charts present).

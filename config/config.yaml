@@ -108,7 +108,18 @@ llm:
   generator_model: claude-sonnet-5-5   # writes test questions, reference answers and RAG answers
   judge_model: claude-opus-5-5         # judges relevance and answer quality; writes explanations
   use_batch_api: true                  # bulk jobs run through the Batch API (50% cheaper, not instant)
-  budget_usd: null                     # spending cap; waiting for the stakeholder answer (question 4)
+  budget_usd: 150                      # D15: total spending cap (author, 2026-11-05); enforced before every call
+  max_retries: 4                       # SDK retries for rate limits and server errors
+  # Published prices, USD per million tokens (checked 2026-11-04). The Batch API
+  # costs half. Thinking tokens are billed as output.
+  prices:
+    claude-sonnet-5-5: {input: 2.0, output: 10.0}
+    claude-opus-5-5: {input: 4.0, output: 20.0}
+  # Per job: thinking effort (low / medium / high), output cap (thinking counts
+  # towards it), and the output size assumed when estimating cost in advance.
+  jobs:
+    questions:       {effort: medium, max_tokens: 4000, expected_output: 900}
+    question_review: {effort: medium, max_tokens: 3000, expected_output: 700}
 
 drift:
   alpha: 0.05

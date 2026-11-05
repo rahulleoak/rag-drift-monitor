@@ -18,7 +18,10 @@ measure-correlation check (D12, F6), and the routing decision after B.
 Query drift waits for the LLM query stream. C, D and E are not built yet,
 so both routes currently end the run. Charts (`driftmon/charts.py`,
 `scripts/make_charts.py`) and a dashboard skeleton (`app/streamlit_app.py`,
-reading saved runs via `driftmon/dashboard_data.py`) show A and B's results. Items marked *(proposal Pn)* come
+reading saved runs via `driftmon/dashboard_data.py`) show A and B's results.
+The LLM layer (`driftmon/llm.py`, D15) is built: budgeted, cached,
+structured calls with refusal fallback, live or batch. Its jobs (question
+writing, judging) come next. Items marked *(proposal Pn)* come
 from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
 marked *(D7)* were added after checking the design against every requirement
 in the assignment (`docs/requirements-coverage.md`).
@@ -122,7 +125,8 @@ agent breaks the next one.
 | Cleaned documents, all periods, with period and drift-sample flag | `data/processed/documents.parquet` | No |
 | Cleaning reports (retention table, every removed document) | `runs/prepare/` (CSV) | No |
 | Small committed sample | `data/sample/` | Yes |
-| Embeddings (`cache/embeddings/<model>/`) and LLM responses | `cache/` | No |
+| Embeddings (`cache/embeddings/<model>/`) and LLM responses (`cache/llm/<job>/`) | `cache/` | No |
+| LLM cost ledger (every billed request) | `runs/llm_costs.csv` | No |
 | Run outputs (reports, charts) | `runs/<run_id>/` | No |
 | Exploration tables | `runs/explore/<dataset>/` (CSV) | No |
 | Charts for a run | `runs/<run_id>/charts/` (PNG) | No |

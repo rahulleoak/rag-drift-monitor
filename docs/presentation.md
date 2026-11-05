@@ -336,8 +336,11 @@ as D5.
   about a second, with no models or keys.
 - **Config, not hard-coding:** periods, thresholds, models and the category
   mapping all live in one file.
-- **Caching:** embeddings cached (a rerun takes 14 s instead of 80 s); LLM
-  responses will be too.
+- **Caching:** embeddings cached (a rerun takes 14 s instead of 80 s); every
+  LLM response cached too, so reruns cost nothing.
+- **Money is controlled in code:** a $150 budget enforced *before* any
+  request is sent, a ledger of every billed call, a 20-question pilot before
+  any full run, and half-price batches for bulk jobs (D15).
 - **Decisions are logged** with options, reasons and evidence (D1–D9); when one
   changes, it is marked "Revised", not deleted (e.g. Q2, Q7, Q12).
 - **Requirements traceability:** `docs/requirements-coverage.md` maps every

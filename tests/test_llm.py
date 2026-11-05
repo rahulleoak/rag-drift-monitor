@@ -163,3 +163,15 @@ def test_batch_refusal_retried_live_and_errors_not_cached(tmp_path):
     assert [c["messages"][0]["content"] for c in llm.client.live_calls] == ["sensitive"]
     assert not out[2].ok and out[2].error == "batch errored"
     assert llm.cached(_req("flaky")) is None  # errors are retried next time
+
+
+def test_api_key_ignores_an_empty_environment_variable(tmp_path, monkeypatch):
+    from driftmon.llm import api_key
+    env = tmp_path / ".env"
+    env.write_text("ANTHROPIC_API_KEY=from-file\n", encoding="utf-8")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+    assert api_key(env) == "from-file"
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "from-env")
+    assert api_key(env) == "from-env"
+    monkeypatch.delenv("ANTHROPIC_API_KEY")
+    assert api_key(tmp_path / "missing.env") is None

@@ -16,6 +16,23 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (night): First live LLM run: the question pilot (checkpoint 3 of 3)
+- **Fixed first:** the shell defines `ANTHROPIC_API_KEY` as an empty
+  string, which hid the `.env` key (python-dotenv never overrides an
+  existing variable). `llm.api_key()` now falls back to `.env` when the
+  environment value is empty, without changing the environment. Test added.
+  Nothing was spent by the failed attempt.
+- **Pilot:** F7. 15 of 20 questions kept for $0.18. First real spend.
+- **Surprises:** zero time-sensitive questions; questions echo the
+  description; the reviewer is lenient; outside facts leak into questions;
+  many two-part questions.
+- **Proposed next (to agree with the author):** prompt and checks version 2:
+  one fact per question; time-sensitive questions where the article
+  supports one; no facts that are not in the article; the copy check
+  extended to the description; stricter reviewer checks (no outside facts,
+  single question); then a second 20-article pilot (about $0.20) and the
+  author's review of the questions.
+
 ## 2026-11-05 (night): Question generator built (checkpoint 2 of 3)
 - **Built:** `driftmon/prompts.py` (writer and reviewer prompts with
   versions and schemas), `driftmon/simulate.py` (select, write, check,

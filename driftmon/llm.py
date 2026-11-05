@@ -41,6 +41,26 @@ LEDGER_FIELDS = ["time", "job", "model", "mode", "input_tokens", "output_tokens"
                  "stop_reason", "key"]
 
 
+def api_key(env_file: Path | None = None) -> str | None:
+    """The Anthropic key: the environment's if it is non-empty, else the project's ``.env``.
+
+    An environment variable that exists but is empty would otherwise hide the
+    ``.env`` value (python-dotenv never overrides existing variables), and the
+    environment is left unchanged either way. None lets the SDK fall back to
+    its other credential sources.
+    """
+    import os
+
+    from dotenv import dotenv_values
+
+    from driftmon.config import REPO_ROOT
+    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if key:
+        return key
+    path = env_file or REPO_ROOT / ".env"
+    return (dotenv_values(path).get("ANTHROPIC_API_KEY") or "").strip() or None if path.exists() else None
+
+
 class BudgetExceeded(RuntimeError):
     """Raised before a request whose estimated cost would pass the budget."""
 
@@ -142,9 +162,8 @@ class LLMClient:
         self.ledger = Path(self.ledger)
         if self.client is None:
             import anthropic
-            from dotenv import load_dotenv
-            load_dotenv()
-            self.client = anthropic.Anthropic(max_retries=int(self.config.get("max_retries", 4)))
+            self.client = anthropic.Anthropic(api_key=api_key(),
+                                              max_retries=int(self.config.get("max_retries", 4)))
 
     # ---------- money ----------
 

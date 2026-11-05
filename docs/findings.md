@@ -360,3 +360,47 @@ chart, and whether it supports or contradicts what we expected.
     stale index should retrieve court cases. 🔨
   - A first version of the term-shift ratio was inflated for small groups
     (noisy centroids); fixed by matching group sizes (D12).
+
+## F7. Question pilot: good questions, cheap, and five things we had not accounted for
+- **Date:** 2026-11-05
+- **Result:** 20 articles (5 baseline, 3 per later year) → **15 questions
+  kept**. Cost **$0.18** in total: Sonnet writing $0.064 (20 calls, about
+  $0.003 each), Opus reviewing $0.112 (15 calls, about $0.0075 each); the
+  advance estimate ($0.51) was about 3× too high (output assumed 900 tokens;
+  actual about 130–185). No refusals, no broken replies. Questions are as
+  varied as their source articles (diversity ratio 1.03, P3: no collapse).
+  - **Rejected (5):** 4 by the writer's own "not answerable" flag, all
+    teasers with no stated fact ("Hopes And Fears In The GOP
+    Establishment", "Dad's Instagram Post Sums Up The Struggle Of
+    Weekends"); 1 for reusing the headline ("How many FCC complaints… 60
+    Minutes interview"). The checks worked as designed.
+  - **Kept questions are specific and paraphrased**, e.g. "How much in U.S.
+    goods did China target with new tariff increases in August 2019?" from
+    "Trade War Escalates With China Announcing Tariff Hikes On $75 Billion".
+- **Not accounted for:**
+  1. **No time-sensitive questions at all** (15 of 15 evergreen). These are
+     the questions where a stale archive gives a superseded answer (D13), so
+     the impact experiment needs them.
+  2. **Questions echo the description**, not the headline: the reviewer
+     noted "borrows heavily from the description" twice, but the copy check
+     only compares with the headline. Copied wording makes retrieval look
+     easier than it is.
+  3. **The reviewer passed all 15**, even when its own reason named a
+     problem ("'Pennsylvania' is unstated in the article but harmless",
+     "partly echoes its own answer"). Its yes/no checks are lenient; the
+     code only sees the yes/no.
+  4. **Questions add outside facts** (Pennsylvania, the Paris agreement,
+     "blood-testing"). Realistic for a journalist, but it lets the writer's
+     own knowledge leak into the test.
+  5. **A third are two-part questions** ("How many…, and did police…?"),
+     which are harder to judge as right or wrong.
+- **Reproduce:** `python scripts/generate_questions.py` (cached: a rerun
+  costs nothing); every draft and decision in
+  `runs/questions/pilot/questions.csv`; costs in `runs/llm_costs.csv`.
+- **Expectation:** a keep rate around 70–80%; some time-sensitive questions.
+- **Verdict:** Mixed. Quality and cost are better than expected; the
+  question mix and the checks need tightening before scaling up.
+- **Implication:** a version-2 prompt and checks (see journal), then a
+  second pilot before generating the ~180-question set. At about $0.01 per
+  kept question, the small set costs about $1–2, and the full plan is far
+  inside the budget.

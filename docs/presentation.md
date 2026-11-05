@@ -9,7 +9,7 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-05 (after first drift results).
+Last updated: 2026-11-05 (Agents A and B running in LangGraph).
 
 ---
 
@@ -206,6 +206,35 @@ a measurement, not an opinion.
   2016 is significant. So the system judges drift by size relative to
   ordinary change, not by p-values.
 
+### 7c. Severity and drift by section (F5, D11) ✅
+
+- **How "unusual" is defined:** by the archive's own history, not invented
+  thresholds. Ordinary change = the same month a year apart inside the
+  baseline (January 2016 vs January 2017, ...). Medium = beyond the 95th
+  percentile of that, high = beyond the 99th.
+- **Whole years:** 2020 flagged high (meaning drift), 2021 medium (wording:
+  vaccine, covid), 2022 medium on both. 2018 and 2019 low. No single year is
+  unusual next to the previous one; the archive drifts away gradually.
+- **Where COVID hit hardest: lifestyle journalism, not politics.** WELLNESS,
+  FOOD & DRINK, STYLE & BEAUTY and PARENTING in 2020 are the most drifted
+  sections of all ("Is It Safe To Go To The Grocery Store?", "How To Make
+  Coronavirus Face Masks"). Practical, time-sensitive advice a 2017 archive
+  cannot give: the best test cases for the impact experiment. 🔨
+- **Sensible secondary signals:** world news in 2020 (outbreak) and 2022
+  (Ukraine invasion); sports in Olympic years; late-night comedy on
+  impeachment in 2019.
+- **The politics paradox:** politics is *never* flagged, despite Trump ->
+  Biden, January 6th and Ukraine, because 2016-17 politics (an election,
+  then a new administration) already changed so much month to month. Good
+  talking point: drift is relative to what is normal for that section. And
+  the honest follow-up: if politics questions still lose quality on the
+  stale index, that is "quality loss without drift", and the system has a
+  path for it (regression check, escalate to a human).
+- **Agent A in one line:** the topic mix moved (Cramér's V 0.2-0.5), and
+  13-26% of later articles sit in sections the baseline does not have,
+  including sections that existed before 2016 and *came back* (MONEY,
+  HOME & LIVING, WEDDINGS).
+
 ## 8. Measuring quality honestly (🔨)
 
 - **A subtle trap (D2):** a stale index cannot contain a 2020 article, so
@@ -304,6 +333,8 @@ Honest moments that show judgement, good for a "what we learned" slide:
   temperature setting, so reproducibility comes from caching every response.
 - **Expected COVID to be the most novel content; it was not** (F4). Instead of
   hiding it, it became the central hypothesis for the impact experiment.
+- **Expected politics to be the most drifted section; it never was** (F5),
+  which exposed how the election year inflates "normal" for that section.
 - **A metric that looked fine was mostly noise:** raw word-distribution
   divergence scored 2018 below an ordinary year. Subtracting what random
   shuffling gives ("excess") fixed it (D10).
@@ -349,7 +380,7 @@ Honest moments that show judgement, good for a "what we learned" slide:
 | Drift per period vs baseline and vs previous year, with ordinary-year line | `runs/drift/period_drift.csv` | data ready |
 | Emerging / declining terms per year | `runs/drift/terms_<period>.csv` | data ready |
 | COVID articles: nearest baseline neighbours | F4 (`scripts/run_drift.py` + check) | data ready |
-| Drift by period and category (heatmap) | Agent B | 🔨 |
+| Drift by section × year (band heatmap) | `runs/<run_id>/drift_segments.csv` | data ready |
 | Drift-metric correlation heatmap (P6) | Agent B | 🔨 |
 | Stale vs refreshed quality per segment | Agents C, D | 🔨 |
 | Drift vs quality loss scatter (which drift matters) | Agent D | 🔨 |

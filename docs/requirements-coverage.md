@@ -16,22 +16,22 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 | Requirement | How it is met | Status |
 |---|---|---|
 | Monitor incoming documents and user queries | Period-by-period article batches; simulated query stream summarised the same way | Designed (data ready) |
-| Maintain historical and recent data distributions | Fixed 2016–17 baseline vs each later year | Designed (periods set, D6) |
-| Identify changes in vocabulary, topics and document characteristics | New-term rate, category mix (chi-square), length, empty descriptions, new or renamed sections | Designed (seen by hand in F1) |
+| Maintain historical and recent data distributions | Fixed 2016–17 baseline vs each later year | **Done** (Agent A, F5) |
+| Identify changes in vocabulary, topics and document characteristics | New-term rate, category mix (chi-square + Cramér's V), length, empty descriptions, new or renamed sections | **Done** (Agent A, F5) |
 | Establish baseline data for comparison | 2016–17, chosen on evidence | **Done** (F2, D6) |
 
 ## B. Semantic Drift Detection Agent
 
 | Requirement | How it is met | Status |
 |---|---|---|
-| Detect changes in semantic representations of historical and recent documents | Embedding drift per period and per category | Designed |
+| Detect changes in semantic representations of historical and recent documents | Embedding drift per period and per category | **Done** (Agent B, F4, F5) |
 | Compare embedding distributions using distance or similarity metrics | MMD with a permutation test; centroid distance; per-document novelty; dispersion (P3) | **Done** for whole periods (F4) |
 | Identify emerging topics | Ranked emerging terms; clusters of novel articles labelled by top terms (D7) | Designed |
 | Identify changing terminology | Jensen–Shannon divergence and log-odds emerging / declining terms (e.g. coronavirus → covid) | **Done** for whole periods (F4) |
 | Identify shifts in semantic relationships | Term-context shift for key terms (D7) | Designed |
-| Quantify drift; identify affected categories or topics | Per period × category scores, p-values with Benjamini–Hochberg, severity bands (P7) | Designed |
-| Generate explanations and supporting examples | LLM explains from the computed numbers; most novel articles and top terms as examples | Designed |
-| At least two complementary techniques | Embedding-based and lexical; correlation heatmap shows how far they differ (P6) | Designed |
+| Quantify drift; identify affected categories or topics | Per period × category scores, p-values with Benjamini–Hochberg, severity bands (P7) | **Done** for categories (F5); topic clusters still to do |
+| Generate explanations and supporting examples | LLM explains from the computed numbers; most novel articles and top terms as examples | Examples and terms **done**; LLM explanations to do |
+| At least two complementary techniques | Embedding-based and lexical; correlation heatmap shows how far they differ (P6) | **Done** (both run; they disagree usefully, F4); heatmap to do |
 
 ## C. Retrieval Evaluation Agent
 
@@ -102,5 +102,5 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 | Measurable retrieval and answer quality | Retrieval metrics and judged answer quality, with confidence intervals | Designed |
 | Evidence-based impact assessment | Stale vs refreshed experiment; historical control set | Designed |
 | Intelligent recommendations and decision-making | Evidence-triggered rules; model evaluation actually run | Designed |
-| Sound engineering practices | Tested pure modules, config file, disk caches, documented decisions | In progress (36 tests) |
+| Sound engineering practices | Tested pure modules, config file, disk caches, documented decisions | In progress (54 tests) |
 | Translate research into practice | MMD (Gretton et al.), Fightin' Words (Monroe et al.), TREC pooling, ideas from the author's paper (D5) | Designed |

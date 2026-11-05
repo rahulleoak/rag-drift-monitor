@@ -116,6 +116,10 @@ drift:
   mmd_permutations: 500
   compare_to: [baseline, previous_period]   # cumulative and period-over-period (proposal P1)
   severity_null_percentiles: {medium: 95, high: 99}   # bands calibrated on within-baseline drift (P7)
+  # D11: "ordinary change" = the same month one year apart inside the baseline
+  # (Jan 2016 vs Jan 2017, ...), each pair re-sampled null_draws times.
+  null_draws: 5
+  null_permutations: 50      # only to estimate the shuffled JSD average for "excess"
 
 evaluation:
   queries_per_segment: null      # set once the LLM budget is known

@@ -245,3 +245,66 @@ chart, and whether it supports or contradicts what we expected.
     register as new. Word drift and distribution-level MMD catch it;
     article-level novelty does not. This is the clearest "which drift
     matters" case to test with Agents C and D.
+
+## F5. Severity bands and drift by section: COVID hit lifestyle journalism hardest; politics never looks unusual
+- **Date:** 2026-11-05
+- **Setup:** the A → B pipeline in LangGraph. Bands from ordinary change
+  inside the baseline (same month a year apart, D11). "× ordinary" here is
+  relative to the *median month-pair change*, which is larger than the
+  single 2017-vs-2016 value used in F4, so the multiples are smaller than
+  F4's; the ranking is the same.
+- **Whole periods vs the baseline:**
+
+  | Period | Embedding (× ordinary) | Words (× ordinary) | Bands (embedding / words) | Kind | Flagged |
+  |---|---|---|---|---|---|
+  | 2018 | 0.8 | 0.6 | low / low | none | no |
+  | 2019 | 1.5 | 1.1 | low / low | none | no |
+  | **2020** | **2.5** | 1.2 | **high** / low | meaning | **yes** |
+  | 2021 | 1.9 | 1.2 | low / **medium** | wording | **yes** |
+  | 2022 | 2.1 | 1.2 | medium / medium | both | **yes** |
+
+  Every year-on-year comparison is "low", including 2020 vs 2019 (1.9×):
+  measured against month-to-month news swings, no single year is
+  extraordinary on its own; the archive moves away gradually (P1).
+  **D6 check 2 passes:** 2020 is flagged high.
+- **Agent A:** category mix vs the baseline has Cramér's V of 0.21 (2018),
+  0.51 (2019), 0.37 (2020), 0.41 (2021), 0.42 (2022). Sections absent from
+  the baseline make up 1.9% of 2018 and 13–26% of later years; besides U.S.
+  NEWS, they include MONEY, HOME & LIVING and WEDDINGS, sections that existed
+  before 2016 and *returned* after 2018.
+- **Sections (37 of 134 period × category groups are large enough):** 14
+  flagged vs the baseline. Highlights:
+  - **2020 lifestyle sections are the most drifted of all,** with both
+    techniques high: WELLNESS (52 of 67 articles COVID-related, e.g.
+    "Social Distancing: Places And Events To Avoid"), FOOD & DRINK (28 of 54:
+    "Is It Safe To Go To The Grocery Store?"), STYLE & BEAUTY (35 of 75: "How
+    To Make Coronavirus Face Masks"), PARENTING (21 of 58; 11 are tweet or
+    shopping roundups). Also WORLD NEWS 2020 (outbreak, virus).
+  - **2022 WORLD NEWS:** ukraine, russian, invasion (both high).
+  - **SPORTS in Olympic years** (2018 Winter, 2021 Tokyo): wording drift.
+  - **2019 COMEDY:** late-night hosts on the shutdown and impeachment.
+  - **POLITICS is never flagged** (0.4–1.0× ordinary, 2018–2022) despite
+    Trump → Biden, the Capitol attack and Ukraine. The baseline's own
+    political coverage (election year, then a new administration) changes
+    so much month to month that later change looks ordinary. This is D6's
+    weakness 2 (the election year inside "normal" variation), seen for one
+    section.
+- **Caveats:** multiples for small sections (54–75 articles) are imprecise
+  (FOOD & DRINK 2020: 17×); the bands, built at the segment's size, are what
+  drive decisions. 97 groups are too small or have no baseline counterpart
+  (reported by Agent A instead).
+- **Reproduce:** `python scripts/run_pipeline.py` (about 60 s; reports in
+  `runs/<run_id>/`: `monitoring.json`, `drift.json`, `drift_whole.csv`,
+  `drift_segments.csv`, `route.txt`).
+- **Chart:** none yet. Suggested: heatmap of section × year bands; the 2020
+  lifestyle sections as the headline example.
+- **Expectation:** 2020 flagged; politics among the most drifted sections.
+- **Verdict:** Mixed. 2020 flagged as expected; politics not flagged at all.
+- **Implication:**
+  - The 2020 lifestyle sections are the best test cases for the impact
+    experiment: practical, time-sensitive questions ("is it safe to…") that
+    a 2017 archive cannot answer.
+  - **Politics is the key test of "quality loss without drift":** if
+    politics questions lose quality on the stale index although no drift
+    was flagged, the system must still catch it (the regression check and
+    the "escalate" rule exist for this).

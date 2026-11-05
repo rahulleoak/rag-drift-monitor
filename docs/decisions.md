@@ -452,3 +452,44 @@ date and reason, and add a new entry that supersedes it.
   measures to what retrieval experiences (the stale index).
 - **Evidence:** F4; tests in `tests/test_drift.py` (including a direct check
   of the MMD formula and that shuffling removes the noise in JSD).
+
+## D11. Within-category comparisons and severity bands
+- **Date:** 2026-11-05
+- **Status:** Accepted (both recommendations approved 2026-11-05)
+- **Context:** F4 showed every comparison is significant at this sample size,
+  so severity must come from size relative to ordinary change. With only
+  the 1,398 drift samples, just 7 baseline categories had 50 articles.
+- **Choices:**
+  1. **Within-category comparisons use every cleaned article** in each
+     period × category group with at least 50 articles whose category also
+     has 50 in the baseline (37 groups); both sides sampled to the same
+     size, capped at 1,398. *Rejected:* the drift samples only (too few
+     categories).
+  2. **Ordinary change = the same month a year apart inside the baseline**
+     (January 2016 vs January 2017, ...: 12 pairs), each pair re-sampled 5
+     times at the size being judged, giving 60 values per measure. Medium
+     = above the 95th percentile, high = above the 99th. *Rejected:*
+     re-sampling 2017 vs 2016 only (sampling noise around one value; bands
+     too tight).
+  3. **Fallbacks:** if a category has too few articles per month, quarter
+     pairs are used (4 pairs); if still too few, the sample size shrinks to
+     what quarters hold; if no category null is possible, the pooled
+     baseline null is used. Each segment records its window and size.
+  4. **One null per category,** built at the smallest segment size in that
+     category: a smaller sample gives a wider, more cautious null.
+  5. **Flag rule:** both techniques significant after Benjamini–Hochberg
+     *and* severity at least medium (Q11 option C). Severity is the higher of
+     the two bands; the kind of drift (meaning / wording / both / none, P2)
+     comes from which bands are above low.
+  6. **Controls:** low-severity sections, kept for Agents C and D to compare
+     against drifted ones.
+  7. **"× ordinary"** = the measure divided by the median of its null; shown
+     for readability, while the bands make the decisions.
+  8. **Agent A** reports category-mix change with Cramér's V next to the
+     chi-square p-value, for the same reason as above.
+- **Why:** comparisons stay like-for-like (same section, same size), and
+  "unusual" is defined by the archive's own history, not invented constants.
+- **Evidence:** F5; `tests/test_agents.py` (null construction falls back from
+  months to quarters; the graph flags a shifted synthetic period and routes
+  to full evaluation, and routes to the regression check when nothing
+  changed).

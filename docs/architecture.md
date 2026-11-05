@@ -10,8 +10,11 @@ stubs exist. Implemented: data loading (`driftmon/data.py`), exploration
 (`driftmon/cleaning.py`, `scripts/prepare_data.py`), cached embeddings
 (`driftmon/embeddings.py`), the stale and cumulative refreshed indexes
 (`driftmon/index.py`, D10) and whole-period drift statistics for both
-techniques (`driftmon/drift/`, `scripts/run_drift.py`, F4). The agents
-themselves are not wired yet. Items marked *(proposal Pn)* come
+techniques (`driftmon/drift/`, `scripts/run_drift.py`, F4). **Agents A and B
+run in LangGraph** (`driftmon/graph.py`, `scripts/run_pipeline.py`) with typed
+reports (`MonitoringReport`, `DriftReport`), within-category comparisons and
+severity bands (D11, F5), and the routing decision after B. C, D and E are
+not built yet, so both routes currently end the run. Items marked *(proposal Pn)* come
 from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
 marked *(D7)* were added after checking the design against every requirement
 in the assignment (`docs/requirements-coverage.md`).

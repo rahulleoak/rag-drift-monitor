@@ -16,6 +16,31 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (afternoon): Agents A and B running in LangGraph
+- **Built:** `driftmon/monitoring.py` (Agent A statistics: volume, length,
+  category mix with Cramér's V, new and renamed sections, new-term rate);
+  `driftmon/drift/compare.py` (shared comparisons; `run_drift.py` now uses
+  it and reproduces F4 exactly); `driftmon/drift/severity.py` (bands from
+  same-month-a-year-apart pairs); `driftmon/drift/report.py` (flags,
+  controls, terms, examples); typed reports in `schemas.py`; agent nodes A
+  and B; `graph.py` with the routing decision; `scripts/run_pipeline.py`.
+  7 new tests (54 in total), including the whole graph on a synthetic
+  archive.
+- **Results:** F5. 2020, 2021 and 2022 flagged; the 2020 lifestyle sections
+  are the most drifted of all; politics is never flagged. The pipeline runs
+  in about 60 s.
+- **Surprises:** politics never looks unusual, because the baseline's own
+  politics coverage swings so much (D6 weakness 2). Pandas 3 returns
+  read-only arrays (an in-place `&=` failed).
+- **Checked:** the flagged 2020 lifestyle sections are mostly COVID
+  content, not templated columns, so D8's revisit trigger 1 does not fire.
+- **Open questions:** LLM explanations for B (wait for the stakeholder
+  answers); topic clusters, term-context shift and query drift (D7); the
+  P6 correlation heatmap.
+- **Next:** decide with the author what comes next: the remaining Agent B
+  items, or the LLM simulator and Agent C once the stakeholder answers
+  arrive.
+
 ## 2026-11-05 (later): Indexes and first drift results
 - **Built:** `driftmon/index.py` (stale and cumulative refreshed indexes),
   `driftmon/corpus.py` (documents + cached vectors), the embedding drift

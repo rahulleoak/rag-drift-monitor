@@ -16,6 +16,14 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06 (later): Reviewer r-v5; prompt tuning ends
+- **Built:** r-v5 "natural" check (names and facts are not copying).
+- **Results:** F12. Random pilot 15 kept (+1); oversample 15 kept (was 9),
+  6 clearly time-sensitive (was 4). Remaining errors are reviewer
+  leniency ("on Saturday", a common-knowledge yes/no question, the
+  "milestone" question), to be measured by hand labels. $2.82 spent.
+- **Next:** dry run of the full question set, shown to the author first.
+
 ## 2026-11-06 (checkpoint): where we are, for the next session
 - **Branch:** `llm-layer-and-pilot` (pushed; no PR yet; ask the author
   before opening one). Main has PRs #1–#5 merged.

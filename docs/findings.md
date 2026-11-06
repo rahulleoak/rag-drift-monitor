@@ -592,3 +592,34 @@ chart, and whether it supports or contradicts what we expected.
     stale index lacks the source), plus harder questions in newer wording
     about older topics (D7, item 2), not known-item rank on the refreshed
     index. Revisit D2's weighting of known-item metrics when Agent C runs.
+
+## F12. Reviewer r-v5 (names and facts are not copying): oversample keep rate 35% → 58%
+- **Date:** 2026-11-06
+- **Change:** "natural" no longer counts reused names, places, numbers or
+  facts as copying; only awkward phrasing or a whole copied sentence fails
+  it (F11 showed copy-rejected questions were not easier to retrieve).
+  Writer unchanged; reviews rerun twice on both pilots.
+- **Result:**
+
+  | Pilot | Kept before (r-v4) | Kept after (r-v5) | Clear time-sensitive | Reviewer consistency |
+  |---|---|---|---|---|
+  | Random (20 articles) | 13 + 1 unanswerable | 14 + 1 | 1 | 92% |
+  | Oversample (20 articles) | 9 | **15** | **6** (was 4) | 87% |
+
+  - **Correctly rescued:** "How many boxes of documents from the probe into
+    violations at the former Rocky Flats weapons plant have gone missing?",
+    "How many victims have California's wildfires claimed so far, as of
+    early August 2018?", the New Zealand and SEC questions.
+  - **Correctly rejected now:** "What happened to the Navy SEAL who died
+    during a Fleet Week demonstration?" (half-answers itself).
+  - **Still lenient:** "Who was killed by the Carr fire… on Saturday?" (no
+    date; a similar "on Sunday" question was rejected earlier); a yes/no
+    question about Bernie Sanders that common knowledge answers; the
+    "milestone" question (F9) still passes. These are what the hand labels
+    (P8) must measure.
+  - Spent so far: $2.82 of $150.
+- **Reproduce:** `python scripts/generate_questions.py --name pilot_v6` and
+  `--name oversample_v2 --oversample` (cached).
+- **Expectation:** more kept questions, especially in the oversample.
+- **Verdict:** Supports. Prompt tuning ends here; the remaining errors are
+  reviewer leniency, measured by hand labels rather than more prompts.

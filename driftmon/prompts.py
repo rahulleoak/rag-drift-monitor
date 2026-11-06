@@ -22,6 +22,10 @@ Version history:
                  (without seeing the writer's) instead of grading it, because the
                  label proved ambiguous; a disagreement is recorded, not a
                  rejection (D17, revised after the third pilot). Writer unchanged.
+    r-v5         "natural" no longer counts reused names, places, numbers or facts
+                 as copying; only awkward phrasing or a whole copied sentence fails
+                 it. Measured reason: copy-rejected questions were not easier to
+                 retrieve (F11). Verbatim copying is caught in code. Writer unchanged.
 """
 from __future__ import annotations
 
@@ -99,7 +103,7 @@ class QuestionDraft(BaseModel):
 
 # ---------- question review (Opus) ----------
 
-REVIEW_VERSION = "r-v4"
+REVIEW_VERSION = "r-v5"
 
 REVIEW_SYSTEM = """You check questions for a test set of a newsroom archive assistant. Each \
 question was written from one archive article (a headline plus a short description) and comes \
@@ -119,8 +123,10 @@ company does) is fine and is NOT a problem.
 answerable from the question itself.
 - reference_correct: the reference answer is correct, supported by the article, and states the \
 fact directly.
-- natural: a journalist or editor could plausibly ask it this way, without copying the headline \
-or description wording.
+- natural: a journalist or editor could plausibly ask it this way: clear, idiomatic phrasing. \
+Reusing the article's names, places, numbers or facts is normal and is NOT a problem. Mark it \
+false only for awkward or unnatural phrasing (for example a question that half-answers itself), \
+or when a whole sentence of the article is copied as the question.
 Be strict: if you notice any problem with a check, even a minor one, that check is false. Your \
 reason must not describe a problem while the matching check is true.
 

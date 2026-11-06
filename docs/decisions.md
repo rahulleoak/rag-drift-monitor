@@ -703,6 +703,10 @@ date and reason, and add a new entry that supersedes it.
   it is unanswerable and it asks one thing ("natural" and "unambiguous" no
   longer apply: such questions are broad and restate the headline by
   nature). Keep rate rose to 60%.
+- **Revised 2026-11-06 (r-v5, after F11):** "natural" no longer treats reused
+  names, places, numbers or facts as copying (copy-rejected questions were
+  not easier to retrieve); verbatim copying stays caught in code. Oversample
+  keep rate 35% → 58% (F12). Prompt tuning ends here.
 - **Revisit when results exist:** (a) is the unanswerable set useful in the
   groundedness results? (b) do keep rates differ by section enough to bias
   the drift-vs-quality analysis? (c) did allowing common knowledge make

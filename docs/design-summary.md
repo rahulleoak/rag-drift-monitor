@@ -93,10 +93,26 @@ Dashboard: Streamlit, reading saved runs, so it works without an API key.
   ordinary (1.2×), but 2022 vs the baseline is 4.7×.
 - **Query drift** is significant for every year (q ≤ 0.008). Word drift
   peaks in 2020–21 (coronavirus, covid, capitol).
-- **Retrieval, first results (no LLM yet):** finding the source article is
-  easy in every year (MRR 0.90–0.97). 2020 is the lowest, at 0.904. On the
-  refreshed index, old questions see more newer articles in their top 10:
-  the share of newer articles rises from 7% to 14%.
+- **Retrieval, stale vs refreshed index** (Opus grades the top 5 of both,
+  blind to which index found what; 423 questions):
+
+  | Questions from | Answer in top 5, stale | Answer in top 5, refreshed |
+  |---|---|---|
+  | 2016-17 (baseline, the control) | 100% | 100% |
+  | 2018 to 2022 | 0–1% | 96–100% |
+
+  - Without re-indexing, questions about new events fail almost completely.
+    The stale index returns related but wrong articles: a 2020 question about
+    takeout during the pandemic gets 2016 hepatitis and E. coli stories.
+  - Re-indexing does not hurt old questions, even though by 2022 14% of
+    their top 10 are newer articles.
+  - **Drifted sections are not hit harder than stable ones**, either before
+    or after re-indexing (refreshed: 99% vs 98% answered). On this archive,
+    the drift that matters is new content missing from the index, not how
+    far a section's meaning moved. Answer quality (Agent D) and the
+    Wikipedia set, where the stale index holds an *outdated version of the
+    same article*, test the subtler cases.
+  - Caveat: the relevance judge is still being checked against hand labels.
 
 ## 5. Test questions and how they are validated
 
@@ -116,7 +132,10 @@ and Opus reviews them.
 
 ## 6. Chunking strategy and how it affects drift detection (planned)
 
-This part is designed but not built yet; results will follow.
+The articles are downloaded and chunked; the drift comparison is not run
+yet. One measurement already: every article in the sample is longer than
+the 512 tokens the model reads (median about 8,000), so without chunking
+about 90% of each article would never be seen.
 
 **Strategy:**
 - Split at section headings first, so a chunk never mixes two sections.

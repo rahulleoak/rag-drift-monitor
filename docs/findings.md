@@ -623,3 +623,60 @@ chart, and whether it supports or contradicts what we expected.
 - **Expectation:** more kept questions, especially in the oversample.
 - **Verdict:** Supports. Prompt tuning ends here; the remaining errors are
   reviewer leniency, measured by hand labels rather than more prompts.
+
+## F15. Stale vs refreshed: not re-indexing loses almost every new question; drift level does not change that
+- **Date:** 2026-11-06
+- **Setup:** Agent C (D25) on the full question set (423 answerable
+  questions). Opus grades the pooled top 5 of the stale and refreshed index
+  in one blind, shuffled call per question. 423 of 423 judged, no failures,
+  no skipped articles; cost $1.65 as a batch (the estimate was $3.17).
+- **Result (a), judged, "answer" = an article in the top 5 answers the question:**
+
+  | Period | Questions | Stale answer | Refreshed answer | Stale nDCG@5 | Refreshed nDCG@5 | Δ nDCG (95% CI) |
+  |---|---|---|---|---|---|---|
+  | 2016-17 (baseline questions) | 49 | 1.00 | 1.00 | 0.968 | 0.969 | +0.001 (−0.006 to 0.008) |
+  | 2018 | 99 | 0.01 | 1.00 | 0.081 | 0.966 | +0.885 (0.848 to 0.921) |
+  | 2019 | 70 | 0.00 | 1.00 | 0.022 | 0.970 | +0.948 |
+  | 2020 | 83 | 0.00 | 0.964 | 0.010 | 0.944 | +0.933 |
+  | 2021 | 69 | 0.00 | 0.986 | 0.012 | 0.968 | +0.955 |
+  | 2022 | 53 | 0.00 | 0.981 | 0.018 | 0.969 | +0.951 |
+
+  1. **Without re-indexing, questions about new events fail almost
+     completely** (0–1% answered), in every year and for every question
+     type, including "evergreen" ones: they are about specific events the
+     stale index never saw. The stale index returns related but wrong
+     articles, as F4 predicted: "Which food delivery company released data on
+     what takeout items have grown more popular during the coronavirus
+     pandemic?" gets 2016 hepatitis A and E. coli outbreak stories (all
+     graded 0); the refreshed index ranks "The Delivery Foods Americans Are
+     Ordering More During Lockdown" first (grade 2).
+  2. **Re-indexing does not hurt old questions:** baseline questions score
+     the same on both (Δ nDCG +0.001), although by 2022 14% of their top 10
+     are newer articles (c) and no source article is pushed out.
+  3. **Drift level does not change the picture.** Later-period questions,
+     by Agent B's drift status:
+
+     | Status | Questions | Stale answer | Refreshed answer | Refreshed nDCG@5 |
+     |---|---|---|---|---|
+     | Flagged sections | 123 | 0.000 | 0.992 | 0.960 |
+     | Control sections | 166 | 0.006 | 0.982 | 0.958 |
+     | Other | 85 | 0.000 | 0.988 | 0.976 |
+
+     Flagged sections lose as much as control sections without
+     re-indexing, and retrieve as well as them after it. On this archive,
+     **the drift that matters is new content the index does not have**, not
+     how far a section's meaning moved. 2020 is the hardest year on the
+     refreshed index (answer 0.964, nDCG 0.944; MRR 0.904 in (b)), but the
+     intervals overlap the other years.
+- **Caveats:** questions are written from their source article, so they
+  are easy to retrieve (F11); a stale index cannot hold a later article, so
+  (a) is one-sided by construction (D2). The judge is checked against hand
+  labels (P8) before these numbers are final.
+- **Reproduce:** `python scripts/run_pipeline.py` (cached; `runs/20261106-113106/`:
+  `retrieval.json`, `retrieval_judged.csv`, `retrieval_grades.csv`).
+- **Expectation:** stale worse on new questions (yes); drifted sections hit
+  harder than controls (no).
+- **Verdict:** Mixed: supports the re-indexing recommendation; contradicts
+  "more drift, more damage". Agent D (answer quality) and the Wikipedia set,
+  where the stale index holds an outdated version of the *same* article,
+  test the subtler case.

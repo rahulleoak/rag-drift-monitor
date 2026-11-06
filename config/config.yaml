@@ -159,6 +159,31 @@ llm:
     question_review: {effort: medium, max_tokens: 3000, expected_output: 700}
     relevance:       {effort: low, max_tokens: 3000, expected_output: 600}
 
+# D26: long-form documents where chunking applies (stakeholder request, 2026-11-06).
+# Wikipedia articles captured at the last revision before the end of each period
+# in `periods` (2016-17 = end of 2017, ...), followed by page id across renames.
+longform:
+  api: https://en.wikipedia.org/w/api.php
+  # Wikimedia asks for a descriptive User-Agent; a project URL, no personal email.
+  user_agent: "rag-drift-monitor/0.1 (research prototype; https://github.com/rahulleoak/rag-drift-monitor)"
+  request_pause_s: 0.2
+  vital_list: "Wikipedia:Vital articles/Level 3"   # about 1,000 broad topics in 11 sections
+  per_section: 14                                  # stratified random sample
+  # Known-drift check: articles tied to events of 2018-2022, labelled separately
+  # and never mixed into sample-wide rates.
+  event_titles: ["COVID-19 pandemic", "Coronavirus", "Vaccine", "Pandemic", "Social distancing",
+                 "Remote work", "Climate change", "Brexit", "Ukraine", "Joe Biden",
+                 "Cryptocurrency", "Artificial intelligence"]
+  skip_sections: ["references", "external links", "see also", "further reading", "notes", "bibliography",
+                  "sources", "citations", "footnotes", "notes and references", "works cited", "gallery",
+                  "explanatory notes", "general and cited sources", "general sources", "cited sources"]
+  min_words: 500               # shorter snapshots are not long-form (stubs or redirects)
+  chunking:
+    size_tokens: 256           # bge-small reads at most 512; 256 keeps a chunk to one point
+    overlap_tokens: 32         # last whole sentences of the previous chunk
+    min_tokens: 20             # a smaller final piece is merged into the previous chunk
+    compare_sizes: [128, 256]  # chunk sizes compared in the chunking experiment
+
 drift:
   alpha: 0.05
   multiple_testing: benjamini-hochberg

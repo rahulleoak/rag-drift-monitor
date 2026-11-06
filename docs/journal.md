@@ -16,6 +16,32 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06 (evening): stakeholder answers; judge run; Wikipedia set downloaded
+- **Stakeholder (Ani):** long-form documents with chunking are required;
+  deadline moved to Friday 2026-11-13; design summary wanted now
+  (`docs/design-summary.md`, sent after the judge numbers were in).
+- **Decided:** Wikipedia at period-end snapshots for the long-form set
+  (D26). SEC 10-K reports only if a test showed them to be better.
+- **Built:** relevance judge run (F15: 423 of 423 judged, $1.65; total
+  spend $10.83). Wikipedia download, cleaning and section-aware chunking
+  (`driftmon/wikipedia.py`, `driftmon/chunking.py`,
+  `scripts/fetch_wikipedia.py`): 165 articles (12 in the event set) × 6
+  snapshots, about 51,000 chunks; summary in `runs/longform/summary.csv`.
+  Architecture diagram updated (dashed = not built). 98 tests pass.
+- **Surprises:**
+  - Drifted sections are not hurt more than control sections (F15). The
+    stale index fails every new-event question regardless of drift level.
+  - Every Wikipedia article is longer than 512 tokens (median about 8,000),
+    so about 91% of each article is invisible without chunking. About 45%
+    of chunks change from one year to the next.
+  - Climate change's lead sentence changes from "Global warming, also
+    referred to as climate change" (2017) to "climate change describes
+    global warming" (2022), a real terminology shift.
+- **Tried and fixed:** the first pipeline run used the system Python
+  (no langgraph); the project's `.venv` must be used.
+- **Next:** embed the chunks; run the whole-article vs chunked drift
+  comparison; then Agents D and E.
+
 ## 2026-11-06 (end of session): ready to generate the full question set tomorrow
 - **State:** branch `llm-layer-and-pilot`, all committed and pushed (no PR
   yet; ask the author first). 77 tests pass. Spent $2.82 of the $20 credit

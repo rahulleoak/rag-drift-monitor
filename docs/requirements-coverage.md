@@ -92,6 +92,17 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 | README: setup, execution, technology choices, decisions, assumptions, limitations | `README.md`, built from the docs | To do |
 | 15–20 minute walkthrough | Slides built from findings and decisions | To do |
 
+## Extensions, only if ahead of schedule
+
+Not required by the brief; listed so they are not forgotten.
+
+| Extension | Why | Source |
+|---|---|---|
+| Entity co-occurrence graph per period for a few key entities (networkx) | A visual complement to term-context shift: neighbours gained and lost (e.g. "Biden" with Obama in 2016–17, Congress in 2021) | D21 (colleague's knowledge-graph suggestion, lightweight version) |
+| Keyword search (BM25) next to the dense retriever | Tests whether wording drift hurts keyword search but not meaning-based search | P2 |
+| Fine-tuning experiment for the "recommend retraining" action | Evidence that retraining would help, with train and test from different periods | D7 |
+| Baseline-candidates chart | Visual for the baseline decision | F2 |
+
 ## Success criteria
 
 | Criterion | How it is met | Status |

@@ -16,6 +16,22 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06 (later): Is rejecting "copied" wording justified? Measured: no
+- **Checked:** F11. Copy-rejected questions retrieve their source article
+  at rank 1 79% of the time, kept ones 91%: the rejection does not prevent
+  easy matches. All questions find their own article easily (circularity,
+  Q8).
+- **Analysis snippet (reproduces F11):** embed each pilot question with
+  `Embedder.embed_queries`, search a `VectorIndex` over all cleaned
+  documents for the top 100, and record the source article's rank; group by
+  kept / rejected "not natural" / rejected otherwise.
+- **Recorded:** extensions to do only if ahead (requirements-coverage.md);
+  storage choices stated in architecture.md (FAISS in memory, files; no
+  database server).
+- **Proposed next:** reviewer r-v5 where "natural" no longer counts reused
+  names and facts as copying (code checks already catch verbatim copying);
+  then the full question set.
+
 ## 2026-11-06 (later): Oversample pilot; knowledge-graph suggestion reviewed
 - **Built:** `simulate.revisable_fact_pool` and `--oversample` (D20); every
   question tagged with its sample pool. 1 new test (76 in total).

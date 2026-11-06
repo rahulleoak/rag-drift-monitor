@@ -136,6 +136,14 @@ agent breaks the next one.
 Every dataset is mapped onto one record shape (`doc_id, date, category,
 title, text`) in `driftmon/data.py`, so switching datasets is a config change.
 
+**Storage (no database server).** Vector search uses FAISS exact
+inner-product indexes held in memory and rebuilt from cached embeddings at
+the start of a run (about a second for 78k vectors). Documents live in a
+parquet file, embeddings in a numpy cache, LLM replies as JSON files, costs
+in a CSV ledger. No Chroma, Qdrant or Neo4j: at this scale a server adds
+installation for reviewers and approximate-search noise for no benefit
+(Q13, D21).
+
 ## 5. Where the LLM is used (and where it is not)
 
 | Step | LLM? | Why |

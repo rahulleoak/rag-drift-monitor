@@ -549,3 +549,46 @@ chart, and whether it supports or contradicts what we expected.
 - **Implication:** about 200 oversampled articles would give roughly 40
   clear time-sensitive questions for about $6 (live) or $3 (batch); no
   further prompt tuning.
+
+## F11. Rejecting "copied" wording does not make retrieval harder; every question finds its article easily
+- **Date:** 2026-11-06
+- **Question:** the reviewers reject questions that reuse the article's
+  wording as "not natural" (F10). Is that justified, i.e. do those questions
+  make retrieval artificially easy?
+- **Method (no LLM cost):** for every drafted question from the random v5
+  pilot and the oversample pilot (51 questions), embed the question and
+  search the *whole* archive (77,840 articles); record where its source
+  article ranks, and the share of its content words found in the article.
+- **Result:**
+
+  | Group | Questions | Source ranked 1st | In top 10 | Word overlap |
+  |---|---|---|---|---|
+  | Kept | 23 | 91% | 100% | 0.53 |
+  | Rejected as "not natural" (copying) | 14 | 79% | 86% | 0.62 |
+  | Rejected for other reasons | 14 | 79% | 100% | 0.56 |
+
+  1. **Copy-rejected questions are not easier to retrieve**, in fact a
+     little harder, despite slightly more shared words. The rejection does
+     not protect the evaluation from easy matches. (Small groups: the
+     differences are not significant; the point is that there is no sign of
+     the feared effect.)
+  2. **Every group is easy:** a question written from one article finds that
+     article first among 77,840 about 80–90% of the time. This is the
+     circularity expected when questions are written from their own source
+     (Q8): known-item retrieval on the refreshed index will be near its
+     ceiling and say little.
+- **Reproduce:** the analysis snippet in the journal entry of 2026-11-06
+  (uses `driftmon.index.VectorIndex`, the cached question embeddings and
+  `data/processed/questions_{pilot_v5,oversample_pilot}.parquet`).
+- **Expectation:** copy-rejected questions would retrieve their source more
+  easily.
+- **Verdict:** Contradicts.
+- **Implication:**
+  - The "natural" check should stop counting reused names and facts as a
+    problem: verbatim copying is already caught by the code checks (4
+    headline words, 7 description words). It still rejects awkward
+    phrasing. Proposed as reviewer r-v5.
+  - The informative retrieval comparison is stale vs refreshed (where the
+    stale index lacks the source), plus harder questions in newer wording
+    about older topics (D7, item 2), not known-item rank on the refreshed
+    index. Revisit D2's weighting of known-item metrics when Agent C runs.

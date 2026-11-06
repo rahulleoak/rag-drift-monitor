@@ -16,6 +16,27 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06 (checkpoint): where we are, for the next session
+- **Branch:** `llm-layer-and-pilot` (pushed; no PR yet; ask the author
+  before opening one). Main has PRs #1–#5 merged.
+- **Done on this branch:** LLM layer (D15), question generator with
+  writer/reviewer (D16–D17), double review and label groups (D19),
+  oversample (D20), F7–F11, D18, D21, D22. Spent $1.87 of the $150 budget
+  ($20 credit loaded). 76 tests pass.
+- **Agreed, not yet done (in order):**
+  1. Reviewer r-v5: "natural" stops counting reused names and facts as
+     copying (F11); rerun reviews on `pilot_v5` and `oversample_pilot`
+     (about $0.50).
+  2. Dry run of the full question set (random ~300 articles weighted to
+     flagged sections and controls + oversample ~200), shown to the author
+     before spending (about $7–10 as a batch).
+  3. Agent C: retrieval evaluation, saving FAISS indexes to `indexes/` with
+     manifests (D22); weigh known-item metrics down (F11); then D, E.
+  4. README: include "From prototype to production" framed for Rivvun
+     (presentation.md §12b) and the judge's built-in-knowledge limitation
+     (D18).
+- **Deadline:** Tuesday 2026-11-10.
+
 ## 2026-11-06 (later): Vector store checked against the brief
 - **Checked:** the brief lists FAISS as a vector database option; D22
   records why FAISS (exact search) stays and what it is precisely.

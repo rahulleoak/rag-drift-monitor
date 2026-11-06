@@ -394,6 +394,26 @@ Honest moments that show judgement, good for a "what we learned" slide:
   divergence scored 2018 below an ordinary year. Subtracting what random
   shuffling gives ("excess") fixed it (D10).
 
+## 12b. From prototype to production (README section and one slide)
+
+- **Local by design** (CLAUDE.md rule; reviewers can clone, install, run;
+  public data only; 220 MB fits a laptop). A take-home that needs cloud
+  accounts risks never being run.
+- **What a company deployment would change:** shared vector database
+  (Qdrant, pgvector or managed) instead of in-memory FAISS; shared storage
+  with backups; logins, permissions and audit logs; a secrets manager;
+  scheduled monitoring with alerts; run history.
+- **Why the move is cheap:** storage sits behind a few small interfaces
+  (`VectorIndex`, the document loader, the LLM cache); agents and
+  statistics do not change. Qdrant with exact search could replace FAISS.
+- **Framed for Rivvun** (enterprise AI for contracts and commercial
+  obligations): confidential customer documents (access control, audit,
+  separation per customer, data location); accountability (decisions in
+  code, evidence on every recommendation, cost ledger); continuous
+  monitoring. The method transfers: new clause language, superseded
+  policies and renamed terms are the contract-archive version of
+  "coronavirus → covid". Do not guess Rivvun's tech stack; keep it generic.
+
 ## 13. Limitations to state up front
 
 - Documents are short; chunking cannot be demonstrated.

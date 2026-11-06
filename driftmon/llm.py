@@ -78,6 +78,9 @@ class LLMRequest:
         prompt_version: bump when a prompt changes, so cached answers are not reused.
         effort: thinking effort ("low", "medium", "high").
         max_tokens: output cap; thinking counts towards it.
+        replicate: 0 for the first answer; 1, 2, ... for independent repeats of
+            the same request (used to review twice, D19). Repeats get their own
+            cache entries; replicate 0 keeps the original cache key.
     """
 
     job: str
@@ -88,12 +91,16 @@ class LLMRequest:
     prompt_version: str
     effort: str = "medium"
     max_tokens: int = 4000
+    replicate: int = 0
 
     @property
     def key(self) -> str:
-        payload = json.dumps({"model": self.model, "system": self.system, "prompt": self.prompt,
-                              "schema": self.schema.model_json_schema(), "version": self.prompt_version,
-                              "effort": self.effort, "max_tokens": self.max_tokens}, sort_keys=True)
+        fields = {"model": self.model, "system": self.system, "prompt": self.prompt,
+                  "schema": self.schema.model_json_schema(), "version": self.prompt_version,
+                  "effort": self.effort, "max_tokens": self.max_tokens}
+        if self.replicate:  # only repeats change the key, so existing caches stay valid
+            fields["replicate"] = self.replicate
+        payload = json.dumps(fields, sort_keys=True)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 

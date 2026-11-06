@@ -115,10 +115,51 @@ def test_generate_questions_flow(tmp_path):
     assert t.loc["b-q0", "type_agreed"] == False and t.loc["b-q1", "type_agreed"] == True  # noqa: E712
     assert t.loc["c-q0", "set"] == "unanswerable"                        # teaser kept for abstention tests
     assert t.loc["d-q0", "rejected_by"] == "near-duplicate question"
-    assert t.loc["a-q0", "set"] == "" and t.loc["a-q0", "rejected_by"] == "review: not no_invented_details"
+    assert t.loc["a-q0", "set"] == ""
+    assert t.loc["a-q0", "rejected_by"] == "review 1: not no_invented_details; review 2: not no_invented_details"
     rates = simulate.keep_rates(t.reset_index(), "category")
     assert rates.loc["WELLNESS", "questions"] == 3 and rates.loc["WELLNESS", "answerable"] == 2
     assert rates.loc["MONEY", "unanswerable"] == 1
     # only questions that passed the code checks went to the (judge) reviewer
     reviewed = [c for c in llm.client.live_calls if "Question:" in c["messages"][0]["content"]]
-    assert len(reviewed) == 4 and all(c["model"] == cfg["llm"]["judge_model"] for c in reviewed)
+    # four questions passed the code checks, each reviewed twice (independent replicates)
+    assert len(reviewed) == 8 and all(c["model"] == cfg["llm"]["judge_model"] for c in reviewed)
+    assert t.loc["b-q1", "type_group"] == "time_sensitive"   # writer and both reviews agree
+    assert t.loc["b-q0", "type_group"] == "disputed"         # writer evergreen, reviewers time-sensitive
+    assert t.loc["b-q0", "question_type"] == "time_sensitive"  # majority of the three labels
+    assert t.loc["b-q0", "reviews_agree"] == True  # noqa: E712
+
+
+def test_type_group():
+    assert simulate.type_group("evergreen", ["evergreen", "evergreen"]) == "evergreen"
+    assert simulate.type_group("time_sensitive", ["time_sensitive"]) == "time_sensitive"
+    assert simulate.type_group("evergreen", ["evergreen", "time_sensitive"]) == "disputed"
+
+
+def test_inconsistent_reviews_reject_the_question(tmp_path):
+    """The same request reviewed twice gives different verdicts: the question is not kept."""
+    articles = pd.DataFrame({"doc_id": ["x"], "period": ["2020"], "category": ["WORLD NEWS"],
+                             "date": ["2020-01-01"], "title": ["Volcano Erupts On Remote Island"],
+                             "text": ["Lava reached the coast within hours."], "words": [20]})
+    calls = {"review": 0}
+
+    def responder(kw, live):
+        if "Question:" in kw["messages"][0]["content"]:
+            calls["review"] += 1
+            body = _review() if calls["review"] == 1 else _review(reference_correct=False)
+        else:
+            body = {"questions": [{"question": "How quickly did lava from the island eruption reach the shore?",
+                                   "reference_answer": "Within hours.", "question_type": "evergreen"}],
+                    "answerable_from_article": True}
+        return _msg(json.dumps(body), model=kw["model"])
+
+    cfg = copy.deepcopy(load_config())
+    cfg["simulation"]["question_checks"] = LIMITS
+    llm = LLMClient(config={**cfg["llm"], "prices": {cfg["llm"]["generator_model"]: {"input": 2, "output": 10},
+                                                       cfg["llm"]["judge_model"]: {"input": 4, "output": 20}}},
+                    cache_dir=tmp_path / "cache", ledger=tmp_path / "l.csv",
+                    client=FakeAPI(responder), sleep=lambda s: None)
+    row = simulate.generate_questions(cfg, articles, llm, _fake_embedder(tmp_path), batch=False).iloc[0]
+    assert calls["review"] == 2
+    assert row["set"] == "" and row["reviews_agree"] == False  # noqa: E712
+    assert row["rejected_by"] == "review 2: not reference_correct"

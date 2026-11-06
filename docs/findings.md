@@ -461,3 +461,59 @@ chart, and whether it supports or contradicts what we expected.
   (the disagreement rate), to be stated with any evergreen vs
   time-sensitive result; a cleaner subset uses only questions where both
   models agree.
+
+## F9. How reliable is the question reviewer? Mostly consistent; its errors are systematic, not random
+- **Date:** 2026-11-06
+- **Two observations from comparing v3 and v4 (F8), the reason for this test:**
+  1. 8 of 25 decisions flipped between v3 and v4. 5 were the intended
+     effect; 3 had nothing to do with the change. One of those let a
+     question with an invented detail through: "What did the Pretty Little
+     Liars cast members do together to mark *a milestone*?" (v3 rejected it;
+     the article never says "milestone").
+  2. Opus labels fewer questions time-sensitive than the writer (3 vs 6 of
+     the reviewed drafts), so with Opus's label final, time-sensitive
+     questions became scarcer.
+- **Test (v5):** the same 20 articles and the same r-v4 prompt, each
+  question reviewed **twice independently**; a question is kept only if both
+  reviews accept it. Labels are grouped: "evergreen" or "time_sensitive" if
+  the writer and both reviews agree, otherwise "disputed".
+- **Result:**
+  - **Same keep/reject decision in 22 of 24 double-reviewed questions
+    (92%); identical type label in 24 of 24 (100%).**
+  - **Correction to observation 1:** the 3 "unexplained" v3→v4 flips were
+    not mainly random. The reviewer prompt also changed between v3 and v4
+    (r-v3 → r-v4), so those flips mix the prompt change with randomness.
+    Measured with the *same* prompt, the reviewer disagrees with itself on
+    about 8% of decisions.
+  - **The "milestone" question passed both reviews** ("'milestone'
+    reasonably paraphrases freedom from plot holes"). It is a consistent
+    judgement under r-v4, not a random lapse, so reviewing twice cannot
+    catch it. Systematic errors like this are what the hand labels (P8)
+    are for.
+  - **Only 1 question changed** (15 → 14 kept): "What did a dad's Instagram
+    post… capture about weekends for parents?" left the unanswerable set
+    (review 2: the headline answers it, which is defensible). The other
+    split decision (the Uttarakhand missing count) was rejected by review 1
+    for a hedged reference answer ("about 140" vs the article's 140).
+  - **Labels:** among the 13 kept answerable questions, 9 clear evergreen,
+    **1 clear time-sensitive**, 3 disputed. The two reviews never disagree
+    on the label: the disagreement is between writer and reviewer, a
+    systematic difference in interpretation, not noise.
+  - Cost: $0.25 for the second reviews; $1.27 spent in total.
+- **Reproduce:** `python scripts/generate_questions.py --name pilot_v5`
+  (cached); `runs/questions/pilot_v5/questions.csv`.
+- **Expectation:** double review would catch random lapses such as the
+  "milestone" question, and lower the keep rate noticeably.
+- **Verdict:** Mixed. The reviewer is more consistent than feared (92%);
+  double review changed one decision and could not catch the systematic
+  miss.
+- **Implication:**
+  - Double review stays for the full set: it is cheap (about $1.50 more for
+    ~300 drafts) and gives a measured reliability figure; it protects
+    against random lapses, not systematic ones.
+  - Hand labels must be drawn to include kept questions, so systematic
+    reviewer errors are measured.
+  - **Clear time-sensitive questions are very scarce (1 of 13).** An
+    analysis of "outdated answers" needs an explicit oversample of articles
+    likely to contain revisable facts (tolls, counts still being reported,
+    ongoing situations), stated as such.

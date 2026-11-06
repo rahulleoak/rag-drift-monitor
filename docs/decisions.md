@@ -736,3 +736,25 @@ date and reason, and add a new entry that supersedes it.
   articles. Safeguards: the groundedness check, and the hand-labelled
   sample (P8) that measures how often the judge departs from the text.
   To be stated in the README.
+
+## D19. Review each question twice; three label groups
+- **Date:** 2026-11-06
+- **Status:** Accepted (author, 2026-11-06), after the test in F9.
+- **Context:** F8/F9: reviewer decisions can differ between runs, and the
+  writer and reviewer often disagree on evergreen vs time-sensitive.
+- **Choices:**
+  1. **Two independent reviews per question** (`simulation.reviews_per_question`);
+     kept only if both accept it. Independence comes from a replicate
+     number in the LLM cache key (`LLMRequest.replicate`); replicate 0 keeps
+     the original key, so earlier reviews were reused, not re-bought.
+  2. **Label groups:** "evergreen" or "time_sensitive" when the writer and
+     every review agree, "disputed" otherwise. Analyses report the clear
+     groups separately and never treat one model's label as truth. A single
+     convenience label is the majority of the three.
+  3. **Reviewer consistency is reported in every run** (same decision, same
+     label).
+- **Why:** cheap protection against random lapses, and a measured
+  reliability number for the walkthrough. It does not catch systematic
+  errors (F9: the "milestone" question passed twice); the hand labels do.
+- **Evidence:** F9; `tests/test_simulate.py` (two disagreeing reviews
+  reject a question; label groups).

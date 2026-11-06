@@ -131,14 +131,31 @@ def question_request(article: Mapping[str, Any], cfg: Mapping[str, Any]) -> LLMR
                       prompt_version=QUESTION_VERSION, effort=job["effort"], max_tokens=int(job["max_tokens"]))
 
 
-def review_request(article: Mapping[str, Any], item: DraftQuestion, cfg: Mapping[str, Any]) -> LLMRequest:
+def review_request(article: Mapping[str, Any], item: DraftQuestion, cfg: Mapping[str, Any],
+                   replicate: int = 0) -> LLMRequest:
     job = cfg["llm"]["jobs"]["question_review"]
     return LLMRequest(job="question_review", model=cfg["llm"]["judge_model"], system=REVIEW_SYSTEM,
                       prompt=REVIEW_TEMPLATE.format(**_fields(article), question=item.question,
                                                     reference_answer=item.reference_answer,
                                                     question_type=item.question_type),
                       schema=QuestionReview, prompt_version=REVIEW_VERSION, effort=job["effort"],
-                      max_tokens=int(job["max_tokens"]))
+                      max_tokens=int(job["max_tokens"]), replicate=replicate)
+
+
+def review_passes(review: QuestionReview, answerable: bool) -> list[str]:
+    """Checks one review fails (empty list = this review accepts the question)."""
+    if answerable:
+        return [f"not {c}" for c in REVIEW_CHECKS if not getattr(review, c)]
+    failed = [f"not {c}" for c in UNANSWERABLE_CHECKS if not getattr(review, c)]
+    if review.answerable:
+        failed.append("finds it answerable")
+    return failed
+
+
+def type_group(writer: str, reviewers: Sequence[str]) -> str:
+    """'time_sensitive' or 'evergreen' if the writer and every review agree, else 'disputed' (D19)."""
+    labels = {writer, *reviewers}
+    return labels.pop() if len(labels) == 1 else "disputed"
 
 
 # ---------- 2-5. the whole flow ----------
@@ -182,38 +199,50 @@ def generate_questions(cfg: Mapping[str, Any], articles: pd.DataFrame, llm: LLMC
             if dup:
                 rows[i]["reasons"].append("near-duplicate question")
 
-    # review the survivors; code decides from the reviewer's yes/no checks
+    # review the survivors, independently n times; code decides from the yes/no checks (D19)
+    n_rev = int(cfg["simulation"].get("reviews_per_question", 1))
     live = [i for i, r in enumerate(rows) if not r["reasons"]]
-    reviews = dict(zip(live, llm.complete_many(
-        [review_request(rows[i], rows[i]["item"], cfg) for i in live], batch=batch)))
+    pairs = [(i, k) for i in live for k in range(n_rev)]
+    results = llm.complete_many([review_request(rows[i], rows[i]["item"], cfg, replicate=k)
+                                 for i, k in pairs], batch=batch)
+    reviews: dict[int, list] = {}
+    for (i, _), res in zip(pairs, results):
+        reviews.setdefault(i, []).append(res)
 
     out = []
     for i, r in enumerate(rows):
         item: DraftQuestion | None = r["item"]
         rec = {k: r[k] for k in ("question_id", "doc_id", "period", "category", "date", "title", "text")}
         rec.update(question=item.question if item else "", reference_answer=item.reference_answer if item else "",
-                   question_type="", writer_type=item.question_type if item else "", type_agreed=None,
+                   question_type="", writer_type=item.question_type if item else "", review_types="",
+                   type_group="", type_agreed=None, reviews_agree=None,
                    writer_answerable=r["answerable"], **{f"rv_{c}": None for c in REVIEW_CHECKS},
                    review_reason="")
         reasons = r["reasons"]
-        rv = reviews.get(i)
         kept_as = ""
-        if rv is not None and not rv.ok:
-            reasons.append(f"review: {rv.error}")
-        elif rv is not None:
-            p: QuestionReview = rv.parsed
-            # the reviewer's label is final; disagreement is recorded, not a rejection (D17)
-            rec.update({f"rv_{c}": getattr(p, c) for c in REVIEW_CHECKS}, review_reason=p.reason,
-                       question_type=p.question_type, type_agreed=p.question_type == item.question_type)
-            if r["answerable"]:
-                failed = [c for c in REVIEW_CHECKS if not getattr(p, c)]
-                kept_as = "" if failed else "answerable"
+        revs = reviews.get(i, [])
+        if any(not rv.ok for rv in revs):
+            reasons += [f"review: {rv.error}" for rv in revs if not rv.ok]
+        elif revs:
+            parsed: list[QuestionReview] = [rv.parsed for rv in revs]
+            first = parsed[0]
+            labels = [p.question_type for p in parsed]
+            # label: majority of writer + reviewers (first reviewer breaks ties); the group says
+            # whether everyone agreed (D19). Disagreement is recorded, never a rejection (D17).
+            votes = [item.question_type, *labels]
+            majority = max(("time_sensitive", "evergreen"), key=lambda t: (votes.count(t), t == labels[0]))
+            fails = [review_passes(p, bool(r["answerable"])) for p in parsed]
+            rec.update({f"rv_{c}": getattr(first, c) for c in REVIEW_CHECKS},
+                       review_reason=" | ".join(p.reason for p in parsed),
+                       question_type=majority, review_types=",".join(labels),
+                       type_group=type_group(item.question_type, labels),
+                       type_agreed=first.question_type == item.question_type,
+                       reviews_agree=len({not f for f in fails}) == 1)
+            if all(not f for f in fails):  # kept only if every review accepts it
+                kept_as = "answerable" if r["answerable"] else "unanswerable"
             else:
-                failed = [c for c in UNANSWERABLE_CHECKS if not getattr(p, c)]
-                if p.answerable:
-                    failed.append("reviewer finds it answerable")
-                kept_as = "" if failed else "unanswerable"
-            reasons += [f"review: {c}" if " " in c else f"review: not {c}" for c in failed]
+                for k, f in enumerate(fails, start=1):
+                    reasons += [f"review {k}: {x}" for x in f]
         rec["set"] = kept_as
         rec["rejected_by"] = "; ".join(reasons)
         out.append(rec)

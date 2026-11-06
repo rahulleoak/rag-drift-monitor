@@ -75,6 +75,7 @@ simulation:
                            "headline quiz", "what to watch", "sunday roundup", "morning email",
                            "what you need to know"]
   max_questions_per_article: 2   # D17: a second question only for a time-sensitive fact
+  reviews_per_question: 2        # D19: independent reviews; a question is kept only if all accept it
   pilot_counts: {"2016-17": 5, "2018": 3, "2019": 3, "2020": 3, "2021": 3, "2022": 3}
   question_checks:
     min_words: 6

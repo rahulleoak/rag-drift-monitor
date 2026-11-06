@@ -376,6 +376,11 @@ Honest moments that show judgement, good for a "what we learned" slide:
   any other measurement. Version 4 let the reviewer assign the label itself:
   60% kept, and the two models agree on the label 83% of the time, the
   ambiguity we now state with any time-sensitive result.
+- **Correcting our own reading of the data:** after v4 I attributed three
+  flipped decisions to the reviewer's randomness; a controlled test (same
+  prompt, two reviews) showed most of it was the prompt change, and the
+  reviewer agrees with itself 92% of the time (F9). Good example of testing
+  an explanation before acting on it.
 - **Expected politics to be the most drifted section; it never was** (F5),
   which exposed how the election year inflates "normal" for that section.
 - **Two of our own measures needed correcting** (D12): a word-shift ratio
@@ -409,6 +414,11 @@ Honest moments that show judgement, good for a "what we learned" slide:
   code by design.
 - **"How do you know the LLM judge is right?"** Hand labels, agreement
   reported; a different model from the one being judged; blind to the index.
+- **"Is the LLM reviewer consistent?"** Measured: reviewing the same question
+  twice gives the same keep/reject decision 92% of the time and the same
+  label 100% of the time (F9). Its errors are mostly systematic (it
+  consistently accepted one paraphrase that added a detail), which repeat
+  reviews cannot catch; that is what the hand labels are for.
 - **"Could the judge just look things up or use what it already knows?"** It
   cannot search: no request declares a search tool, and each call holds
   only the instructions and one article. It does not learn from our calls.

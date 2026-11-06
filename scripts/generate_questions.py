@@ -91,11 +91,19 @@ def main(argv: list[str] | None = None) -> int:
     reasons = table.loc[table["set"] == "", "rejected_by"].str.split("; ").explode().value_counts()
     if len(reasons):
         print("Rejection reasons:\n" + reasons.to_string())
-    print(f"Question types kept (reviewer's label): {kept['question_type'].value_counts().to_dict()}")
+    print(f"Label groups kept (writer and every review agree, else disputed): "
+          f"{kept['type_group'].value_counts().to_dict()}")
     reviewed = table[table["type_agreed"].notna()]
     if len(reviewed):
-        print(f"Writer and reviewer agree on the type for {int(reviewed['type_agreed'].sum())} of "
+        print(f"Writer and first reviewer agree on the type for {int(reviewed['type_agreed'].sum())} of "
               f"{len(reviewed)} reviewed questions ({reviewed['type_agreed'].mean():.0%})")
+        both = reviewed[reviewed["reviews_agree"].notna()]
+        if cfg["simulation"].get("reviews_per_question", 1) > 1 and len(both):
+            labels_same = both["review_types"].map(lambda s: len(set(s.split(","))) == 1)
+            print(f"Reviewer consistency (independent reviews of the same question): same keep/reject "
+                  f"decision for {int(both['reviews_agree'].sum())} of {len(both)} "
+                  f"({both['reviews_agree'].mean():.0%}); same type label for {int(labels_same.sum())} "
+                  f"({labels_same.mean():.0%})")
     print(f"Diversity (P3): questions {div['questions']:.3f} vs source articles "
           f"{div['articles']:.3f} (ratio {div['ratio']:.2f})")
     print(f"\nSaved {out} and {report / 'questions.csv'}")

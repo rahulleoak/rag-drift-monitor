@@ -16,6 +16,20 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06: Double review and label groups tested
+- **Built:** independent repeat requests (`LLMRequest.replicate`, cache-safe),
+  two reviews per question with "kept only if both accept", three label
+  groups (clear evergreen, clear time-sensitive, disputed), reviewer
+  consistency in the run summary (D19). 2 new tests (75 in total).
+- **Results:** F9. Reviewer consistency 92% (decisions), 100% (labels).
+  Only one decision changed. Clear time-sensitive questions: 1 of 13 kept.
+  $1.27 spent in total.
+- **Correction:** the v3→v4 flips were mostly the prompt change, not
+  randomness; recorded in F9.
+- **Open:** time-sensitive questions are too scarce for their own analysis;
+  an oversample of "breaking news" articles is proposed.
+- **Next:** decide the oversample, then generate the ~180-question set.
+
 ## 2026-11-05 (late night): Question reviewer version 4; prompt tuning stops
 - **Built:** reviewer r-v4 assigns the type label itself (without seeing
   the writer's); disagreement recorded as `type_agreed`; unanswerable

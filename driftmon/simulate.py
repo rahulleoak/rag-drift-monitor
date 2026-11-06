@@ -82,6 +82,50 @@ def revisable_fact_pool(docs: pd.DataFrame, patterns: Sequence[str]) -> pd.Serie
     return (docs["title"] + " " + docs["text"]).str.contains(pattern)
 
 
+def full_sample(eligible: pd.DataFrame, revisable: pd.Series, flagged: Sequence[str],
+                controls: Sequence[str], plan: Mapping[str, Any], seed: int) -> pd.DataFrame:
+    """The full question-source sample, each article tagged with why it was picked (D23).
+
+    Draws, in this order and never the same article twice:
+        - ``per_flagged_segment`` articles from each flagged period x section,
+        - ``per_control_segment`` from each low-drift control segment,
+        - ``random_per_period`` plain random articles per period (the archive
+          as it is; ``random_baseline`` for the baseline period),
+        - ``oversample_per_period`` from the likely-revisable pool (D20).
+    Segment ids look like "2020|WELLNESS|vs 2016-17". A segment with fewer
+    articles than asked gives what it has.
+
+    Returns the chosen rows with ``sample_pool`` ("flagged", "control",
+    "random", "oversample") and ``sample_segment``.
+    """
+    rng_seed = iter(range(seed, seed + 10_000))
+    taken: set = set()
+    parts = []
+
+    def draw(pool: pd.DataFrame, n: int, tag: str, segment: str = "") -> None:
+        pool = pool[~pool.index.isin(taken)]
+        if n <= 0 or pool.empty:
+            return
+        pick = pool.sample(n=min(n, len(pool)), random_state=next(rng_seed))
+        taken.update(pick.index)
+        parts.append(pick.assign(sample_pool=tag, sample_segment=segment))
+
+    for tag, segments, n in (("flagged", flagged, int(plan["per_flagged_segment"])),
+                             ("control", controls, int(plan["per_control_segment"]))):
+        for seg in segments:
+            period, category = seg.split("|")[:2]
+            draw(eligible[(eligible["period"] == period) & (eligible["category"] == category)], n, tag, seg)
+    periods = list(dict.fromkeys(eligible["period"]))
+    baseline = plan.get("baseline_period", periods[0])
+    for p in periods:
+        n = int(plan["random_baseline"] if p == baseline else plan["random_per_period"])
+        draw(eligible[eligible["period"] == p], n, "random")
+    for p in periods:
+        draw(eligible[(eligible["period"] == p) & revisable.loc[eligible.index]],
+             int(plan["oversample_per_period"]), "oversample")
+    return pd.concat(parts) if parts else eligible.head(0)
+
+
 def sample_articles(docs: pd.DataFrame, counts: Mapping[str, int], seed: int) -> pd.DataFrame:
     """A random sample of ``counts[period]`` eligible articles from each period."""
     parts = []

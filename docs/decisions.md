@@ -852,3 +852,23 @@ date and reason, and add a new entry that supersedes it.
   held.
 - **Walkthrough answer:** "FAISS is listed in the brief; we chose exact
   search because approximate search would blur the very effect we measure."
+
+## D23. The full question set: four tagged sources, one batch
+- **Date:** 2026-11-06
+- **Status:** Accepted (sampling built; the run waits for the author's go).
+- **Context:** the evaluation needs questions where drift was flagged, where
+  it was not (controls), from the archive as it is, and time-sensitive ones
+  (D20), within a $20 credit.
+- **Choice** (`simulation.full_set` in the config; `simulate.full_sample`):
+  8 articles per flagged section (14 sections), 3 per control segment (23),
+  40 random baseline articles (the control questions) and 20 random per
+  later year, and 34 per period from the likely-revisable pool. No article
+  is drawn twice; each carries `sample_pool` and `sample_segment`, so every
+  analysis can keep the groups apart. Flagged and control segments come
+  from the latest drift run, so the sample follows what Agent B found.
+- **Dry run:** 525 articles (flagged 112, control 69, random 140,
+  oversample 204). Estimated $11.55 as a batch (the estimate has run about
+  2–3× high; expected about $5–8).
+- **Known imbalance:** 39 of the 69 control articles are from 2018, because
+  most low-drift segments are 2018 sections; 2020 has 48 flagged articles.
+  Reported, not corrected: it reflects where drift was and was not found.

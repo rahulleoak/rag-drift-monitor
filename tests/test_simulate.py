@@ -171,3 +171,27 @@ def test_revisable_fact_pool():
     pool = simulate.revisable_fact_pool(docs, [r"\bat least\b", r"\bstill\b", r"\bmissing\b"])
     assert list(pool) == [True, False, True]
     assert not simulate.revisable_fact_pool(docs, []).any()
+
+
+def test_full_sample_tags_and_never_repeats():
+    rows = []
+    for p in ("2016-17", "2020"):
+        for c in ("WELLNESS", "POLITICS", "SPORTS"):
+            for k in range(12):
+                rows.append({"period": p, "category": c, "title": f"{p} {c} {k}",
+                             "text": "Toll rises" if k < 6 else "Calm day"})
+    docs = pd.DataFrame(rows)
+    revisable = docs["text"].str.contains("Toll")
+    plan = {"per_flagged_segment": 5, "per_control_segment": 3, "random_baseline": 4,
+            "random_per_period": 2, "oversample_per_period": 4}
+    s = simulate.full_sample(docs, revisable, ["2020|WELLNESS|vs 2016-17"],
+                             ["2020|POLITICS|vs 2016-17"], plan, seed=1)
+    assert s.index.is_unique                                   # no article twice
+    counts = s.groupby("sample_pool").size().to_dict()
+    assert counts == {"flagged": 5, "control": 3, "random": 6, "oversample": 8}
+    assert set(s.loc[s.sample_pool == "flagged", "category"]) == {"WELLNESS"}
+    assert s.loc[s.sample_pool == "flagged", "sample_segment"].iloc[0] == "2020|WELLNESS|vs 2016-17"
+    assert s.loc[s.sample_pool == "oversample", "text"].str.contains("Toll").all()
+    small = simulate.full_sample(docs, revisable, ["2020|WELLNESS|vs 2016-17"], [],
+                                 {**plan, "per_flagged_segment": 50}, seed=1)
+    assert (small.sample_pool == "flagged").sum() == 12        # a small segment gives what it has

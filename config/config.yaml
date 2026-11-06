@@ -86,6 +86,14 @@ simulation:
                         '\bwill take effect\b', '\brising\b', '\bclimb(?:s|ed|ing)?\b',
                         '\bsurg(?:e|es|ed|ing)\b', '\bcases\b', '\blatest\b', '\bremains?\b',
                         '\binvestigat(?:ion|ing)\b', '\bdeveloping\b', '\bdead\b', '\bkilled\b']
+  # D23: the full question set. Articles are drawn from flagged sections, control
+  # sections, plain random, and the revisable-fact oversample; each is tagged.
+  full_set:
+    per_flagged_segment: 8     # per flagged period x section (Agent B's drifted segments)
+    per_control_segment: 3     # per low-drift control segment
+    random_baseline: 40        # plain random baseline articles (the control questions)
+    random_per_period: 20      # plain random articles per later period
+    oversample_per_period: 34  # likely-revisable articles per period (D20)
   question_checks:
     min_words: 6
     max_words: 30

@@ -44,6 +44,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dry-run", action="store_true", help="show selection and estimate; no API calls")
     parser.add_argument("--oversample", action="store_true",
                         help="sample only articles likely to state a revisable fact (D20)")
+    parser.add_argument("--full", action="store_true",
+                        help="the full set: flagged, control, random and oversample articles (D23)")
     args = parser.parse_args(argv)
 
     sim = cfg["simulation"]
@@ -53,13 +55,23 @@ def main(argv: list[str] | None = None) -> int:
     ok = simulate.eligible_articles(docs, sim["exclude_title_patterns"], int(sim["min_words"]))
     print(f"Eligible source articles: {int(ok.sum()):,} of {len(docs):,} "
           f"({int((~ok).sum()):,} templated or too short)")
-    pool_name = "random"
-    if args.oversample:
-        revisable = simulate.revisable_fact_pool(docs, sim.get("oversample_patterns", []))
-        print(f"Oversample pool (likely revisable facts): {int((ok & revisable).sum()):,} eligible articles")
-        ok, pool_name = ok & revisable, "oversample"
-    articles = simulate.sample_articles(docs[ok], counts, seed=int(cfg["seed"]))
-    print(f"Sampled {len(articles)} articles: {counts}")
+    revisable = simulate.revisable_fact_pool(docs, sim.get("oversample_patterns", []))
+    if args.full:
+        run_id, drift = _latest_drift(cfg)
+        flagged = [s for s in drift.drifted_segments if "|ALL|" not in s]
+        articles = simulate.full_sample(docs[ok], revisable, flagged, drift.control_segments,
+                                        sim["full_set"], seed=int(cfg["seed"]))
+        print(f"Full set from drift run {run_id}: {len(flagged)} flagged and "
+              f"{len(drift.control_segments)} control segments")
+        print(pd.crosstab(articles["period"], articles["sample_pool"], margins=True).to_string())
+    else:
+        pool_name = "random"
+        if args.oversample:
+            print(f"Oversample pool (likely revisable facts): {int((ok & revisable).sum()):,} eligible articles")
+            ok, pool_name = ok & revisable, "oversample"
+        articles = simulate.sample_articles(docs[ok], counts, seed=int(cfg["seed"]))
+        articles = articles.assign(sample_pool=pool_name, sample_segment="")
+        print(f"Sampled {len(articles)} articles: {counts}")
 
     llm = LLMClient(config=cfg["llm"], cache_dir=resolve_path(cfg["paths"]["cache"]) / "llm",
                     ledger=resolve_path(cfg["paths"]["runs"]) / "llm_costs.csv",
@@ -72,12 +84,15 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Estimated cost: ${est:.2f} (if every draft is reviewed); spent so far ${llm.spent():.2f} "
           f"of the ${llm.budget:.0f} budget")
     if args.dry_run:
-        print(articles[["period", "category", "title"]].to_string(index=False))
+        if not args.full:
+            print(articles[["period", "category", "title"]].to_string(index=False))
         return 0
 
     before = llm.spent()
     table = simulate.generate_questions(cfg, articles, llm, Embedder.from_config(cfg), batch=args.batch)
-    table["sample_pool"] = pool_name  # "random" or "oversample": always reported apart (D20)
+    # why each article was picked: always reported apart, never mixed into archive-wide rates (D20, D23)
+    tags = articles.set_index("doc_id")[["sample_pool", "sample_segment"]]
+    table = table.join(tags, on="doc_id")
     out = resolve_path(cfg["paths"]["data_processed"]) / f"questions_{args.name}.parquet"
     table.to_parquet(out, index=False)
     report = resolve_path(cfg["paths"]["runs"]) / "questions" / args.name
@@ -116,6 +131,17 @@ def main(argv: list[str] | None = None) -> int:
           f"{div['articles']:.3f} (ratio {div['ratio']:.2f})")
     print(f"\nSaved {out} and {report / 'questions.csv'}")
     return 0
+
+
+def _latest_drift(cfg):
+    """(run id, DriftReport) of the newest pipeline run: flagged and control segments."""
+    from driftmon.dashboard_data import list_runs, load_run
+    runs_dir = resolve_path(cfg["paths"]["runs"])
+    runs = list_runs(runs_dir)
+    if not runs:
+        raise SystemExit("No pipeline run found; run scripts/run_pipeline.py first.")
+    run = load_run(runs_dir, runs[0])
+    return run.run_id, run.drift
 
 
 class _DryClient:

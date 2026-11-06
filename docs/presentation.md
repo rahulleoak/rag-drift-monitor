@@ -376,6 +376,10 @@ Honest moments that show judgement, good for a "what we learned" slide:
   any other measurement. Version 4 let the reviewer assign the label itself:
   60% kept, and the two models agree on the label 83% of the time, the
   ambiguity we now state with any time-sensitive result.
+- **Oversampling on purpose, and saying so** (D20, F10): random sampling gave
+  1 clear time-sensitive question in 13; a word-filtered pool of
+  likely-revisable articles gave 4 in 9. Those questions are always
+  reported as their own group, never mixed into archive-wide rates.
 - **Correcting our own reading of the data:** after v4 I attributed three
   flipped decisions to the reviewer's randomness; a controlled test (same
   prompt, two reviews) showed most of it was the prompt change, and the
@@ -427,6 +431,11 @@ Honest moments that show judgement, good for a "what we learned" slide:
   knows but the article does not state ("the Paris deal"). (D18)
 - **"Why HuffPost and not enterprise documents?"** Public, timestamped, with a
   known drift event to validate against; limitations stated.
+- **"Why not a knowledge graph?"** Considered (D21): it would make relationship
+  changes explicit, but extraction from one-sentence descriptions is the hard
+  part, OWL reasoning and a graph database add days and infrastructure for
+  no change to retrieval, and relationship shift is already measured with a
+  significance test (F6). Future work: temporal knowledge graphs, GraphRAG.
 - **"What would you do with more time?"** Keyword search (BM25) to test the
   wording-vs-meaning hypothesis; fine-tuning experiment for the retraining
   recommendation; longer documents to show chunking.

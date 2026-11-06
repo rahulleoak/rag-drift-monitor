@@ -77,6 +77,15 @@ simulation:
   max_questions_per_article: 2   # D17: a second question only for a time-sensitive fact
   reviews_per_question: 2        # D19: independent reviews; a question is kept only if all accept it
   pilot_counts: {"2016-17": 5, "2018": 3, "2019": 3, "2020": 3, "2021": 3, "2022": 3}
+  # D20: oversample of articles likely to state a revisable fact (tolls, counts still
+  # being reported, ongoing situations, current rules), because random sampling gave
+  # too few time-sensitive questions (F9). Reported as its own group, never mixed
+  # into archive-wide rates.
+  oversample_patterns: ['\bat least\b', '\bso far\b', '\bmissing\b', 'death toll', '\btoll\b', '\bstill\b',
+                        '\bongoing\b', '\bcurrently\b', '\bnew (?:rules?|guidance|restrictions?)\b',
+                        '\bwill take effect\b', '\brising\b', '\bclimb(?:s|ed|ing)?\b',
+                        '\bsurg(?:e|es|ed|ing)\b', '\bcases\b', '\blatest\b', '\bremains?\b',
+                        '\binvestigat(?:ion|ing)\b', '\bdeveloping\b', '\bdead\b', '\bkilled\b']
   question_checks:
     min_words: 6
     max_words: 30

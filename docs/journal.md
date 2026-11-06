@@ -16,6 +16,16 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06 (later): Oversample pilot; knowledge-graph suggestion reviewed
+- **Built:** `simulate.revisable_fact_pool` and `--oversample` (D20); every
+  question tagged with its sample pool. 1 new test (76 in total).
+- **Results:** F10. Clear time-sensitive questions 4 of 9 kept (vs 1 of 13
+  random); keep rate 35%; $0.60; $1.87 spent in total.
+- **Reviewed:** a colleague's suggestion to model relationship change with
+  OWL/RDF, Neo4j and Protégé. Not adopted; reasons and a lightweight
+  alternative recorded in D21.
+- **Next:** generate the full question set (random + oversample) as a batch.
+
 ## 2026-11-06: Double review and label groups tested
 - **Built:** independent repeat requests (`LLMRequest.replicate`, cache-safe),
   two reviews per question with "kept only if both accept", three label

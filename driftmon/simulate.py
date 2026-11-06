@@ -69,6 +69,19 @@ def eligible_articles(docs: pd.DataFrame, exclude_patterns: Sequence[str], min_w
     return (~templated) & (docs["words"] >= min_words)
 
 
+def revisable_fact_pool(docs: pd.DataFrame, patterns: Sequence[str]) -> pd.Series:
+    """True for articles whose headline or description suggests a revisable fact
+    (a toll still being counted, an ongoing situation, current rules), D20.
+
+    Used to oversample time-sensitive questions, which random sampling rarely
+    yields (F9). Such questions are always reported as their own group.
+    """
+    if not patterns:
+        return pd.Series(False, index=docs.index)
+    pattern = re.compile("|".join(patterns), re.IGNORECASE)
+    return (docs["title"] + " " + docs["text"]).str.contains(pattern)
+
+
 def sample_articles(docs: pd.DataFrame, counts: Mapping[str, int], seed: int) -> pd.DataFrame:
     """A random sample of ``counts[period]`` eligible articles from each period."""
     parts = []

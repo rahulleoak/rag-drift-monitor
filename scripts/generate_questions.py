@@ -42,6 +42,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--per-period", type=int, help="articles per period (default: the pilot counts)")
     parser.add_argument("--batch", action="store_true", help="use the Batch API (half price, slower)")
     parser.add_argument("--dry-run", action="store_true", help="show selection and estimate; no API calls")
+    parser.add_argument("--oversample", action="store_true",
+                        help="sample only articles likely to state a revisable fact (D20)")
     args = parser.parse_args(argv)
 
     sim = cfg["simulation"]
@@ -51,6 +53,11 @@ def main(argv: list[str] | None = None) -> int:
     ok = simulate.eligible_articles(docs, sim["exclude_title_patterns"], int(sim["min_words"]))
     print(f"Eligible source articles: {int(ok.sum()):,} of {len(docs):,} "
           f"({int((~ok).sum()):,} templated or too short)")
+    pool_name = "random"
+    if args.oversample:
+        revisable = simulate.revisable_fact_pool(docs, sim.get("oversample_patterns", []))
+        print(f"Oversample pool (likely revisable facts): {int((ok & revisable).sum()):,} eligible articles")
+        ok, pool_name = ok & revisable, "oversample"
     articles = simulate.sample_articles(docs[ok], counts, seed=int(cfg["seed"]))
     print(f"Sampled {len(articles)} articles: {counts}")
 
@@ -70,6 +77,7 @@ def main(argv: list[str] | None = None) -> int:
 
     before = llm.spent()
     table = simulate.generate_questions(cfg, articles, llm, Embedder.from_config(cfg), batch=args.batch)
+    table["sample_pool"] = pool_name  # "random" or "oversample": always reported apart (D20)
     out = resolve_path(cfg["paths"]["data_processed"]) / f"questions_{args.name}.parquet"
     table.to_parquet(out, index=False)
     report = resolve_path(cfg["paths"]["runs"]) / "questions" / args.name

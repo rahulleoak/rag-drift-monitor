@@ -758,3 +758,64 @@ date and reason, and add a new entry that supersedes it.
   errors (F9: the "milestone" question passed twice); the hand labels do.
 - **Evidence:** F9; `tests/test_simulate.py` (two disagreeing reviews
   reject a question; label groups).
+
+## D20. Oversample articles likely to state a revisable fact
+- **Date:** 2026-11-06
+- **Status:** Accepted (author, 2026-11-06)
+- **Why we did it:** the experiment needs time-sensitive questions, where a
+  stale archive gives an outdated answer (who holds an office, a toll still
+  being counted). Random sampling yields very few: 1 clear time-sensitive
+  question of 13 kept (F9). At that rate the ~180-question set would hold
+  about 15, too few to say anything about outdated answers.
+- **Options considered:**
+  1. *Accept the natural rate:* honest, but too thin to analyse.
+  2. *Ask the writer to always produce a time-sensitive question:* forces
+     unnatural questions from articles that have no revisable fact.
+  3. *Oversample a pool of likely-revisable articles* (chosen): a word
+     filter on headline + description ("at least", "so far", "missing",
+     "death toll", "still", "ongoing", "cases", "new rules", ...; list in
+     `simulation.oversample_patterns`).
+- **How it is reported:** every question carries `sample_pool` ("random"
+  or "oversample"). Oversampled questions are **never mixed into
+  archive-wide rates**; they are analysed as their own group (outdated
+  answers), and the README says so.
+- **Known bias:** the pool is 9% of eligible articles and leans towards
+  hard news (politics 32%, world news 19%); it says nothing about lifestyle
+  sections' time-sensitive facts.
+- **Evidence:** F10.
+
+## D21. Knowledge graph / ontology (OWL, RDF, Neo4j, Protégé): considered, not adopted
+- **Date:** 2026-11-06
+- **Status:** Not adopted for this project; recorded as future work.
+- **Context:** a colleague suggested modelling how relationships between
+  entities change with an ontology (OWL/RDF), stored in a graph database
+  (Neo4j), edited and visualised in Protégé.
+- **What is right about it:** the brief asks for "shifts in semantic
+  relationships", and many time-sensitive facts are relationship changes
+  ("Biden — holds office — President"). A temporal knowledge graph would
+  make such changes explicit and easy to explain, and is an established
+  approach.
+- **Why not here:**
+  1. **Extraction is the hard part, not storage.** Turning 78k one-to-two
+     sentence descriptions into entities and relations needs an LLM or a
+     relation-extraction model: cost, time, and extraction errors that would
+     themselves look like drift.
+  2. **OWL/RDF buys formal reasoning we do not use.** The system measures
+     change; it does not infer new facts. Designing and defending an
+     ontology is days of work, with four days left.
+  3. **Infrastructure for little gain.** Neo4j is another service for
+     reviewers to install; a few thousand relations fit in memory
+     (pandas / networkx). Protégé is a manual editor for hand-built
+     ontologies, not for automated monitoring.
+  4. **The RAG under test is vector-based;** a graph would not change
+     retrieval unless we also built GraphRAG (scope creep).
+  5. **Relationship shift is already measured** distributionally, with a
+     significance test and size-matched baseline (term-context shift, F6:
+     "cases", "test", "home", "virus").
+- **Lightweight middle ground, if time allows:** an entity co-occurrence
+  graph per period for a few key entities (networkx), showing neighbours
+  gained and lost (e.g. "Biden" with Obama and "vice" in 2016–17; with
+  Congress and "administration" in 2021). A visual complement to F6, no new
+  infrastructure.
+- **Future work:** temporal knowledge graphs for relationship drift, and
+  GraphRAG for questions about who holds which role.

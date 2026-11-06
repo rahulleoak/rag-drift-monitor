@@ -163,3 +163,11 @@ def test_inconsistent_reviews_reject_the_question(tmp_path):
     assert calls["review"] == 2
     assert row["set"] == "" and row["reviews_agree"] == False  # noqa: E712
     assert row["rejected_by"] == "review 2: not reference_correct"
+
+
+def test_revisable_fact_pool():
+    docs = pd.DataFrame({"title": ["Quake Kills At Least 30", "Chef Shares Pasta Recipe", "Search Goes On"],
+                         "text": ["Rescuers are still digging.", "A simple dinner.", "Five remain missing."]})
+    pool = simulate.revisable_fact_pool(docs, [r"\bat least\b", r"\bstill\b", r"\bmissing\b"])
+    assert list(pool) == [True, False, True]
+    assert not simulate.revisable_fact_pool(docs, []).any()

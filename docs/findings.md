@@ -517,3 +517,35 @@ chart, and whether it supports or contradicts what we expected.
     analysis of "outdated answers" needs an explicit oversample of articles
     likely to contain revisable facts (tolls, counts still being reported,
     ongoing situations), stated as such.
+
+## F10. The oversample quadruples clear time-sensitive questions, at a lower keep rate
+- **Date:** 2026-11-06
+- **Setup:** 20 articles from the likely-revisable pool (D20), same period
+  counts as the random pilots, same prompts, double review (D19).
+- **Result:**
+
+  | Sample | Articles | Kept answerable | Clear time-sensitive | Disputed label | Keep rate | Writer–reviewer label agreement | Cost |
+  |---|---|---|---|---|---|---|---|
+  | Random (v5, F9) | 20 | 13 | 1 (8%) | 3 | 56% | 83% | $0.25 (2nd reviews only) |
+  | **Oversample** | 20 | 9 | **4 (44%)** | 1 | 35% | 91% | $0.60 |
+
+  - Kept time-sensitive questions are what the experiment needs: "How many
+    people had died in the New Zealand mosque shootings as of March 17,
+    2019?"; "How many U.S. states had detected the Omicron variant as of
+    early December 2021?"; "How many COVID-19 cases did North Paulding High
+    School in Georgia report…?"
+  - Labels are less ambiguous here (agreement 91% vs 83%).
+  - The keep rate is lower mainly because both reviewers reject questions
+    that reuse the description's wording (19 "not natural" votes): breaking
+    news is full of specific names and places ("Carr fire in northern
+    California… on Saturday"), which are hard to paraphrase. Some of these
+    flags treat proper names as copying; the strictness also keeps
+    retrieval from being artificially easy.
+  - Reviewer consistency 96% (decisions), 100% (labels). Total spent $1.87.
+- **Reproduce:** `python scripts/generate_questions.py --name oversample_pilot --oversample`.
+- **Expectation:** more time-sensitive questions.
+- **Verdict:** Supports; the keep rate cost is acceptable (about $0.07 per
+  kept question).
+- **Implication:** about 200 oversampled articles would give roughly 40
+  clear time-sensitive questions for about $6 (live) or $3 (batch); no
+  further prompt tuning.

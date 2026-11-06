@@ -953,3 +953,48 @@ date and reason, and add a new entry that supersedes it.
 - **Code:** `driftmon/evaluation/retrieval.py`, `retrieval_metrics.py`,
   `agents/retrieval_eval.py`, prompt `rel-v1`; tests in
   `tests/test_retrieval.py`; dashboard page "Retrieval".
+
+## D26. Long-form documents: Wikipedia articles at yearly snapshots, chunked
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author); not built yet.
+- **Context:** the stakeholder (Ani, 2026-11-06, `docs/questions.md`) asked
+  for long-form documents where chunking applies, next to HuffPost, and for
+  an explanation of the chunking strategy and how it affects drift
+  detection. HuffPost articles are one or two sentences, so chunking was a
+  stated limitation until now.
+- **Options considered:**
+  1. *Wikipedia articles captured at the end of each year (2017–2022).* Same
+     years as HuffPost; the same document is edited over time ("documents
+     become outdated or replaced"); fits the newsroom use case (reference
+     material); clear sections. Cons: page markup needs cleaning; the LLM
+     has read Wikipedia, so answers may come from memory (handled by
+     answering only from the retrieved text and judging groundedness); the
+     API asks for contact info in the User-Agent (a project URL, not an
+     email).
+  2. *Company annual reports (SEC 10-K risk sections, EDGAR-CORPUS).* Most
+     enterprise-like and the hardest chunking case (long, mostly repeated
+     text with small new paragraphs). Cons: the dataset appears to end in
+     2020; a second use case beside the newsroom; the SEC wants an email if
+     we fetch filings ourselves.
+  3. *arXiv papers.* Clear topic drift, but free abstracts are too short to
+     chunk and full text means PDF parsing; papers are never updated.
+- **Choice:** 1. The author would revisit 2 only if a test showed it to be
+  better.
+- **Plan:**
+  - About 150–200 articles sampled from Wikipedia's "vital articles" list
+    (stratified by topic, so the choice is not hand-picked), plus a small,
+    labelled set of articles tied to known events (e.g. pandemic, vaccine)
+    as the known-drift check.
+  - Each article as it stood at the last revision before the end of 2017
+    (baseline), 2018, … 2022.
+  - Chunks split at section headings, then about 256 tokens with about 32
+    tokens of overlap (bge-small reads at most 512 tokens).
+  - **Chunking experiment:** four ways to read each article: first 512
+    tokens only; one averaged vector; chunks of about 128; chunks of about
+    256 tokens. The text added between two snapshots (from the revision
+    diff) is the ground truth, so we can count how many known changes each
+    one detects. Expectation: truncation misses changes deep in the
+    article, and averaging dilutes small changes.
+  - Agents A–C run on the chunks; stale vs refreshed then shows the stale
+    index returning the outdated version of the same article.
+- **Cost:** about $3–5 for questions and judging, after the credit top-up.

@@ -58,7 +58,7 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 |---|---|---|
 | Continue monitoring | Drift, but no material quality loss | Designed |
 | Update or re-index the knowledge base | Quality recovers on the refreshed index | Designed |
-| Improve document chunking or embedding strategies | Embedding: via model evaluation below. Chunking: not applicable | Designed / **Limitation** (1–2 sentence articles) |
+| Improve document chunking or embedding strategies | Embedding: via model evaluation below. Chunking: Wikipedia long-form set with a chunk-size experiment (D26, stakeholder request) | Designed |
 | Update retrieval configurations | Right article usually found just outside the top K | Designed |
 | Improve prompts or retrieval strategies | Retrieval fine, answers wrong or ungrounded | Designed |
 | Trigger model evaluation or retraining | Evaluation is run by the system (second embedding model on affected segments) when re-indexing does not fix quality, or when the judge's agreement with hand labels is low. Retraining is recommended with evidence when neither model copes; not run by us | Designed |
@@ -103,7 +103,7 @@ named directly (checked against the assignment PDF, 2026-11-06):
 | "Existing documents become outdated or are replaced" | Time-sensitive questions (D20) on the stale vs refreshed archive | Name the requirement and show an outdated-answer example |
 | "User queries evolve and introduce new terminology" / "Monitor incoming documents and user queries" | Query drift: the same two techniques on each period's incoming questions | Required, not optional (journal correction, 2026-11-06) |
 | "continuously monitor" | Periods replayed as incoming batches | State it as an assumption; a deployment would schedule it (§12b) |
-| "Improve document chunking" | Not applicable to one-to-two-sentence articles | State the limitation; the rule exists in Agent E |
+| "Improve document chunking" (stakeholder: long-form documents required) | Wikipedia long-form set, chunked; four-way chunking experiment (D26) | Explain the chunking strategy and how it changes what drift detection sees |
 
 ## Extensions, only if ahead of schedule
 

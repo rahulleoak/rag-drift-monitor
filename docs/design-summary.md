@@ -16,7 +16,7 @@ it.
 | Set | What | Why |
 |---|---|---|
 | **HuffPost News Category** (time-based drift) | 77,840 cleaned articles. Baseline 2016–17; new data arrives one year at a time, 2018–2022 | Real, dated drift with a known event to check against (COVID in 2020) |
-| **Wikipedia, long-form** (chunking; planned, not built yet) | A sample of long articles, each captured as it stood at the end of each year, 2017–2022 | Long documents with sections, so chunking matters. The same article is edited over time, which is the "documents become outdated" case. Same years as HuffPost. |
+| **Wikipedia, long-form** (chunking) | A sample of long articles, each captured as it stood at the end of each year, 2017–2022 | Long documents with sections, so chunking matters. The same article is edited over time, which is the "documents become outdated" case. Same years as HuffPost. |
 
 ## 3. Architecture and agents (LangGraph)
 
@@ -130,12 +130,13 @@ and Opus reviews them.
   (Cohen's kappa).
 - **Total LLM spend so far:** $9.18, using our own key.
 
-## 6. Chunking strategy and how it affects drift detection (planned)
+## 6. Chunking strategy and how it affects drift detection
 
-The articles are downloaded and chunked; the drift comparison is not run
-yet. One measurement already: every article in the sample is longer than
-the 512 tokens the model reads (median about 8,000), so without chunking
-about 90% of each article would never be seen.
+Data: 165 Wikipedia articles (a random sample across topics, plus a few
+tied to known events), each as it stood at the end of every year,
+2017–2022. Every article is longer than the 512 tokens the model reads
+(median about 8,000), so without chunking about 90% of each article would
+never be seen.
 
 **Strategy:**
 - Split at section headings first, so a chunk never mixes two sections.
@@ -149,13 +150,20 @@ both hide drift.
 - Averaging one vector over the whole article dilutes a small new section
   into the rest.
 
-**How we plan to show it:** compare drift detection on whole articles
-(first 512 tokens, or one averaged vector) with detection on chunks. The
-text that changed between two snapshots comes from Wikipedia's revision
-history, so we know what really changed and can check what each way of
-reading the article catches. The stale vs refreshed experiment then shows
-the practical cost: the stale index returns the outdated version of the
-same article.
+**First result:** we compared each article with its own 2017 version,
+knowing exactly how much text was new or rewritten. How well each way of
+reading the article follows that real change (rank correlation, 1 =
+perfect): first 512 tokens only 0.51; one averaged vector 0.78 (and its
+scores are too small to set an alert threshold); chunks of about 256
+tokens 0.87. Articles tied to known events (COVID-19, vaccines, Ukraine)
+score about twice as high as the random sample, jumping in 2020. One
+lesson: our archive-wide drift test assumes each period brings new
+documents; for documents that are edited rather than replaced, drift has
+to be measured per document against its own earlier version.
+
+**Still to do:** an "ordinary year" reference for Wikipedia, and the stale
+vs refreshed test, where the stale index returns the outdated version of
+the same article.
 
 ## 7. Main assumptions and limitations
 

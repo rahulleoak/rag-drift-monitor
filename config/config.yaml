@@ -186,6 +186,10 @@ longform:
   # Set before looking at results: a pair counts as a "big change" when at least this
   # share of the later version's words is in new or rewritten sentences.
   big_change: 0.2
+  # Ordinary-year reference: each article at the end of 2016, so 2016 -> 2017 shows how
+  # much a normal year of editing changes an article (bands, as D11 does for HuffPost).
+  reference_period: {name: "2016", end: "2016-12-31"}
+  band_percentiles: {medium: 95, high: 99}
   mmd_sample: 1500             # chunks per side for the archive-level MMD test
   mmd_permutations: 200
 

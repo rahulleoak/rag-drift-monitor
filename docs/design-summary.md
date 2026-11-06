@@ -161,9 +161,15 @@ lesson: our archive-wide drift test assumes each period brings new
 documents; for documents that are edited rather than replaced, drift has
 to be measured per document against its own earlier version.
 
-**Still to do:** an "ordinary year" reference for Wikipedia, and the stale
-vs refreshed test, where the stale index returns the outdated version of
-the same article.
+Against an ordinary year of editing (2016 to 2017), the event articles
+change 4.3 times as much in 2020; the random sample stays ordinary. A
+blind spot: when only a number changes ("killed over 75 million" became
+"over 20 million"), the vectors barely move (about 16 times less than a
+typical edit), so drift scores alone miss changed facts. The answer check
+(Agent D) is designed to catch these.
+
+**Still to do:** the stale vs refreshed test, where the stale index
+returns the outdated version of the same article.
 
 ## 7. Main assumptions and limitations
 

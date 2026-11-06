@@ -26,6 +26,7 @@ if __package__ in (None, ""):
 
 from driftmon import chunking, longform  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
+from driftmon.drift.severity import band  # noqa: E402
 from driftmon.drift.embedding import median_heuristic_gamma, mmd_permutation_test  # noqa: E402
 from driftmon.embeddings import Embedder, document_text  # noqa: E402
 
@@ -42,15 +43,17 @@ def main() -> int:
     sizes = list(ch["compare_sizes"])
 
     # 1. Texts to embed for every snapshot, each way of reading it.
-    trunc_text, chunk_text = {}, {s: {} for s in sizes}
+    default = ch["size_tokens"]
+    trunc_text, chunk_text, chunk_raw = {}, {s: {} for s in sizes}, {}
     for r in snaps.itertuples(index=False):
         key = (r.page_id, r.period)
         trunc_text[key] = document_text(r.title, chunking.truncate(r.text, count, TRUNCATE_TOKENS))
         secs = json.loads(r.sections)
         for s in sizes:
-            chunk_text[s][key] = [document_text(f"{r.title} - {c.section}", c.text)
-                                  for c in chunking.chunk_document(secs, count, s, ch["overlap_tokens"],
-                                                                   ch["min_tokens"])]
+            pieces = chunking.chunk_document(secs, count, s, ch["overlap_tokens"], ch["min_tokens"])
+            chunk_text[s][key] = [document_text(f"{r.title} - {c.section}", c.text) for c in pieces]
+            if s == default:
+                chunk_raw[key] = [c.text for c in pieces]
     print(f"{len(snaps)} snapshots; chunks per size: "
           f"{ {s: sum(map(len, chunk_text[s].values())) for s in sizes} }", flush=True)
 
@@ -70,11 +73,11 @@ def main() -> int:
     # 3. Each article vs its own baseline version.
     base = cfg["periods"]["baseline"]["name"]
     later = [p["name"] for p in cfg["periods"]["later"]]
-    default = ch["size_tokens"]
+    ref = lf["reference_period"]["name"]
     by_key = {(r.page_id, r.period): r for r in snaps.itertuples(index=False)}
     rows = []
     for (pid, period), r in by_key.items():
-        if period == base:
+        if period in (base, ref):
             continue
         b = by_key.get((pid, base))
         if b is None:
@@ -118,12 +121,66 @@ def main() -> int:
                              "mmd2": round(res.mmd2, 5), "p_value": round(res.p_value, 4)})
     mmd = pd.DataFrame(mmd_rows)
 
+    # 5. Year on year, against an ordinary year of editing (2016 -> 2017), and
+    #    the blind spot: edits that change only a number.
+    order = [ref, base, *later]
+    yoy, edited, examples = [], [], []
+    for pid in snaps["page_id"].unique():
+        for prev, cur in zip(order, order[1:]):
+            a, b = by_key.get((pid, prev)), by_key.get((pid, cur))
+            if a is None or b is None:
+                continue
+            old_v, new_v = cv[default][(pid, prev)], cv[default][(pid, cur)]
+            yoy.append({"page_id": pid, "title": b.title, "event": b.event, "period": cur, "previous": prev,
+                        "true_changed": longform.changed_share(a.text, b.text)[0],
+                        "chunks_change": longform.chunk_change(old_v, new_v)[0]})
+            old_sents = set(longform.sentences(a.text))
+            num_edits = longform.number_only_edits(a.text, b.text)
+            novelty = 1.0 - (new_v @ old_v.T).max(axis=1)
+            old_raw = set(chunk_raw[(pid, prev)])
+            for raw, nov in zip(chunk_raw[(pid, cur)], novelty):
+                if raw in old_raw:
+                    continue
+                changed = [x for x in longform.sentences(raw) if x not in old_sents]
+                if not changed:
+                    continue                        # only a chunk boundary moved
+                kind = "number only" if all(x in num_edits for x in changed) else "other edits"
+                edited.append({"period": cur, "event": b.event, "kind": kind, "novelty": float(nov)})
+                if kind == "number only" and b.event and len(examples) < 10:
+                    examples.append({"article": b.title, "period": cur, "before": num_edits[changed[0]],
+                                     "after": changed[0], "chunk_novelty": round(float(nov), 4)})
+    yoy = pd.DataFrame(yoy)
+    ref_scores = yoy.loc[yoy["period"] == base, "chunks_change"]
+    thresholds = {k: float(np.percentile(ref_scores, v)) for k, v in lf["band_percentiles"].items()}
+    yoy["band"] = [band(v, thresholds) for v in yoy["chunks_change"]]
+    yoy["times_ordinary"] = yoy["chunks_change"] / float(ref_scores.median())
+    yoy_summary = (yoy.assign(set=np.where(yoy["event"], "event set", "vital sample"),
+                              medium_or_high=yoy["band"] != "low", high=yoy["band"] == "high")
+                   .groupby(["set", "period"], sort=False)
+                   .agg(articles=("page_id", "size"), true_changed=("true_changed", "mean"),
+                        times_ordinary=("times_ordinary", "median"),
+                        medium_or_high=("medium_or_high", "mean"), high=("high", "mean"))
+                   .round(3).reset_index())
+    edited = pd.DataFrame(edited)
+    all_nov = np.sort(edited["novelty"].to_numpy())
+    edited["rank_pct"] = np.searchsorted(all_nov, edited["novelty"], side="right") / len(all_nov)
+    blind = (edited.groupby("kind").agg(chunks=("novelty", "size"), median_change=("novelty", "median"),
+                                        median_rank_pct=("rank_pct", "median"),
+                                        bottom_quarter=("rank_pct", lambda r: float((r <= 0.25).mean())))
+             .round(4).reset_index())
+    examples = pd.DataFrame(examples)
+
     out = resolve_path(cfg["paths"]["runs"]) / "longform"
     out.mkdir(parents=True, exist_ok=True)
     table.to_csv(out / "article_change.csv", index=False)
     ev.to_csv(out / "chunking_eval.csv", index=False)
     by_period.to_csv(out / "by_period.csv", index=False)
     mmd.to_csv(out / "archive_mmd.csv", index=False)
+    yoy.to_csv(out / "year_on_year.csv", index=False)
+    yoy_summary.to_csv(out / "year_on_year_summary.csv", index=False)
+    edited.to_csv(out / "edited_chunks.csv", index=False)
+    blind.to_csv(out / "number_edits.csv", index=False)
+    examples.to_csv(out / "number_edit_examples.csv", index=False)
 
     pd.set_option("display.width", 250)
     print(f"\n{len(table)} article x period pairs; {len(new_docs)} articles are new since the baseline.")
@@ -136,6 +193,16 @@ def main() -> int:
     print(by_period.to_string(index=False))
     print("\nArchive-level MMD vs the baseline:")
     print(mmd.to_string(index=False))
+    print(f"\nYear on year vs an ordinary year ({ref} -> {base}); thresholds "
+          f"{ {k: round(v, 4) for k, v in thresholds.items()} }:")
+    print(yoy_summary.to_string(index=False))
+    print("\nEdited chunks: changed only by numbers vs other edits "
+          "(rank_pct: 0 = least changed of all edited chunks):")
+    print(blind.to_string(index=False))
+    print("\nExamples (event set):")
+    for e in examples.itertuples(index=False):
+        print(f"  {e.article} {e.period} (chunk change {e.chunk_novelty}):\n"
+              f"    before: {e.before[:220]}\n    after:  {e.after[:220]}")
     return 0
 
 

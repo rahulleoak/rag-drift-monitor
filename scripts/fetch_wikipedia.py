@@ -29,8 +29,9 @@ from driftmon.config import load_config, resolve_path  # noqa: E402
 
 
 def snapshot_times(cfg) -> list[tuple[str, str]]:
-    """(period name, ISO end time) for the baseline and each later period."""
-    periods = [cfg["periods"]["baseline"], *cfg["periods"]["later"]]
+    """(period name, ISO end time): the ordinary-year reference (end of 2016),
+    the baseline and each later period."""
+    periods = [cfg["longform"]["reference_period"], cfg["periods"]["baseline"], *cfg["periods"]["later"]]
     return [(p["name"], f"{p['end']}T23:59:59Z") for p in periods]
 
 

@@ -52,6 +52,35 @@ def changed_share(old: str, new: str, cutoff_words: int | None = None) -> tuple[
     return share, beyond
 
 
+_NUMBER = re.compile(r"\d(?:[\d,.]*\d)?")
+
+
+def sentences(text: str) -> list[str]:
+    """Sentences of a text, whitespace-normalised (the unit of the ground truth)."""
+    return _sentences(text)
+
+
+def number_only_edits(old: str, new: str) -> dict[str, str]:
+    """Sentences of ``new`` that differ from a sentence of ``old`` only in
+    their numbers (counts, dates, amounts): {new sentence: old sentence}.
+
+    These edits can change what an answer should say while barely changing
+    the wording, which is the blind spot of embedding-based drift.
+    """
+    old_set = set(_sentences(old))
+    by_mask: dict[str, str] = {}
+    for s in old_set:
+        by_mask.setdefault(_NUMBER.sub("#", s), s)
+    out = {}
+    for s in _sentences(new):
+        if s in old_set:
+            continue
+        mask = _NUMBER.sub("#", s)
+        if "#" in mask and mask in by_mask:
+            out[s] = by_mask[mask]
+    return out
+
+
 def cosine_change(a: np.ndarray, b: np.ndarray) -> float:
     """1 - cosine between two vectors."""
     return float(1.0 - a @ b / (np.linalg.norm(a) * np.linalg.norm(b)))

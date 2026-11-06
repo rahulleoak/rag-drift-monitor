@@ -88,3 +88,11 @@ def test_chunk_change_and_auc():
     mean, mx = longform.chunk_change(old, moved)
     assert mx > 0 and mean == mx / 3
     assert longform.auc(np.array([0.9, 0.8, 0.1]), np.array([True, True, False])) == 1.0
+
+
+def test_number_only_edits():
+    from driftmon import longform
+    old = "The plague killed over 75 million people. It began in Asia."
+    new = "The plague killed over 20 million people. It began in Europe. A new sentence."
+    edits = longform.number_only_edits(old, new)
+    assert edits == {"The plague killed over 20 million people.": "The plague killed over 75 million people."}

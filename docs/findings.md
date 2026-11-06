@@ -732,5 +732,53 @@ chart, and whether it supports or contradicts what we expected.
   edited documents.
 - **Verdict:** Supports chunking at about 256 tokens and per-document
   comparison for updated documents.
-- **Still to do:** an "ordinary year" reference for Wikipedia (2016 vs
-  2017 snapshots) to turn scores into severity bands, as for HuffPost.
+- **Follow-up:** ordinary-year bands and the number-edit blind spot in F17.
+
+## F17. Wikipedia against an ordinary year, and the blind spot: changed numbers barely move the vectors
+- **Date:** 2026-11-06
+- **Setup:** each article also captured at the end of 2016, so 2016 → 2017
+  is the "ordinary year" of editing (as D11 does for HuffPost). Each year
+  is compared with the year before (chunks of about 256 tokens). Bands:
+  above the 95th / 99th percentile of the ordinary year's article scores =
+  medium / high. Blind spot: an edited chunk counts as "number only" when
+  every new or rewritten sentence in it differs from an old sentence only
+  in its numbers.
+- **Result, year on year:**
+
+  | | Ordinary year (2017) | 2018 | 2019 | **2020** | 2021 | 2022 |
+  |---|---|---|---|---|---|---|
+  | Random sample: × ordinary (median) | 1.0 | 0.9 | 0.8 | 1.0 | 1.0 | 0.9 |
+  | Random sample: medium or high | 5% | 5% | 1% | 5% | 3% | 9% |
+  | Event set: × ordinary (median) | 1.2 | 0.8 | 1.1 | **4.3** | 3.4 | 3.0 |
+  | Event set: medium or high | 20% | 18% | 18% | **45%** | 17% | 17% |
+
+  The random sample changes at an ordinary pace every year (about 5% above
+  the medium line, as expected by construction). The event articles jump
+  in 2020 (4.3× an ordinary year) and stay high: the known-drift check
+  passes with the year-on-year view too. The amount of editing is steady
+  (about 55% of chunks unchanged each year, 56% in the ordinary year);
+  what changes is *what* gets edited.
+- **Result, blind spot:**
+
+  | Edited chunks | Chunks | Median change | Share in the least-changed quarter |
+  |---|---|---|---|
+  | Changed only by numbers | 100 | 0.0008 | 62% |
+  | Other edits | 21,107 | 0.0127 | 25% |
+
+  A chunk whose only edit is a number moves about 16 times less than a
+  typical edited chunk. Examples: "the Black Death … killed over 75
+  million people" → "over 20 million" (chunk change 0.006); "from 1347 to
+  1453" → "1347 to 1353" (0.000); bitcoin "over 4,000 altcoins" → "over
+  6,000" (0.007). Some number edits are only formatting ("2217" →
+  "2,217", "80s" → "1980s") and should be ignored; the embedding cannot
+  tell those apart from a changed fact.
+- **Reproduce:** `python scripts/fetch_wikipedia.py` then
+  `python scripts/longform_drift.py` (`runs/longform/year_on_year*.csv`,
+  `number_edits.csv`, `number_edit_examples.csv`).
+- **Expectation:** event articles above an ordinary year in 2020 (yes);
+  number edits nearly invisible to embeddings (yes).
+- **Verdict:** Supports. **Implication:** embedding drift cannot be the
+  only guard for facts that change by number (tolls, counts, dates); the
+  answer-level check in Agent D (does the answer change between the old
+  and new version?) is needed, and a cheap text check for changed numbers
+  could flag such edits for re-indexing.

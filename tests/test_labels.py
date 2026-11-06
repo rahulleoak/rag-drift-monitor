@@ -49,3 +49,11 @@ def test_score():
     assert s.loc["relevance", "answers_agreement"] == 1.0 and s.loc["relevance", "llm_more_lenient"] == 1
     assert s.loc["questions", "labelled"] == 1 and s.loc["questions", "unlabelled"] == 1
     assert s.loc["questions", "llm_kept_you_rejected"] == 1
+
+
+def test_fact_items_are_all_flagged_by_the_check():
+    changes = pd.DataFrame({"page_id": [1, 2, 3], "title": ["A", "B", "C"], "period": ["2020"] * 3,
+                            "before": ["x 1."] * 3, "after": ["x 2."] * 3})
+    f = labels.sample_facts(changes, n=2, seed=0)
+    assert len(f) == 2 and (f["verdict"] == 1).all() and f["text"].str.startswith("BEFORE:").all()
+    assert "facts" in labels.INSTRUCTIONS

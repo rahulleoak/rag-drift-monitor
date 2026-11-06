@@ -1001,7 +1001,7 @@ date and reason, and add a new entry that supersedes it.
 
 ## D27. Address the changed-numbers blind spot: detect, measure harm, act
 - **Date:** 2026-11-06
-- **Status:** Accepted (approved by the author); detection being built first.
+- **Status:** Accepted (approved by the author). Detection built (F18: first rules failed the hand check and were tightened); harm (Agent D) and action (Agent E) to follow.
 - **Context:** F17 measured a blind spot of embedding-based drift: when an
   updated document changes only a number, its chunk vector barely moves
   (median change 0.0008 against 0.0127 for other edits, about 16 times

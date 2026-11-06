@@ -44,7 +44,12 @@ minimum, added before stopping. Plain language.
   address the blind spot in all three stages (D27): detect with a plain
   "changed facts" check, measure harm in Agent D, act in Agent E. Whether
   the check is useful is decided by Agent D, not assumed.
-- **Next:** build the changed-facts check; then the Agent D design.
+- **Changed-facts check built (F18):** the first version flagged mostly
+  noise (about 2 of 12 real: dropped ISBNs, added context, markup); tightened
+  to "a number was replaced", now about 23 of 25 real by my reading. 20
+  flags added to the author's blind hand-label sheet. 107 tests pass.
+- **Next:** the Agent D design (answer quality; old vs new version answers
+  for changed facts), for approval before spending.
 
 ## 2026-11-06 (end of session): ready to generate the full question set tomorrow
 - **State:** branch `llm-layer-and-pilot`, all committed and pushed (no PR

@@ -190,6 +190,7 @@ longform:
   # much a normal year of editing changes an article (bands, as D11 does for HuffPost).
   reference_period: {name: "2016", end: "2016-12-31"}
   band_percentiles: {medium: 95, high: 99}
+  fact_min_similarity: 0.6     # D27: word overlap for a changed sentence to count as the same statement
   mmd_sample: 1500             # chunks per side for the archive-level MMD test
   mmd_permutations: 200
 

@@ -27,6 +27,8 @@ INSTRUCTIONS = {
     "questions": "1 = a fair question a journalist could ask, answered by the article, and the reference "
                  "answer is right; 0 = otherwise",
     "relevance": "2 = the article answers the question; 1 = same topic or event but no answer; 0 = not relevant",
+    "facts": "1 = the AFTER sentence states a different fact from BEFORE (a new count, date, amount or ranking); "
+             "0 = only wording, rounding, units, formatting or an example changed",
 }
 
 
@@ -59,6 +61,17 @@ def sample_relevance(grades: pd.DataFrame, questions: pd.DataFrame, docs: pd.Dat
                          "text": [f"(published {d.at[i, 'date']}) {document_text(d.at[i, 'title'], d.at[i, 'text'])}"
                                   for i in out["doc_id"]],
                          "source_id": out["question_id"] + "|" + out["doc_id"], "verdict": out["grade"]})
+
+
+def sample_facts(changes: pd.DataFrame, n: int, seed: int) -> pd.DataFrame:
+    """Changed facts flagged by the D27 check, to measure its precision.
+    Every item is one the check flagged, so the verdict is always 1."""
+    pick = changes.sample(n=min(n, len(changes)), random_state=seed)
+    return pd.DataFrame({"part": "facts", "question": [f"{t} ({p})" for t, p in zip(pick["title"], pick["period"])],
+                         "reference_answer": "",
+                         "text": [f"BEFORE: {b}\nAFTER: {a}" for b, a in zip(pick["before"], pick["after"])],
+                         "source_id": [f"{i}|{p}" for i, p in zip(pick["page_id"], pick["period"])],
+                         "verdict": 1})
 
 
 def build_sheet(parts: Sequence[pd.DataFrame], seed: int) -> tuple[pd.DataFrame, pd.DataFrame]:

@@ -25,6 +25,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon import chunking, longform  # noqa: E402
+from driftmon.drift import facts  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.drift.severity import band  # noqa: E402
 from driftmon.drift.embedding import median_heuristic_gamma, mmd_permutation_test  # noqa: E402
@@ -124,16 +125,20 @@ def main() -> int:
     # 5. Year on year, against an ordinary year of editing (2016 -> 2017), and
     #    the blind spot: edits that change only a number.
     order = [ref, base, *later]
-    yoy, edited, examples = [], [], []
+    yoy, edited, examples, fact_rows = [], [], [], []
     for pid in snaps["page_id"].unique():
         for prev, cur in zip(order, order[1:]):
             a, b = by_key.get((pid, prev)), by_key.get((pid, cur))
             if a is None or b is None:
                 continue
             old_v, new_v = cv[default][(pid, prev)], cv[default][(pid, cur)]
+            fc = facts.fact_changes(json.loads(a.sections), json.loads(b.sections), lf["fact_min_similarity"])
+            fact_rows.extend({"page_id": pid, "title": b.title, "event": b.event, "period": cur, "section": f.section,
+                              "removed": " ".join(f.removed), "added": " ".join(f.added),
+                              "similarity": f.similarity, "before": f.before, "after": f.after} for f in fc)
             yoy.append({"page_id": pid, "title": b.title, "event": b.event, "period": cur, "previous": prev,
                         "true_changed": longform.changed_share(a.text, b.text)[0],
-                        "chunks_change": longform.chunk_change(old_v, new_v)[0]})
+                        "chunks_change": longform.chunk_change(old_v, new_v)[0], "fact_changes": len(fc)})
             old_sents = set(longform.sentences(a.text))
             num_edits = longform.number_only_edits(a.text, b.text)
             novelty = 1.0 - (new_v @ old_v.T).max(axis=1)
@@ -170,6 +175,19 @@ def main() -> int:
              .round(4).reset_index())
     examples = pd.DataFrame(examples)
 
+    # 6. Changed facts (D27): what the check finds, and how much of it the
+    #    embedding bands miss (articles with changed facts but a "low" band).
+    fact_rows = pd.DataFrame(fact_rows)
+    later_yoy = yoy[yoy["period"] != base].assign(has_facts=lambda d: d["fact_changes"] > 0)
+    fact_summary = (later_yoy.assign(set=np.where(later_yoy["event"], "event set", "vital sample"),
+                                     missed_by_embeddings=later_yoy["has_facts"] & (later_yoy["band"] == "low"))
+                    .groupby(["set", "period"], sort=False)
+                    .agg(articles=("page_id", "size"), with_changed_facts=("has_facts", "mean"),
+                         changed_facts=("fact_changes", "sum"),
+                         changed_facts_but_band_low=("missed_by_embeddings", "mean"))
+                    .round(3).reset_index())
+    hand_check = fact_rows.sample(n=min(25, len(fact_rows)), random_state=int(cfg["seed"]))
+
     out = resolve_path(cfg["paths"]["runs"]) / "longform"
     out.mkdir(parents=True, exist_ok=True)
     table.to_csv(out / "article_change.csv", index=False)
@@ -181,6 +199,9 @@ def main() -> int:
     edited.to_csv(out / "edited_chunks.csv", index=False)
     blind.to_csv(out / "number_edits.csv", index=False)
     examples.to_csv(out / "number_edit_examples.csv", index=False)
+    fact_rows.to_csv(out / "fact_changes.csv", index=False)
+    fact_summary.to_csv(out / "fact_changes_summary.csv", index=False)
+    hand_check.to_csv(out / "fact_changes_hand_check.csv", index=False, encoding="utf-8-sig")
 
     pd.set_option("display.width", 250)
     print(f"\n{len(table)} article x period pairs; {len(new_docs)} articles are new since the baseline.")
@@ -203,6 +224,13 @@ def main() -> int:
     for e in examples.itertuples(index=False):
         print(f"  {e.article} {e.period} (chunk change {e.chunk_novelty}):\n"
               f"    before: {e.before[:220]}\n    after:  {e.after[:220]}")
+    print(f"\nChanged facts (D27): {len(fact_rows)} in {fact_rows['page_id'].nunique()} articles; "
+          "share of article-years with any, and with any while the embedding band is low:")
+    print(fact_summary.to_string(index=False))
+    print("\nHand-check sample (first 12 of 25 in fact_changes_hand_check.csv):")
+    for f in hand_check.head(12).itertuples(index=False):
+        print(f"  {f.title} {f.period} [{f.removed} -> {f.added}]\n    before: {f.before[:200]}\n"
+              f"    after:  {f.after[:200]}")
     return 0
 
 

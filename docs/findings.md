@@ -782,3 +782,45 @@ chart, and whether it supports or contradicts what we expected.
   answer-level check in Agent D (does the answer change between the old
   and new version?) is needed, and a cheap text check for changed numbers
   could flag such edits for re-indexing.
+
+## F18. The changed-facts check: about one article in five changes a fact each year, almost always unseen by embedding drift
+- **Date:** 2026-11-06
+- **Setup:** the D27 check on the Wikipedia set, each year vs the year
+  before (2017 → 2022). A changed sentence is matched with the most
+  similar sentence of the previous version in the same section (word
+  overlap ≥ 0.6); it is a changed fact when a number was *replaced*.
+  Ignored: numbers only added (new context) or only removed (dropped
+  citations), formatting ("2217" vs "2,217"), citation lines, image
+  captions, fragments, and cleaning leftovers.
+- **First version failed the hand check:** of 12 sampled flags, about 2
+  were real; the rest were dropped ISBNs, added context ("In 2016, a
+  study…"), "seven" → "7" and markup leftovers. The rules above came from
+  that check (tests in `tests/test_facts.py`).
+- **Result:** 505 changed facts in 97 of 165 articles over five years.
+
+  | | 2018 | 2019 | 2020 | 2021 | 2022 |
+  |---|---|---|---|---|---|
+  | Random sample: articles with a changed fact | 18% | 23% | 25% | 22% | 20% |
+  | … of which the embedding band is "low" | 18% | 23% | 25% | 22% | 18% |
+  | Event set: articles with a changed fact | 9% | 45% | 55% | 58% | 50% |
+  | … of which the embedding band is "low" | 9% | 36% | 18% | 50% | 50% |
+
+  In the random sample, **almost every article whose facts changed looks
+  ordinary to embedding drift**. Event articles changed facts most from
+  2019; in 2020 most were caught anyway because they also changed a lot in
+  other ways, but in 2021–22 half had changed facts with a "low" band.
+- **Precision (my reading of 25 random flags, to be confirmed by the
+  author's blind labels):** about 23 of 25 are real changed facts, e.g.
+  malaria "228 million cases … 405,000 deaths" → "229 million … 409,000";
+  tuberculosis deaths 1.6 → 1.5 million; Paris Agreement signatories 194
+  → 193; Germany's president Gauck (2012) → Steinmeier (2017); Catholic
+  Church members 1.27 → 1.29 billion. Misses: a changed maths example
+  ("1/5" → "2/5") and a rearranged sentence.
+- **Reproduce:** `python scripts/longform_drift.py`
+  (`runs/longform/fact_changes.csv`, `fact_changes_summary.csv`,
+  `fact_changes_hand_check.csv`); 20 flags go into the hand-label sheet
+  (`scripts/label_sheet.py make`, part "facts").
+- **Expectation:** changed facts would mostly sit in low embedding bands
+  (yes, almost all).
+- **Verdict:** Supports D27's detection step. Usefulness is not yet shown:
+  Agent D must show that flagged articles give changed answers.

@@ -6,9 +6,10 @@
     python scripts/label_sheet.py score
         agreement between your labels and the LLM, per part
 
-Parts: kept and rejected questions (the question reviewer) and
+Parts: kept and rejected questions (the question reviewer),
 (question, article) pairs (Agent C's relevance judge, from the run's
-retrieval_grades.csv). Agent D's answers are added when D exists.
+retrieval_grades.csv), and changed facts flagged by the D27 check (its
+precision). Agent D's answers are added when D exists.
 """
 from __future__ import annotations
 
@@ -36,6 +37,7 @@ def main(argv: list[str] | None = None) -> int:
     make.add_argument("--kept", type=int, default=10)
     make.add_argument("--rejected", type=int, default=5)
     make.add_argument("--per-grade", type=int, default=5)
+    make.add_argument("--facts", type=int, default=20, help="changed facts from runs/longform (D27); 0 to skip")
     sub.add_parser("score")
     args = parser.parse_args(argv)
     out = resolve_path(cfg["paths"]["runs"]) / "labels"
@@ -50,6 +52,9 @@ def main(argv: list[str] | None = None) -> int:
         grades = pd.read_csv(Path(args.run) / "retrieval_grades.csv")
         parts = [labels.sample_questions(table, args.kept, args.rejected, seed),
                  labels.sample_relevance(grades, table, docs, args.per_grade, seed)]
+        facts_file = resolve_path(cfg["paths"]["runs"]) / "longform" / "fact_changes.csv"
+        if args.facts and facts_file.exists():
+            parts.append(labels.sample_facts(pd.read_csv(facts_file), args.facts, seed))
         sheet, key = labels.build_sheet(parts, seed)
         out.mkdir(parents=True, exist_ok=True)
         sheet.to_csv(out / "sheet.csv", index=False, encoding="utf-8-sig")  # BOM: Excel reads UTF-8

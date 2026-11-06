@@ -39,8 +39,12 @@ minimum, added before stopping. Plain language.
     global warming" (2022), a real terminology shift.
 - **Tried and fixed:** the first pipeline run used the system Python
   (no langgraph); the project's `.venv` must be used.
-- **Next:** embed the chunks; run the whole-article vs chunked drift
-  comparison; then Agents D and E.
+- **Later the same evening:** chunking experiment (F16), ordinary-year
+  bands and the changed-numbers blind spot (F17). The author asked to
+  address the blind spot in all three stages (D27): detect with a plain
+  "changed facts" check, measure harm in Agent D, act in Agent E. Whether
+  the check is useful is decided by Agent D, not assumed.
+- **Next:** build the changed-facts check; then the Agent D design.
 
 ## 2026-11-06 (end of session): ready to generate the full question set tomorrow
 - **State:** branch `llm-layer-and-pilot`, all committed and pushed (no PR

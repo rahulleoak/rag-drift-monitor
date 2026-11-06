@@ -998,3 +998,50 @@ date and reason, and add a new entry that supersedes it.
   - Agents A–C run on the chunks; stale vs refreshed then shows the stale
     index returning the outdated version of the same article.
 - **Cost:** about $3–5 for questions and judging, after the credit top-up.
+
+## D27. Address the changed-numbers blind spot: detect, measure harm, act
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author); detection being built first.
+- **Context:** F17 measured a blind spot of embedding-based drift: when an
+  updated document changes only a number, its chunk vector barely moves
+  (median change 0.0008 against 0.0127 for other edits, about 16 times
+  less; 62% of such chunks are among the least-changed quarter). Examples:
+  "the Black Death … killed over 75 million people" became "over 20
+  million"; "from 1347 to 1453" became "1347 to 1353" (no measurable
+  change). These are exactly the edits that make an answer outdated
+  (tolls, counts, dates), so drift scores alone would miss the drift that
+  matters most for answers, and the brief names "existing documents become
+  outdated" as a core problem.
+- **Options considered:**
+  1. *Accept and document it as a limitation.* No work, but leaves the
+     most answer-relevant change undetected.
+  2. *Lower the embedding thresholds.* Would flood alerts: number edits
+     sit among ordinary edits, not above them.
+  3. *Add a plain text check for changed facts, then test whether it
+     matters, then act on it.* Small, testable, no LLM for detection.
+- **Choice:** 3, in all three stages:
+  - **Detect (Agents A/B):** a "changed facts" check for updated documents.
+    Each changed sentence is matched with the most similar sentence of the
+    previous version in the same section; if their numbers differ (after
+    ignoring formatting such as "2217" vs "2,217"), it is reported as a
+    changed fact, with both sentences as evidence. A third signal next to
+    the embedding and word techniques.
+  - **Measure harm (Agent D):** for documents with changed facts, ask the
+    same question of the old and new version and check whether the answer
+    changes.
+  - **Act (Agent E):** a rule: changed facts in an indexed document →
+    re-index that document (a targeted refresh), citing the sentences.
+- **Why:** the check costs little, runs without an LLM and catches what
+  the embeddings cannot see; the answer test then shows whether it
+  matters.
+- **Validation (stated honestly):** the check uses the same idea that found
+  the blind spot, so catching those cases proves nothing on its own. It is
+  validated in two ways: a hand-checked sample of flagged changes
+  (precision: are they real fact changes?), and Agent D (do flagged
+  documents give different answers more often than unflagged ones?). If
+  Agent D shows no difference, the check is reported as not useful.
+- **Limits:** applies only to documents that are edited (Wikipedia), not to
+  HuffPost, where each period brings new articles; there, the
+  time-sensitive questions in Agent D cover the same risk. Changed names
+  (e.g. a new office holder) are not caught by a number check; left out
+  unless time allows.

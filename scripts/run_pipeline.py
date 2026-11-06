@@ -11,6 +11,7 @@ Writes:
     topics.csv         emerging topics across sections
     term_shifts.csv    term-context shifts
     correlations.csv   how the drift measures correlate across segments (P6)
+    query_drift.csv    each period's queries vs the baseline queries (if a question set exists)
     route.txt          the routing decision after Agent B
 
 Usage (from the repository root):
@@ -31,6 +32,7 @@ if __package__ in (None, ""):  # allow `python scripts/run_pipeline.py` without 
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.corpus import load_corpus  # noqa: E402
 from driftmon.graph import build_graph  # noqa: E402
+from driftmon.queries import load_questions, query_stream  # noqa: E402
 
 SHOW = ["segment_id", "times_ordinary_embedding", "times_ordinary_lexical", "embedding_band",
         "lexical_band", "kind", "flagged", "emerging_terms"]
@@ -44,7 +46,12 @@ def main(argv: list[str] | None = None) -> int:
     run_dir.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     docs, vectors = load_corpus(config)
-    state = build_graph().invoke({"config": config, "docs": docs, "vectors": vectors})
+    stream = query_stream(config, load_questions(config))
+    queries, query_vectors = stream if stream else (None, None)
+    print(f"Query stream: {len(queries)} questions" if stream is not None else
+          "Query stream: no question set yet (query drift skipped)")
+    state = build_graph().invoke({"config": config, "docs": docs, "vectors": vectors,
+                                  "queries": queries, "query_vectors": query_vectors})
 
     mon, drift = state["monitoring"], state["drift"]
     (run_dir / "monitoring.json").write_text(mon.model_dump_json(indent=2), encoding="utf-8")
@@ -82,6 +89,12 @@ def main(argv: list[str] | None = None) -> int:
         sig = shifts[shifts["q_value"] <= config["drift"]["alpha"]]
         print(sig[["term", "period", "docs_baseline", "docs_period", "times_ordinary",
                    "context_before", "context_after"]].round(1).to_string(index=False))
+    if not isinstance(drift.query_drift, str):
+        qd = pd.DataFrame(drift.query_drift)
+        qd.to_csv(run_dir / "query_drift.csv", index=False)
+        print("\n=== Agent B: query drift (each period's questions vs the baseline questions) ===")
+        print(qd[["period", "compared_with", "n_reference", "n_period", "mmd2", "mmd_q", "jsd_excess",
+                  "jsd_q", "new_term_rate", "significant", "emerging_terms"]].round(4).to_string(index=False))
     print("\n=== Agent B: correlation of drift measures across segments (Spearman) ===")
     print(corr.set_index("measure").round(2).to_string())
     print(f"\nFlagged (vs baseline): {len(drift.drifted_segments)}; controls: "

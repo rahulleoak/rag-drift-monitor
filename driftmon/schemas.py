@@ -27,7 +27,8 @@ class MonitoringReport(BaseModel):
     data_quality: list[dict[str, Any]]         # cleaning retention per period (empty descriptions etc.)
     renamed_sections: list[dict[str, Any]]     # raw labels merged into another name
     segments: list[dict[str, Any]]             # period x category, with eligibility and reason
-    query_stream: str = "not available yet (needs the LLM simulator)"
+    # per-period query volume, length and new-term rate; a note if no question set exists yet
+    query_stream: list[dict[str, Any]] | str = "not available (no question set generated yet)"
 
     def eligible_segments(self) -> list[dict[str, Any]]:
         return [s for s in self.segments if s["eligible"]]
@@ -77,7 +78,8 @@ class DriftReport(BaseModel):
     topics: list[dict[str, Any]] = Field(default_factory=list)        # emerging topics (D12)
     term_shifts: list[dict[str, Any]] = Field(default_factory=list)   # term-context shifts (D12)
     metric_correlations: list[dict[str, Any]] = Field(default_factory=list)  # P6, across segments
-    query_drift: str = "not available yet (needs the LLM query stream)"
+    # each period's queries vs the baseline queries (driftmon.queries); a note if unavailable
+    query_drift: list[dict[str, Any]] | str = "not available (no question set generated yet)"
 
 
 class PipelineState(TypedDict, total=False):
@@ -87,6 +89,8 @@ class PipelineState(TypedDict, total=False):
     docs: Any          # pandas DataFrame of cleaned documents
     vectors: Any       # numpy array aligned with docs
     tokens: list[list[str]]
+    queries: Any       # pandas DataFrame: the query stream (simulated questions), or None
+    query_vectors: Any  # numpy array aligned with queries
     monitoring: MonitoringReport
     drift: DriftReport
     next_step: str     # routing decision after B

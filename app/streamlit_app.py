@@ -123,7 +123,11 @@ with tabs[1]:
     st.markdown(f"**Segments:** {int(seg['eligible'].sum())} of {len(seg)} period × section groups "
                 "have enough articles to analyse")
     st.dataframe(seg, hide_index=True, width="stretch")
-    st.info("Query stream: " + run.monitoring.query_stream)
+    st.markdown("**Query stream** (simulated questions from the random and oversample pools)")
+    if isinstance(run.monitoring.query_stream, str):
+        st.info("Query stream: " + run.monitoring.query_stream)
+    else:
+        st.dataframe(pd.DataFrame(run.monitoring.query_stream).round(3), hide_index=True, width="stretch")
 
 with tabs[2]:
     st.subheader("Agent B · drift by section and year")
@@ -152,6 +156,15 @@ with tabs[2]:
             st.image(str(run.charts.get(f"dark/{key}", run.charts[key])))
         with st.expander("Table"):
             st.dataframe(table.round(3) if len(table) else table, width="stretch")
+    st.markdown("**Query drift** (each period's questions vs the baseline questions)")
+    if isinstance(run.drift.query_drift, str):
+        st.info("Query drift: " + run.drift.query_drift)
+    else:
+        qd = pd.DataFrame(run.drift.query_drift)
+        st.dataframe(qd.drop(columns=["examples"], errors="ignore").round(3), hide_index=True,
+                     width="stretch")
+        st.caption("The questions are written from each period's articles, so query drift partly "
+                   "mirrors document drift by construction; a real query log can drift on its own.")
     st.info("Explanations written by the LLM will appear here once the LLM parts are built.")
 
 for tab, agent, what in [(tabs[3], "C · Retrieval evaluation", "stale vs refreshed retrieval per segment"),

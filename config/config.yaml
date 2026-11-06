@@ -178,6 +178,10 @@ drift:
 evaluation:
   queries_per_segment: null      # set once the LLM budget is known
   judge_validation_items: 40     # hand-labelled items used to check the LLM judge
+  question_set: full             # data/processed/questions_<name>.parquet (D23)
+  # D7: the query stream = questions from pools drawn the same way in every
+  # period; flagged/control pools are picked by document drift, so excluded here
+  query_stream_pools: [random, oversample]
 
 impact:
   min_retrieval_drop: null       # practical-significance thresholds, set before running (Q11)

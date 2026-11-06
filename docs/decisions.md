@@ -872,3 +872,34 @@ date and reason, and add a new entry that supersedes it.
 - **Known imbalance:** 39 of the 69 control articles are from 2018, because
   most low-drift segments are 2018 sections; 2020 has 48 flagged articles.
   Reported, not corrected: it reflects where drift was and was not found.
+
+## D24. Query drift: the simulated questions as the query stream
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author); code built and tested, numbers
+  wait for the full question set.
+- **Context:** the brief asks to monitor incoming queries and says user queries
+  evolve and bring new terminology. There is no real query log.
+- **Options considered:**
+  1. *All generated questions as the stream.* Simple, but the flagged and
+     control articles were picked *because* of document drift, so their
+     questions would inflate query drift by design.
+  2. *Only the pools drawn the same way in every period* (random and
+     oversample). Smaller (about 80–130 questions a period), but a fair
+     comparison between periods.
+  3. *A separately generated query log* with personas. Closer to real users,
+     but extra cost and still written from the same articles.
+- **Choice:** 2. Each period's stream questions are compared with the
+  baseline's using the same two techniques as for documents: MMD with a
+  permutation test and centroid shift on query embeddings; excess JSD,
+  log-odds emerging terms and new-term rate on question words (question
+  wording such as "did", "according" is ignored). Benjamini–Hochberg across
+  periods. Unanswerable questions count: real users ask those too. Agent A
+  summarises the stream (volume, length, new-term rate, unanswerable share).
+- **Scale:** the 2017-vs-2016 questions give a rough "ordinary year" row.
+  The document severity bands (D11) need far more data than the stream has,
+  so query drift reports significance and times-ordinary, not bands.
+- **Limitation (README):** the questions are written from each period's
+  articles, so query drift partly mirrors document drift by construction; a
+  real query log can also drift on its own (new users, new tasks).
+- **Code:** `driftmon/queries.py`; Agent A and B nodes; `query_drift.csv` in
+  each run; tests in `tests/test_queries.py`.

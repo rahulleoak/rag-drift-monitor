@@ -15,7 +15,7 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 
 | Requirement | How it is met | Status |
 |---|---|---|
-| Monitor incoming documents and user queries | Period-by-period article batches; simulated query stream summarised the same way | Documents **done**; queries **required** (not cuttable): built after the full question set |
+| Monitor incoming documents and user queries | Period-by-period article batches; simulated query stream summarised the same way | Documents **done**; queries: code **built** (D24), numbers after the full question set |
 | Maintain historical and recent data distributions | Fixed 2016–17 baseline vs each later year | **Done** (Agent A, F5) |
 | Identify changes in vocabulary, topics and document characteristics | New-term rate, category mix (chi-square + Cramér's V), length, empty descriptions, new or renamed sections | **Done** (Agent A, F5) |
 | Establish baseline data for comparison | 2016–17, chosen on evidence | **Done** (F2, D6) |

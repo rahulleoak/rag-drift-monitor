@@ -183,6 +183,11 @@ longform:
     overlap_tokens: 32         # last whole sentences of the previous chunk
     min_tokens: 20             # a smaller final piece is merged into the previous chunk
     compare_sizes: [128, 256]  # chunk sizes compared in the chunking experiment
+  # Set before looking at results: a pair counts as a "big change" when at least this
+  # share of the later version's words is in new or rewritten sentences.
+  big_change: 0.2
+  mmd_sample: 1500             # chunks per side for the archive-level MMD test
+  mmd_permutations: 200
 
 drift:
   alpha: 0.05

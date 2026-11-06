@@ -115,6 +115,7 @@ Not required by the brief; listed so they are not forgotten.
 | Keyword search (BM25) next to the dense retriever | Tests whether wording drift hurts keyword search but not meaning-based search | P2 |
 | Fine-tuning experiment for the "recommend retraining" action | Evidence that retraining would help, with train and test from different periods | D7 |
 | Baseline-candidates chart | Visual for the baseline decision | F2 |
+| Newer-wording questions about older topics (e.g. "COVID" asked of an article that says "coronavirus") | Tests the one case where a change in wording itself could hurt search; F15 found drift level did not predict harm, and this would check that claim where it is most likely to fail. Needs a few extra LLM questions | F15 (author, 2026-11-06: do if time allows) |
 
 ## Success criteria
 

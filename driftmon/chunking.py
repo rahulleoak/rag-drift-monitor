@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 
 CountFn = Callable[[str], int]
 _SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
@@ -106,3 +107,17 @@ def truncate(text: str, count: CountFn, limit: int = 512) -> str:
         else:
             hi = mid - 1
     return " ".join(words[:lo])
+
+
+def token_counter(model_name: str) -> CountFn:
+    """Token count with the embedding model's own tokenizer (cached per string)."""
+    from transformers import AutoTokenizer
+    from transformers.utils import logging as hf_logging
+
+    hf_logging.set_verbosity_error()   # counting long texts is fine; only the model is limited to 512
+    tok = AutoTokenizer.from_pretrained(model_name)
+
+    @lru_cache(maxsize=500_000)
+    def count(text: str) -> int:
+        return len(tok(text, add_special_tokens=False)["input_ids"])
+    return count

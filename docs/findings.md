@@ -680,3 +680,57 @@ chart, and whether it supports or contradicts what we expected.
   "more drift, more damage". Agent D (answer quality) and the Wikipedia set,
   where the stale index holds an outdated version of the *same* article,
   test the subtler case.
+
+## F16. Chunking: chunk-level comparison follows real edits far better than whole-article vectors
+- **Date:** 2026-11-06
+- **Setup:** the Wikipedia set (D26): 165 articles at the end of 2017
+  (baseline) and of each year 2018–2022; 815 article × year pairs with a
+  baseline version (2 articles are new since the baseline). Ground truth:
+  the share of the later version's words in sentences that are new or
+  rewritten since the baseline version. Each way of reading an article
+  gives a change score; we measure how well it follows the ground truth
+  (Spearman rank correlation, and AUC for a "big change" = at least 20% of
+  the text new or rewritten, threshold set before looking).
+- **Result:**
+
+  | How the article is read | Follows real change (Spearman) | Spots big changes (AUC) |
+  |---|---|---|
+  | First 512 tokens only (whole-article embedding) | 0.51 | 0.77 |
+  | One averaged vector of all chunks | 0.78 | 0.89 |
+  | **Chunks of ~256 tokens** (our default) | **0.87** | **0.93** |
+  | Chunks of ~128 tokens | 0.89 | 0.95 |
+  | Chunks, largest single change instead of average | 0.55–0.56 | 0.80–0.82 |
+
+  1. **A whole-article embedding sees only the start.** Every article is
+     longer than 512 tokens (median about 8,000); 91% of the text is never
+     read. Edits are spread through articles, so the start still moves a
+     little, but the score follows real change poorly (0.51).
+  2. **Averaging dilutes.** It ranks articles reasonably (0.78), but the
+     scores are tiny (0.006 on average in 2022, when 54% of the text had
+     changed), so any alert threshold would sit in the noise.
+  3. **Chunks work best.** 128-token chunks are slightly better than 256
+     (0.89 vs 0.87) but need nearly twice as many vectors (96,819 vs
+     52,058); 256 stays the default.
+  4. **Known-drift check passes:** the event set (COVID-19, vaccine,
+     Ukraine, …) changes more than the random sample (89% vs 54% of the
+     text by 2022) and its chunk scores are twice as high, rising sharply
+     in 2020.
+  5. **Lesson for drift detection: edited documents need a paired test.**
+     The archive-level MMD test (Agent B's technique) is built for new,
+     independent documents each period, as in HuffPost. Here the same
+     articles appear on both sides, so the test breaks: on article vectors
+     MMD² is negative with p = 1.0 in every year; on chunks it is mostly
+     not significant, because about half of the chunks are unchanged
+     copies. For documents that are edited rather than replaced, drift has
+     to be measured per document against its own earlier version, as
+     above.
+- **Reproduce:** `python scripts/fetch_wikipedia.py` then
+  `python scripts/longform_drift.py` (tables in `runs/longform/`;
+  about 4 minutes the first time, for 74k embeddings).
+- **Expectation:** truncation misses changes and averaging dilutes them
+  (yes, both). Not expected: the archive-level test does not apply to
+  edited documents.
+- **Verdict:** Supports chunking at about 256 tokens and per-document
+  comparison for updated documents.
+- **Still to do:** an "ordinary year" reference for Wikipedia (2016 vs
+  2017 snapshots) to turn scores into severity bands, as for HuffPost.

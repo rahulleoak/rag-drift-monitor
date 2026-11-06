@@ -68,3 +68,23 @@ def test_vital_titles_and_stratified_sample():
     assert len(picks) == 4 and sum(s == "Science" for s, _ in picks) == 2
     assert picks == wikipedia.sample_titles(by, per_section=2, seed=0)     # reproducible
     assert wikipedia.is_redirect("#REDIRECT [[Plato]]")
+
+
+def test_changed_share_and_where_the_change_is():
+    from driftmon import longform
+    old = "Alpha beta gamma. Delta epsilon zeta.\nEta theta iota."
+    new = "Alpha beta gamma. Delta epsilon zeta.\nEta theta iota. Brand new sentence here."
+    share, beyond = longform.changed_share(old, new, cutoff_words=9)
+    assert share == 4 / 13 and beyond == 1.0              # the only change is after word 9
+    assert longform.changed_share(old, old, 9)[0] == 0.0
+
+
+def test_chunk_change_and_auc():
+    import numpy as np
+    from driftmon import longform
+    old = np.eye(3)
+    same, moved = np.eye(3), np.array([[1.0, 0, 0], [0, 1, 0], [0, 0.6, 0.8]])
+    assert longform.chunk_change(old, same) == (0.0, 0.0)
+    mean, mx = longform.chunk_change(old, moved)
+    assert mx > 0 and mean == mx / 3
+    assert longform.auc(np.array([0.9, 0.8, 0.1]), np.array([True, True, False])) == 1.0

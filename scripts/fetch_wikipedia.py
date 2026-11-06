@@ -16,7 +16,6 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
-from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
@@ -25,19 +24,8 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon import chunking, wikipedia  # noqa: E402
+from driftmon.chunking import token_counter  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
-
-
-def token_counter(model_name: str):
-    """Token count with the embedding model's own tokenizer (cached per string)."""
-    from transformers import AutoTokenizer
-
-    tok = AutoTokenizer.from_pretrained(model_name)
-
-    @lru_cache(maxsize=500_000)
-    def count(text: str) -> int:
-        return len(tok(text, add_special_tokens=False)["input_ids"])
-    return count
 
 
 def snapshot_times(cfg) -> list[tuple[str, str]]:

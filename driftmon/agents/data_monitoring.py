@@ -43,5 +43,7 @@ def data_monitoring(state: PipelineState) -> dict[str, Any]:
         data_quality=_records(quality), renamed_sections=_records(monitoring.renamed_sections(docs)),
         segments=_records(segments))
     if state.get("queries") is not None:
-        report.query_stream = _records(queries.stream_summary(state["queries"], baseline, later))
+        base_rows = (docs["period"] == baseline).to_numpy()
+        vocab = {t for i, keep in enumerate(base_rows) if keep for t in tokens[i]}
+        report.query_stream = _records(queries.stream_summary(state["queries"], baseline, later, vocab))
     return {"monitoring": report, "tokens": tokens}

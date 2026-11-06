@@ -67,11 +67,17 @@ def query_stream(config: Mapping[str, Any], questions: pd.DataFrame | None,
     return stream, embedder.embed_queries(stream["question"].tolist())
 
 
-def stream_summary(stream: pd.DataFrame, baseline: str, later: Sequence[str]) -> pd.DataFrame:
-    """One row per period: query volume, length and new-term rate vs baseline queries."""
+def stream_summary(stream: pd.DataFrame, baseline: str, later: Sequence[str],
+                   archive_vocab: set[str] | None = None) -> pd.DataFrame:
+    """One row per period: query volume, length and new-term rate.
+
+    ``archive_vocab``: the words of the baseline archive. A query word the
+    archive never used is new; against the few dozen baseline *questions*
+    almost every word would look new. Falls back to the baseline questions.
+    """
     tokens = [tokenize_question(q) for q in stream["question"]]
     period = stream["period"].to_numpy()
-    base_vocab = {t for i in np.where(period == baseline)[0] for t in tokens[i]}
+    base_vocab = archive_vocab or {t for i in np.where(period == baseline)[0] for t in tokens[i]}
     rows = []
     for p in [baseline, *later]:
         idx = np.where(period == p)[0]
@@ -79,7 +85,7 @@ def stream_summary(stream: pd.DataFrame, baseline: str, later: Sequence[str]) ->
         row = {"period": p, "queries": len(idx),
                "unanswerable_share": float((sub["set"] == "unanswerable").mean()) if len(idx) else 0.0,
                "median_words": float(sub["question"].str.split().str.len().median()) if len(idx) else 0.0}
-        if p != baseline:
+        if p != baseline or archive_vocab:
             row["new_term_rate"] = lex.new_term_rate([tokens[i] for i in idx], base_vocab)
         rows.append(row)
     return pd.DataFrame(rows)
@@ -96,7 +102,8 @@ def _compare(x: np.ndarray, y: np.ndarray, tx: list[list[str]], ty: list[list[st
 
 def query_drift_table(stream: pd.DataFrame, vectors: np.ndarray, baseline: str, later: Sequence[str],
                       permutations: int = 500, seed: int = 0, alpha: float = 0.05,
-                      prior: Mapping[str, int] | None = None, n_terms: int = 5) -> pd.DataFrame:
+                      prior: Mapping[str, int] | None = None, n_terms: int = 5,
+                      archive_vocab: set[str] | None = None) -> pd.DataFrame:
     """Each period's queries vs the baseline queries, both techniques.
 
     The first row is the ordinary-change reference: the baseline's second
@@ -111,6 +118,9 @@ def query_drift_table(stream: pd.DataFrame, vectors: np.ndarray, baseline: str, 
         baseline: baseline period name; later: later period names in order.
         prior: background term counts for the emerging-term ranking
             (defaults to all stream queries).
+        archive_vocab: words of the baseline archive, for the new-term rate
+            (share of query words the archive never used); defaults to the
+            baseline questions' words, which is far too small a reference.
     """
     tokens = [tokenize_question(q) for q in stream["question"]]
     period = stream["period"].to_numpy()
@@ -118,7 +128,7 @@ def query_drift_table(stream: pd.DataFrame, vectors: np.ndarray, baseline: str, 
     if len(base) < 4:
         return pd.DataFrame()
     gamma = emb.median_heuristic_gamma(vectors[base], seed=seed)
-    base_vocab = {t for i in base for t in tokens[i]}
+    base_vocab = archive_vocab or {t for i in base for t in tokens[i]}
     prior = prior or lex.term_counts(tokens)
 
     years = pd.to_datetime(stream["date"]).dt.year.to_numpy()
@@ -127,7 +137,7 @@ def query_drift_table(stream: pd.DataFrame, vectors: np.ndarray, baseline: str, 
     rows = []
     if len(h1) >= 2 and len(h2) >= 2:
         ref = _compare(vectors[h1], vectors[h2], [tokens[i] for i in h1], [tokens[i] for i in h2],
-                       gamma, permutations, seed, {t for i in h1 for t in tokens[i]})
+                       gamma, permutations, seed, archive_vocab or {t for i in h1 for t in tokens[i]})
         ref.update(period=f"{first_year + 1} (inside baseline)", compared_with=str(first_year))
         rows.append(ref)
     for p in later:

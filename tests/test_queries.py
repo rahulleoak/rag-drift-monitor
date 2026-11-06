@@ -60,3 +60,13 @@ def test_stream_summary():
     s = queries.stream_summary(stream, "2016-17", ["2020"]).set_index("period")
     assert s.loc["2016-17", "queries"] == 10 and s.loc["2020", "unanswerable_share"] == 0.1
     assert s.loc["2020", "new_term_rate"] > 0.3 and "new_term_rate" in s.columns
+
+
+def test_new_term_rate_is_measured_against_the_archive():
+    stream, vecs = _stream()
+    archive = set(OLD) | {"what", "about"}
+    t = queries.query_drift_table(stream, vecs, "2016-17", ["2020"], permutations=20, archive_vocab=archive)
+    assert t.iloc[0]["new_term_rate"] == 0.0     # baseline questions use archive words only
+    assert t.iloc[1]["new_term_rate"] == 1.0     # every 2020 topic word is new to the archive
+    s = queries.stream_summary(stream, "2016-17", ["2020"], archive).set_index("period")
+    assert s.loc["2016-17", "new_term_rate"] == 0.0 and s.loc["2020", "new_term_rate"] == 1.0

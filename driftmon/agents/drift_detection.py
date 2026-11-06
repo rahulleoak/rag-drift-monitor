@@ -24,14 +24,14 @@ from driftmon.schemas import PipelineState
 
 def drift_detection(state: PipelineState) -> dict[str, Any]:
     """LangGraph node: build the DriftReport from Agent A's report."""
-    report, _, _ = build_drift_report(state["config"], state["docs"], state["vectors"],
+    report, inp, _ = build_drift_report(state["config"], state["docs"], state["vectors"],
                                       state["monitoring"], state.get("tokens"))
     if state.get("queries") is not None:
         cfg, periods = state["config"], study_periods(state["config"])
         table = queries.query_drift_table(
             state["queries"], state["query_vectors"], periods[0].name, [p.name for p in periods[1:]],
             permutations=int(cfg["drift"]["mmd_permutations"]), seed=int(cfg["seed"]),
-            alpha=float(cfg["drift"]["alpha"]))
+            alpha=float(cfg["drift"]["alpha"]), archive_vocab=inp.baseline_vocab)
         if len(table):
             report.query_drift = table.astype(object).where(table.notna(), None).to_dict("records")
     return {"drift": report}

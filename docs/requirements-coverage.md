@@ -15,7 +15,7 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 
 | Requirement | How it is met | Status |
 |---|---|---|
-| Monitor incoming documents and user queries | Period-by-period article batches; simulated query stream summarised the same way | Documents **done**; queries wait for the LLM simulator |
+| Monitor incoming documents and user queries | Period-by-period article batches; simulated query stream summarised the same way | Documents **done**; queries **required** (not cuttable): built after the full question set |
 | Maintain historical and recent data distributions | Fixed 2016–17 baseline vs each later year | **Done** (Agent A, F5) |
 | Identify changes in vocabulary, topics and document characteristics | New-term rate, category mix (chi-square + Cramér's V), length, empty descriptions, new or renamed sections | **Done** (Agent A, F5) |
 | Establish baseline data for comparison | 2016–17, chosen on evidence | **Done** (F2, D6) |
@@ -91,6 +91,19 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 | Recommendations with evidence | Agent E output | To do |
 | README: setup, execution, technology choices, decisions, assumptions, limitations | `README.md`, built from the docs | To do |
 | 15–20 minute walkthrough | Slides built from findings and decisions | To do |
+
+## Must be explicit in the README and walkthrough
+
+Requirements the design meets but a reviewer could miss unless they are
+named directly (checked against the assignment PDF, 2026-11-06):
+
+| Brief wording | Where we meet it | What to say |
+|---|---|---|
+| "enterprise documents, including contracts, policies, procedures" / "solve a real enterprise AI problem" | News archive as a stand-in (HuffPost is the brief's first suggested dataset) | The mapping: newer reporting supersedes older ↔ new policies replace old ones; "coronavirus → covid" ↔ renamed business terms; "who holds this office" ↔ "which contract version is current" (presentation §12b) |
+| "Existing documents become outdated or are replaced" | Time-sensitive questions (D20) on the stale vs refreshed archive | Name the requirement and show an outdated-answer example |
+| "User queries evolve and introduce new terminology" / "Monitor incoming documents and user queries" | Query drift: the same two techniques on each period's incoming questions | Required, not optional (journal correction, 2026-11-06) |
+| "continuously monitor" | Periods replayed as incoming batches | State it as an assumption; a deployment would schedule it (§12b) |
+| "Improve document chunking" | Not applicable to one-to-two-sentence articles | State the limitation; the rule exists in Agent E |
 
 ## Extensions, only if ahead of schedule
 

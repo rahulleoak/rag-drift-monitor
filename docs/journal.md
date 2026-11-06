@@ -41,8 +41,13 @@ minimum, added before stopping. Plain language.
 - **Money ahead:** after the question set about $9–12 of credit remains;
   Agents C and D need roughly $10–15, so about $20 more credit by Sunday.
 - **Timeline:** about 28–35 hours of work left over Saturday–Monday, with
-  Tuesday as buffer. Cuttable if needed: query drift (state as a
-  limitation), a minimal model-evaluation loop.
+  Tuesday as buffer. Cuttable if needed: a minimal model-evaluation loop.
+  **Correction (same evening, after re-reading the brief): query drift is
+  NOT cuttable.** The brief requires it twice ("User queries evolve and
+  introduce new terminology"; Agent A: "Monitor incoming documents and user
+  queries"). Minimum version (about 2 h): treat each period's generated
+  questions as that period's incoming queries and run Agent B's two
+  techniques on them.
 
 ## 2026-11-06 (later): Reviewer r-v5; prompt tuning ends
 - **Built:** r-v5 "natural" check (names and facts are not copying).

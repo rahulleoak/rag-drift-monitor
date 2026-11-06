@@ -17,7 +17,11 @@ Every request goes through ``LLMClient``, which:
     - **does not cache broken replies** (cut off, or not matching the schema),
       so a rerun retries them; their cost is still recorded;
     - runs either **live** (one request at a time) or as a **batch** (half
-      price, results within hours).
+      price, results within hours);
+    - makes batches **resumable**: the batch id and its request list are saved
+      the moment a batch is created (``<cache>/_batches/``), so if the run is
+      interrupted while waiting, rerunning the same command collects that
+      batch instead of paying for a new one.
 
 The LLM writes questions, answers, judgements and explanations; it never
 makes the decisions (those live in tested Python code).
@@ -154,6 +158,7 @@ class LLMClient:
         client: an ``anthropic.Anthropic`` client, or a stand-in with the same
             methods (tests); created from ``ANTHROPIC_API_KEY`` if omitted.
         sleep: wait function used while polling batches (replaced in tests).
+        log: progress messages while a batch runs (e.g. ``print``); silent by default.
     """
 
     config: Mapping[str, Any]
@@ -162,6 +167,7 @@ class LLMClient:
     client: Any = None
     sleep: Callable[[float], None] = time.sleep
     poll_seconds: float = 30.0
+    log: Callable[[str], None] = lambda message: None
     _spent: float | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -329,18 +335,44 @@ class LLMClient:
     def _run_batch(self, requests: list[LLMRequest], on_submit) -> dict[str, LLMResult]:
         from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
         from anthropic.types.messages.batch_create_params import Request
-        by_id = {f"r{i}": r for i, r in enumerate(requests)}
-        created = self.client.messages.batches.create(requests=[
-            Request(custom_id=cid, params=MessageCreateParamsNonStreaming(**self._params(r)))
-            for cid, r in by_id.items()])
+        by_key = {r.key: r for r in requests}
+        # the same set of uncached requests always maps to the same pending file
+        fingerprint = hashlib.sha256("\n".join(sorted(by_key)).encode()).hexdigest()[:20]
+        pending = self.cache_dir / "_batches" / f"{fingerprint}.json"
+        if pending.exists():  # an earlier run submitted this batch and was interrupted
+            saved = json.loads(pending.read_text(encoding="utf-8"))
+            batch_id = saved["batch_id"]
+            by_id = {cid: by_key[key] for cid, key in saved["custom_ids"].items()}
+            self.log(f"Resuming batch {batch_id} ({len(by_id)} requests, submitted {saved['created']})")
+        else:
+            by_id = {f"r{i}": r for i, r in enumerate(requests)}
+            created = self.client.messages.batches.create(requests=[
+                Request(custom_id=cid, params=MessageCreateParamsNonStreaming(**self._params(r)))
+                for cid, r in by_id.items()])
+            batch_id = created.id
+            pending.parent.mkdir(parents=True, exist_ok=True)
+            pending.write_text(json.dumps({
+                "batch_id": batch_id, "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "jobs": sorted({r.job for r in requests}),
+                "custom_ids": {cid: r.key for cid, r in by_id.items()}}, indent=1), encoding="utf-8")
+            self.log(f"Submitted batch {batch_id} ({len(by_id)} requests); saved to {pending}")
         if on_submit:
-            on_submit(created.id)
-        return self.collect_batch(created.id, by_id)
+            on_submit(batch_id)
+        out = self.collect_batch(batch_id, by_id)
+        pending.unlink(missing_ok=True)  # collected and cached: nothing left to resume
+        return out
 
     def collect_batch(self, batch_id: str, by_id: Mapping[str, LLMRequest]) -> dict[str, LLMResult]:
         """Wait for a batch, then cache and record every result (by custom id)."""
-        while self.client.messages.batches.retrieve(batch_id).processing_status != "ended":
+        waited = 0.0
+        while (status := self.client.messages.batches.retrieve(batch_id)).processing_status != "ended":
+            counts = getattr(status, "request_counts", None)
+            done = (f"{counts.succeeded + counts.errored + counts.canceled + counts.expired} of "
+                    f"{len(by_id)} done" if counts else "in progress")
+            if waited % 300 == 0:  # every 5 minutes
+                self.log(f"Batch {batch_id}: {done} after {waited / 60:.0f} min")
             self.sleep(self.poll_seconds)
+            waited += self.poll_seconds
         out: dict[str, LLMResult] = {}
         for item in self.client.messages.batches.results(batch_id):
             req = by_id[item.custom_id]

@@ -165,6 +165,31 @@ def test_batch_refusal_retried_live_and_errors_not_cached(tmp_path):
     assert llm.cached(_req("flaky")) is None  # errors are retried next time
 
 
+def test_interrupted_batch_is_resumed_not_resubmitted(tmp_path):
+    """The run dies while waiting; rerunning the same requests collects the same batch."""
+    api = FakeAPI(good)
+
+    def interrupted(seconds):
+        raise KeyboardInterrupt
+
+    first = LLMClient(config=CONFIG, cache_dir=tmp_path / "cache", ledger=tmp_path / "ledger.csv",
+                      client=api, sleep=interrupted)
+    reqs = [_req("q0"), _req("q1"), _req("q2")]
+    with pytest.raises(KeyboardInterrupt):
+        first.complete_many(reqs, batch=True)
+    assert len(api.batches) == 1 and len(list((tmp_path / "cache" / "_batches").glob("*.json"))) == 1
+
+    messages = []
+    second = LLMClient(config=CONFIG, cache_dir=tmp_path / "cache", ledger=tmp_path / "ledger.csv",
+                       client=api, sleep=lambda s: None, log=messages.append)
+    out = second.complete_many(list(reversed(reqs)), batch=True)  # same set, any order
+    assert len(api.batches) == 1                                   # nothing paid twice
+    assert [r.parsed.question for r in out] == ["q2", "q1", "q0"]
+    assert messages[0].startswith("Resuming batch batch1")
+    assert not list((tmp_path / "cache" / "_batches").glob("*.json"))  # cleared once collected
+    assert second.complete_many(reqs, batch=True)[0].cached        # and now served from cache
+
+
 def test_api_key_ignores_an_empty_environment_variable(tmp_path, monkeypatch):
     from driftmon.llm import api_key
     env = tmp_path / ".env"

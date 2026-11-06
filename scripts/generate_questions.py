@@ -12,6 +12,11 @@ Usage (from the repository root):
     python scripts/generate_questions.py --dry-run     # selection and cost estimate only
     python scripts/generate_questions.py               # the pilot (live calls)
     python scripts/generate_questions.py --name small --per-period 30 --batch
+    python scripts/generate_questions.py --name full --full --batch   # the full set (D23)
+
+With --batch there are two batches (writing, then reviewing). If the run is
+interrupted while waiting, run the same command again: it collects the
+batch already submitted instead of paying for a new one.
 """
 from __future__ import annotations
 
@@ -75,7 +80,7 @@ def main(argv: list[str] | None = None) -> int:
 
     llm = LLMClient(config=cfg["llm"], cache_dir=resolve_path(cfg["paths"]["cache"]) / "llm",
                     ledger=resolve_path(cfg["paths"]["runs"]) / "llm_costs.csv",
-                    client=_DryClient() if args.dry_run else None)
+                    client=_DryClient() if args.dry_run else None, log=lambda m: print(m, flush=True))
     rows = articles.to_dict("records")
     writes = [simulate.question_request(a, cfg) for a in rows]
     placeholder = DraftQuestion(question="x " * 15, reference_answer="y " * 25, question_type="evergreen")

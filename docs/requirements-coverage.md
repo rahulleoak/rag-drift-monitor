@@ -37,8 +37,8 @@ Last checked: 2026-11-04 (gaps found and closed in D7).
 
 | Requirement | How it is met | Status |
 |---|---|---|
-| Evaluate retrieval quality across time periods | Per period, stale vs refreshed index; historical and recent questions | Designed |
-| Identify changes in document relevance and retrieval rankings | Pooled LLM relevance judgements; top-K overlap, rank correlation, displaced articles (D7) | Designed |
+| Evaluate retrieval quality across time periods | Per period, stale vs refreshed index; historical and recent questions (D25) | Built; numbers after the full question set |
+| Identify changes in document relevance and retrieval rankings | Pooled LLM relevance judgements; top-K overlap, newer-article share, displaced source articles (D7, D25) | Built; numbers after the full question set |
 | Precision@K, Recall@K, MRR or NDCG | All four (D2) | Designed |
 | Identify queries with poor or irrelevant results | Worst queries per segment, with what was retrieved | Designed |
 

@@ -26,6 +26,8 @@ Version history:
                  as copying; only awkward phrasing or a whole copied sentence fails
                  it. Measured reason: copy-rejected questions were not easier to
                  retrieve (F11). Verbatim copying is caught in code. Writer unchanged.
+    rel-v1       retrieval relevance judge (Agent C): grades 0/1/2 for the pooled
+                 top-k of both indexes, in shuffled order, index not shown (D25)
 """
 from __future__ import annotations
 
@@ -161,3 +163,44 @@ class QuestionReview(BaseModel):
     natural: bool
     question_type: Literal["evergreen", "time_sensitive"]
     reason: str = Field(description="At most 25 words")
+
+
+# ---------- retrieval relevance (Opus, Agent C) ----------
+
+RELEVANCE_VERSION = "rel-v1"
+
+RELEVANCE_SYSTEM = """You judge search results for a newsroom archive assistant. Journalists and \
+editors ask it questions; it searches the company's archive of published articles (each article is \
+a headline plus a short description) and answers from the articles it finds.
+
+You will see one question, a reference answer, and a list of archive articles in random order. The \
+reference answer was written from one article; other articles may answer the question equally \
+well, and some articles may not. Grade every article on its own, from its text only:
+- 2: the article answers the question: it states the fact asked for (or an equally correct answer \
+to the question as asked). If the question is about a specific event, person, place or time, the \
+article must be about that same one.
+- 1: on the same topic or event and useful background, but it does not state the answer.
+- 0: not relevant: a different topic, or a different event that only shares words with the \
+question.
+
+Do not use outside knowledge to fill gaps: judge what each article itself says. Grade every \
+article listed, exactly once, using its letter."""
+
+RELEVANCE_TEMPLATE = """Question: {question}
+Reference answer: {reference_answer}
+
+Articles:
+{articles}"""
+
+
+class ArticleGrade(BaseModel):
+    """One article's relevance grade."""
+
+    article: str = Field(description="The article's letter")
+    grade: Literal[0, 1, 2]
+
+
+class RelevanceJudgement(BaseModel):
+    """Grades for every pooled article of one question; code computes the metrics."""
+
+    grades: list[ArticleGrade]

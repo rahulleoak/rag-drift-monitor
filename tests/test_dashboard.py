@@ -5,7 +5,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from driftmon.dashboard_data import list_runs, load_run, severity_grid
+from driftmon.dashboard_data import list_runs, load_run, severity_grid, stale_vs_refreshed
+from driftmon.schemas import RetrievalReport
 from driftmon.graph import build_graph
 from scripts.make_charts import latest_run, make_all
 from tests.test_agents import _config, _synthetic_corpus
@@ -30,6 +31,17 @@ def run_dir(tmp_path_factory):
     pd.DataFrame(d.topics).to_csv(out / "topics.csv", index=False)
     pd.DataFrame(d.term_shifts).to_csv(out / "term_shifts.csv", index=False)
     pd.DataFrame(d.metric_correlations).to_csv(out / "correlations.csv", index=False)
+    judged = [{"period": p, "questions": 10, "stale_answer": s, "refreshed_answer": r, "delta_answer": r - s,
+               "delta_answer_low": r - s - 0.1, "delta_answer_high": r - s + 0.1}
+              for p, s, r in (("2016-17", 0.9, 0.9), ("2020", 0.3, 0.8))]
+    report = RetrievalReport(
+        mode="full_evaluation", questions=20, questions_by_status={"flagged": 10, "baseline": 10},
+        index_store={"directory": "indexes", "reloaded": True}, known_item=[{"index": "refreshed_2020"}],
+        known_item_by_status=[], ranking_change=[{"index": "refreshed_2020", "overlap": 0.8}],
+        judged_by_period=judged, judge={"judged_questions": 20, "cost_usd": 0.12},
+        worst_queries=[{"question": "Q?", "period": "2020", "category": "WELLNESS", "drift_status": "flagged",
+                        "stale_ndcg": 0.0, "refreshed_ndcg": 1.0, "stale_top3": ["a"], "refreshed_top3": ["b"]}])
+    (out / "retrieval.json").write_text(report.model_dump_json(), encoding="utf-8")
     (runs / "not-a-run").mkdir()  # ignored: no drift report
     return out
 
@@ -44,6 +56,8 @@ def test_list_and_load_run(run_dir):
     assert set(run.flagged()["segment_id"]) == {"2020|ALL|vs 2016-17", "2020|POLITICS|vs 2016-17"}
     grid = severity_grid(run)
     assert set(grid["category"]) == {"ALL SECTIONS", "POLITICS"}
+    long = stale_vs_refreshed(run).set_index(["period", "index"])
+    assert len(long) == 4 and long.loc[("2020", "Refreshed index"), "value"] == 0.8
 
 
 def test_make_all_charts(run_dir, tmp_path):
@@ -69,6 +83,7 @@ def test_dashboard_renders_every_tab(run_dir, monkeypatch):
                                           "Impact", "Recommendations"]
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Flagged (vs baseline)"] == "2"
+    assert metrics["Judged questions"] == "20" and metrics["Judge cost"] == "$0.12"
     assert metrics["Next step"] == "full evaluation"
     segment = next(s for s in at.selectbox if s.label == "Segment")
     segment.select("2020|POLITICS|vs 2016-17").run()

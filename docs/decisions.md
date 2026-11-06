@@ -903,3 +903,53 @@ date and reason, and add a new entry that supersedes it.
   real query log can also drift on its own (new users, new tasks).
 - **Code:** `driftmon/queries.py`; Agent A and B nodes; `query_drift.csv` in
   each run; tests in `tests/test_queries.py`.
+
+## D25. Agent C: three retrieval comparisons, one judge call per question
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author); built and tested, numbers wait
+  for the full question set.
+- **Context:** the brief asks Agent C to evaluate retrieval across periods and
+  find changes in relevance and rankings, and the key experiment is stale vs
+  refreshed. A stale index cannot contain a later article, so known-item
+  scores alone are one-sided (D2), and they are inflated anyway (F11).
+- **Choice:** three comparisons, each answering one question:
+  1. *(a) Did not re-indexing hurt?* Each later period's questions on the
+     stale index and that period's refreshed index. Opus grades the pooled
+     top 5 of both (0 = not relevant, 1 = on topic, 2 = answers). Metrics:
+     answer@5 (the context the answer step reads contains an answer),
+     precision@5, nDCG@5 against the pooled ideal; paired difference per
+     question with a bootstrap interval; by period, by drift status from
+     Agent B (flagged / control / other) and by question type. Baseline
+     questions are judged on stale vs the latest refreshed index: the
+     historical control.
+  2. *(b) Does the retriever cope with drifted content?* On the same
+     refreshed index, each period's questions vs the baseline's: MRR and
+     Recall@10 of the source article. One index for both groups, so index
+     size is not the explanation. Weighted down (F11).
+  3. *(c) Are old questions crowded out?* Baseline questions on stale vs each
+     refreshed index: top-10 overlap, share of the top 10 from newer periods,
+     and whether the source article fell out. Free (no LLM). This replaces
+     the rank correlation listed earlier: with mostly different documents
+     in two top-10 lists, overlap and displacement say more.
+- **Judge design:**
+  - One request per question, grading every pooled article together, in a
+    shuffled order, never saying which index found which article (tested).
+    Cheaper than one call per article and blind to the index.
+  - Top 5, not 10: about half the cost, and it is what the answer step reads.
+  - The judge sees the reference answer but is told other articles may
+    answer equally well, so an older article that still answers gets credit.
+  - An article the judge skips is left ungraded and the question is dropped
+    from the judged metrics, never silently scored 0 (tested). Counts are
+    reported.
+  - Unanswerable questions are not used here (no relevant article exists by
+    design); they are for Agent D's abstention check.
+- **Regression-check route** (no drift flagged): only random-pool questions.
+- **Indexes (D22):** saved to `indexes/` with a manifest (model, fingerprint
+  of document ids and vectors, periods and document ids per index); reloaded
+  only when the fingerprint matches, otherwise rebuilt (tested). 650 MB for
+  the six indexes; stale holds 60k articles, refreshed 2022 77.8k.
+- **Cost:** about 1 cent per question as a batch; `run_pipeline.py --estimate`
+  prints the exact estimate before any spend.
+- **Code:** `driftmon/evaluation/retrieval.py`, `retrieval_metrics.py`,
+  `agents/retrieval_eval.py`, prompt `rel-v1`; tests in
+  `tests/test_retrieval.py`; dashboard page "Retrieval".

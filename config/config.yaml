@@ -12,6 +12,7 @@ paths:
   data_sample: data/sample
   cache: cache          # embeddings and LLM responses
   runs: runs            # one folder per pipeline run: reports and charts
+  indexes: indexes      # FAISS indexes with a manifest, saved by Agent C (D22)
 
 # Candidate datasets. Both are explored before one is chosen (Q1).
 datasets:
@@ -133,6 +134,7 @@ embeddings:
 
 retrieval:
   top_k: 10
+  judge_k: 5                    # D25: the judge grades the pooled top 5 of both indexes (what the answer step reads)
   index_type: faiss_flat_ip               # exact search, Q13
 
 # D9: a different, stronger model judges than the one that writes questions
@@ -155,6 +157,7 @@ llm:
   jobs:
     questions:       {effort: medium, max_tokens: 4000, expected_output: 900}
     question_review: {effort: medium, max_tokens: 3000, expected_output: 700}
+    relevance:       {effort: low, max_tokens: 3000, expected_output: 600}
 
 drift:
   alpha: 0.05

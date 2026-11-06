@@ -9,6 +9,7 @@ data/raw/*
 # --- Caches and run outputs (embeddings, LLM responses, reports) ---
 cache/
 runs/
+indexes/            # FAISS indexes saved by Agent C (D22)
 *.npy
 *.faiss
 

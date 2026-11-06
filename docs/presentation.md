@@ -431,6 +431,9 @@ Honest moments that show judgement, good for a "what we learned" slide:
   knows but the article does not state ("the Paris deal"). (D18)
 - **"Why HuffPost and not enterprise documents?"** Public, timestamped, with a
   known drift event to validate against; limitations stated.
+- **"Didn't the brief ask for a vector database?"** It lists "Qdrant / FAISS /
+  Chroma" as options; we use FAISS with exact search, because approximate
+  search would add retrieval noise to the very effect we measure (D22).
 - **"Why not a knowledge graph?"** Considered (D21): it would make relationship
   changes explicit, but extraction from one-sentence descriptions is the hard
   part, OWL reasoning and a graph database add days and infrastructure for

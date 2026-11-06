@@ -16,6 +16,16 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06 (later): Vector store checked against the brief
+- **Checked:** the brief lists FAISS as a vector database option; D22
+  records why FAISS (exact search) stays and what it is precisely.
+- **Planned for Agent C:** save the FAISS indexes to `indexes/` with a
+  manifest and reload them when embeddings are unchanged (currently rebuilt
+  in memory each run). `indexes/` added to .gitignore.
+- **Storage today:** raw data 84 MB, cleaned articles 9 MB (parquet),
+  embeddings 120 MB (numpy cache), LLM replies 1 MB (JSON), runs 2.5 MB;
+  all local and gitignored except `docs/figures/`.
+
 ## 2026-11-06 (later): Is rejecting "copied" wording justified? Measured: no
 - **Checked:** F11. Copy-rejected questions retrieve their source article
   at rank 1 79% of the time, kept ones 91%: the rejection does not prevent

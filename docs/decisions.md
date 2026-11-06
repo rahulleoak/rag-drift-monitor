@@ -819,3 +819,32 @@ date and reason, and add a new entry that supersedes it.
   infrastructure.
 - **Future work:** temporal knowledge graphs for relationship drift, and
   GraphRAG for questions about who holds which role.
+
+## D22. Vector store revisited against the brief: FAISS stays, indexes saved to disk with Agent C
+- **Date:** 2026-11-06
+- **Status:** Accepted (author, 2026-11-06). Adds to Q13.
+- **Context:** the author asked whether the brief expects a vector database.
+  The brief's technology table lists "Vector database: Qdrant / FAISS /
+  Chroma", and says the stack is open and not every listed technology
+  must be used. FAISS is one of the three named options.
+- **What FAISS is, precisely:** a vector search library, not a database
+  server. Here it stores the vectors and does exact nearest-neighbour
+  search; the article metadata (date, section, text) sits next to it in
+  `data/processed/documents.parquet`, joined by document id. Together they
+  do the job of a vector database for a single-user analysis system.
+- **Why not Qdrant or Chroma:**
+  1. **Exact search keeps the experiment clean.** Their default indexes are
+     approximate (HNSW), which adds small random retrieval errors; a quality
+     drop could then be drift or search noise.
+  2. **Six indexes are cheap with FAISS** (one stale, one refreshed per
+     later year): a few lines and about a second to build.
+  3. **Nothing to install** for reviewers reproducing the results.
+- **Gap closed with Agent C:** indexes are currently rebuilt in memory on
+  every run from the embedding cache. Agent C will save each index to disk
+  (`faiss.write_index`, under `indexes/`, gitignored) with a small manifest
+  (model, document ids, build date), and reload them when the embeddings
+  have not changed. This makes the store persistent, lets the dashboard and
+  demos load instantly, and records exactly which documents each index
+  held.
+- **Walkthrough answer:** "FAISS is listed in the brief; we chose exact
+  search because approximate search would blur the very effect we measure."

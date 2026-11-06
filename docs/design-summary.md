@@ -59,7 +59,7 @@ flowchart TD
     OUT --> UI["Streamlit dashboard"]
 
     classDef planned stroke-dasharray: 6 4
-    class WK,CH,ALT,G2,D,E planned
+    class ALT,G2,D,E planned
 ```
 
 Solid boxes are built and tested; dashed boxes are designed, not built yet.

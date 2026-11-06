@@ -16,6 +16,34 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-06 (end of session): ready to generate the full question set tomorrow
+- **State:** branch `llm-layer-and-pilot`, all committed and pushed (no PR
+  yet; ask the author first). 77 tests pass. Spent $2.82 of the $20 credit
+  ($150 budget). Prompts final: writer q-v3, reviewer r-v5 (F12).
+- **Built today:** double review and label groups (D19, F9), oversample
+  (D20, F10, F12), copy-vs-retrieval check (F11), full-set sampling (D23:
+  525 articles, estimated $11.55 batch, expected $5–8), vector-store
+  decision (D22), knowledge-graph suggestion reviewed (D21), prototype-to-
+  production framing (presentation §12b).
+- **Deferred by the author:** the full batch run, to start fresh tomorrow
+  rather than risk an interruption mid-run.
+- **Tomorrow, in order (Saturday 2026-11-07):**
+  1. **Make batches resumable first:** save each batch id to
+     `runs/questions/<name>/batch_ids.txt` the moment it is created
+     (`LLMClient.complete_many(on_submit=...)`), and add `--resume` to
+     `generate_questions.py` to collect a finished batch instead of
+     resubmitting. Requests are rebuilt deterministically (same seed, same
+     order), so custom ids match.
+  2. Run `python scripts/generate_questions.py --name full --full --batch`
+     (shown to the author as a dry run already).
+  3. Agent C (retrieval evaluation; save FAISS indexes, D22; weigh
+     known-item metrics down, F11) and the hand-label sheet.
+- **Money ahead:** after the question set about $9–12 of credit remains;
+  Agents C and D need roughly $10–15, so about $20 more credit by Sunday.
+- **Timeline:** about 28–35 hours of work left over Saturday–Monday, with
+  Tuesday as buffer. Cuttable if needed: query drift (state as a
+  limitation), a minimal model-evaluation loop.
+
 ## 2026-11-06 (later): Reviewer r-v5; prompt tuning ends
 - **Built:** r-v5 "natural" check (names and facts are not copying).
 - **Results:** F12. Random pilot 15 kept (+1); oversample 15 kept (was 9),

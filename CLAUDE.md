@@ -1,6 +1,7 @@
 # Project: Semantic Drift Detection & RAG Quality Assurance
 
-Full brief: `docs/project-brief.md`. Deadline: Tuesday, Nov 10, 2026,
+Full brief: `docs/project-brief.md`. Deadline: Friday, Nov 13, 2026 (moved from
+Tuesday, Nov 10 by the stakeholder, Ani, on 2026-11-06; see `docs/questions.md`),
 followed by a 15–20 minute stakeholder walkthrough of the system and its
 key technical decisions.
 

@@ -16,6 +16,18 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-05 (late night): Question reviewer version 4; prompt tuning stops
+- **Built:** reviewer r-v4 assigns the type label itself (without seeing
+  the writer's); disagreement recorded as `type_agreed`; unanswerable
+  questions kept if the reviewer agrees and they ask one thing. Agreement
+  rate shown in every run. Tests updated (73 pass).
+- **Results:** F8 updated. 60% kept (13 answerable + 2 unanswerable); label
+  agreement 83%; $0.25 for reviews only; $1.03 spent in total.
+- **Recorded:** D18, the judge cannot search or learn; its built-in
+  knowledge is a stated limitation (the author's question).
+- **Next:** the ~180-question set, sampled with extra weight on flagged
+  sections and controls, as a batch (about $3–6).
+
 ## 2026-11-05 (late night): Question writer versions 2 and 3
 - **Built:** prompts q-v2/r-v2 then q-v3/r-v3 (D17): one fact per question,
   up to two per article, direct reference answers, sharper time-sensitive

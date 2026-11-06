@@ -373,7 +373,9 @@ Honest moments that show judgement, good for a "what we learned" slide:
   "Justin Trudeau"; version 3 showed that even Opus cannot consistently say
   whether "what police said at the time" will go out of date. A strong model
   as a reviewer is useful, but its yes/no checks need the same scrutiny as
-  any other measurement.
+  any other measurement. Version 4 let the reviewer assign the label itself:
+  60% kept, and the two models agree on the label 83% of the time, the
+  ambiguity we now state with any time-sensitive result.
 - **Expected politics to be the most drifted section; it never was** (F5),
   which exposed how the election year inflates "normal" for that section.
 - **Two of our own measures needed correcting** (D12): a word-shift ratio
@@ -407,6 +409,12 @@ Honest moments that show judgement, good for a "what we learned" slide:
   code by design.
 - **"How do you know the LLM judge is right?"** Hand labels, agreement
   reported; a different model from the one being judged; blind to the index.
+- **"Could the judge just look things up or use what it already knows?"** It
+  cannot search: no request declares a search tool, and each call holds
+  only the instructions and one article. It does not learn from our calls.
+  Its built-in knowledge cannot be removed, only constrained and checked;
+  evidence it holds the line: it rejected questions for facts it surely
+  knows but the article does not state ("the Paris deal"). (D18)
 - **"Why HuffPost and not enterprise documents?"** Public, timestamped, with a
   known drift event to validate against; limitations stated.
 - **"What would you do with more time?"** Keyword search (BM25) to test the

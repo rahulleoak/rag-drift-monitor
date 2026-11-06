@@ -18,6 +18,10 @@ Version history:
                  who people and places are is allowed, invented event details are
                  not; reviewer check "no_outside_facts" becomes
                  "no_invented_details" (D17, revised after the second pilot)
+    r-v4         the reviewer assigns the evergreen / time-sensitive label itself
+                 (without seeing the writer's) instead of grading it, because the
+                 label proved ambiguous; a disagreement is recorded, not a
+                 rejection (D17, revised after the third pilot). Writer unchanged.
 """
 from __future__ import annotations
 
@@ -95,12 +99,12 @@ class QuestionDraft(BaseModel):
 
 # ---------- question review (Opus) ----------
 
-REVIEW_VERSION = "r-v3"
+REVIEW_VERSION = "r-v4"
 
 REVIEW_SYSTEM = """You check questions for a test set of a newsroom archive assistant. Each \
 question was written from one archive article (a headline plus a short description) and comes \
-with a reference answer and a type label. The headline and the description are both part of the \
-article. Judge whether the question is answered only from the article text shown.
+with a reference answer. The headline and the description are both part of the article. Judge \
+whether the question is answered only from the article text shown.
 
 Answer each check with true or false:
 - answerable: the article alone fully answers the question.
@@ -117,12 +121,14 @@ answerable from the question itself.
 fact directly.
 - natural: a journalist or editor could plausibly ask it this way, without copying the headline \
 or description wording.
-- type_correct: the type label is right. time_sensitive means the answer could change or be \
-revised later (counts still being reported, current rules, who holds a role now, ongoing \
-situations); evergreen means it stays true.
-
 Be strict: if you notice any problem with a check, even a minor one, that check is false. Your \
 reason must not describe a problem while the matching check is true.
+
+Also label the question (this is a classification, not a pass/fail check):
+- time_sensitive: the correct answer could change or be revised after publication (counts or \
+tolls still being reported, current rules or guidance, who holds a role now, ongoing situations).
+- evergreen: the correct answer stays true (what someone did or said on a given occasion, a final \
+result, a fixed fact).
 
 Then give a reason of at most 25 words, naming the main problem if any check is false."""
 
@@ -131,11 +137,10 @@ Headline: {title}
 Description: {text}
 
 Question: {question}
-Reference answer: {reference_answer}
-Type label: {question_type}"""
+Reference answer: {reference_answer}"""
 
 REVIEW_CHECKS = ("answerable", "unambiguous", "single_question", "no_invented_details",
-                 "needs_article", "reference_correct", "natural", "type_correct")
+                 "needs_article", "reference_correct", "natural")
 
 
 class QuestionReview(BaseModel):
@@ -148,5 +153,5 @@ class QuestionReview(BaseModel):
     needs_article: bool
     reference_correct: bool
     natural: bool
-    type_correct: bool
+    question_type: Literal["evergreen", "time_sensitive"]
     reason: str = Field(description="At most 25 words")

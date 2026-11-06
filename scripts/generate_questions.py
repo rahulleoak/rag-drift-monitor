@@ -91,7 +91,11 @@ def main(argv: list[str] | None = None) -> int:
     reasons = table.loc[table["set"] == "", "rejected_by"].str.split("; ").explode().value_counts()
     if len(reasons):
         print("Rejection reasons:\n" + reasons.to_string())
-    print(f"Question types kept: {kept['question_type'].value_counts().to_dict()}")
+    print(f"Question types kept (reviewer's label): {kept['question_type'].value_counts().to_dict()}")
+    reviewed = table[table["type_agreed"].notna()]
+    if len(reviewed):
+        print(f"Writer and reviewer agree on the type for {int(reviewed['type_agreed'].sum())} of "
+              f"{len(reviewed)} reviewed questions ({reviewed['type_agreed'].mean():.0%})")
     print(f"Diversity (P3): questions {div['questions']:.3f} vs source articles "
           f"{div['articles']:.3f} (ratio {div['ratio']:.2f})")
     print(f"\nSaved {out} and {report / 'questions.csv'}")

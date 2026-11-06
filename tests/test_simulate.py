@@ -52,9 +52,10 @@ def _fake_embedder(tmp_path):
     return Embedder("fake", tmp_path / "emb", encode_fn=enc)
 
 
-def _review(**false):
+def _review(label="evergreen", **false):
     body = {c: True for c in REVIEW_CHECKS}
     body.update({k: False for k in false})
+    body["question_type"] = label
     body["reason"] = ", ".join(false) or "fine"
     return body
 
@@ -83,9 +84,11 @@ def test_generate_questions_flow(tmp_path):
             if "upper chamber" in prompt:
                 body = _review(no_invented_details=False)  # strict reviewer rejects
             elif "divided between spouses" in prompt:
-                body = _review(answerable=False)                             # agrees: not answerable
+                body = _review(answerable=False, natural=False)  # agrees: not answerable (and broad)
+            elif "fined" in prompt:
+                body = _review(label="time_sensitive")
             else:
-                body = _review()
+                body = _review(label="time_sensitive")  # the bus start date: reviewer disagrees
         elif "Senate" in prompt:
             body = {"questions": [budget_q], "answerable_from_article": True}
         elif "Divorce" in prompt:
@@ -107,6 +110,9 @@ def test_generate_questions_flow(tmp_path):
 
     assert t.loc["b-q0", "set"] == "answerable" and t.loc["b-q1", "set"] == "answerable"
     assert t.loc["b-q1", "question_type"] == "time_sensitive"          # second question per article
+    # the reviewer's label is final; disagreement is recorded, not a rejection
+    assert t.loc["b-q0", "writer_type"] == "evergreen" and t.loc["b-q0", "question_type"] == "time_sensitive"
+    assert t.loc["b-q0", "type_agreed"] == False and t.loc["b-q1", "type_agreed"] == True  # noqa: E712
     assert t.loc["c-q0", "set"] == "unanswerable"                        # teaser kept for abstention tests
     assert t.loc["d-q0", "rejected_by"] == "near-duplicate question"
     assert t.loc["a-q0", "set"] == "" and t.loc["a-q0", "rejected_by"] == "review: not no_invented_details"

@@ -14,7 +14,9 @@ Flow:
        question a journalist would naturally ask, flagged as not answerable.
     3. **Check in code:** length, copying the headline or the description,
        reference answers that describe the article, near-duplicates.
-    4. **Review** (Opus): eight yes/no checks per question.
+    4. **Review** (Opus): seven yes/no checks per question, and its own
+       evergreen / time-sensitive label (final; disagreement with the writer
+       is recorded, not a rejection).
     5. **Decide in code:**
        - answerable questions are kept only if all eight checks pass;
        - unanswerable questions become a separate **unanswerable set**
@@ -48,9 +50,10 @@ _META = re.compile(r"^\s*(the|this) (article|description|headline|story)\b|\bthe
                    re.IGNORECASE)
 UNANSWERABLE_REFERENCE = "Not stated in the article."
 # checks an unanswerable question must pass (besides the reviewer agreeing it is not answerable)
-# an unanswerable question may be broad ("how is debt split in a divorce?"): that is the point
-# of the test, so "unambiguous" is not required
-UNANSWERABLE_CHECKS = ("single_question", "natural")
+# An unanswerable question is kept if the reviewer agrees the article does not answer it and it
+# asks one thing. It may be broad ("how is debt split in a divorce?") and restate the headline:
+# that is the point of the test, so "unambiguous" and "natural" are not required (D17).
+UNANSWERABLE_CHECKS = ("single_question",)
 
 
 def _words(text: str) -> list[str]:
@@ -189,7 +192,7 @@ def generate_questions(cfg: Mapping[str, Any], articles: pd.DataFrame, llm: LLMC
         item: DraftQuestion | None = r["item"]
         rec = {k: r[k] for k in ("question_id", "doc_id", "period", "category", "date", "title", "text")}
         rec.update(question=item.question if item else "", reference_answer=item.reference_answer if item else "",
-                   question_type=item.question_type if item else "",
+                   question_type="", writer_type=item.question_type if item else "", type_agreed=None,
                    writer_answerable=r["answerable"], **{f"rv_{c}": None for c in REVIEW_CHECKS},
                    review_reason="")
         reasons = r["reasons"]
@@ -199,7 +202,9 @@ def generate_questions(cfg: Mapping[str, Any], articles: pd.DataFrame, llm: LLMC
             reasons.append(f"review: {rv.error}")
         elif rv is not None:
             p: QuestionReview = rv.parsed
-            rec.update({f"rv_{c}": getattr(p, c) for c in REVIEW_CHECKS}, review_reason=p.reason)
+            # the reviewer's label is final; disagreement is recorded, not a rejection (D17)
+            rec.update({f"rv_{c}": getattr(p, c) for c in REVIEW_CHECKS}, review_reason=p.reason,
+                       question_type=p.question_type, type_agreed=p.question_type == item.question_type)
             if r["answerable"]:
                 failed = [c for c in REVIEW_CHECKS if not getattr(p, c)]
                 kept_as = "" if failed else "answerable"

@@ -695,8 +695,44 @@ date and reason, and add a new entry that supersedes it.
   8. **Keep rates reported per section and period** in every run, so any
      bias in what survives is visible; sampling will draw more from the
      flagged sections and the controls (politics).
+- **Revised 2026-11-05 (r-v4, after the third pilot):** the reviewer no longer
+  grades the writer's type label (it proved ambiguous, F8); it assigns its
+  own label without seeing the writer's, and that label is final.
+  Disagreement is recorded as a measure of ambiguity (17% in the pilot),
+  not a rejection. An unanswerable question is kept if the reviewer agrees
+  it is unanswerable and it asks one thing ("natural" and "unambiguous" no
+  longer apply: such questions are broad and restate the headline by
+  nature). Keep rate rose to 60%.
 - **Revisit when results exist:** (a) is the unanswerable set useful in the
   groundedness results? (b) do keep rates differ by section enough to bias
   the drift-vs-quality analysis? (c) did allowing common knowledge make
   retrieval easier than it should be?
 - **Evidence:** F8.
+
+## D18. The judge cannot search, and does not learn; its built-in knowledge is a stated limitation
+- **Date:** 2026-11-05
+- **Status:** Accepted (raised by the author, 2026-11-05)
+- **Context:** the reviewer (and later the answer judge) must judge from the
+  article or the retrieved context, not from elsewhere.
+- **Facts, checked in code:**
+  1. **No outside search.** A Claude model can search the web only if a
+     request declares a search tool; no request in this project declares
+     any tool (`driftmon/llm.py`, `_params`). Each request contains the
+     instructions, one article and the question; a cached reply in
+     `cache/llm/question_review/` shows exactly what was sent.
+  2. **No learning across calls.** Every request is independent; the model
+     has no memory of earlier articles and is not changed by our calls
+     (under Anthropic's commercial terms, API data is not used for training
+     by default). The only memory is our own disk cache of replies.
+- **Limitation:** the model's built-in knowledge from training cannot be
+  switched off, only constrained by instructions and checked. Evidence it
+  holds the line: the reviewer rejected questions for facts it surely knows
+  but the articles do not state ("the Paris deal", "blood-testing startup",
+  the name of a primary winner). Using general knowledge for the
+  evergreen / time-sensitive label is intended (how news evolves, not facts
+  about the story).
+- **Where it matters next:** the answer judge (Agent D) could accept an
+  answer that is true in the world but not supported by the retrieved
+  articles. Safeguards: the groundedness check, and the hand-labelled
+  sample (P8) that measures how often the judge departs from the text.
+  To be stated in the README.

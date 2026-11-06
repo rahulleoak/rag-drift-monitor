@@ -416,8 +416,16 @@ chart, and whether it supports or contradicts what we expected.
   | v1 (F7) | 20 | 15 | 75% | 0 | n/a | $0.18 |
   | v2 | 24 | 9 | 38% | 3 | 0 | $0.28 |
   | v3 | 25 | 9 | 36% | 2 | 0 | $0.33 |
+  | **v4** (reviewer labels the type; looser unanswerable rule) | 25 | **13 + 2** | **60%** | 2 | **2** | $0.25 |
 
-  Total spent so far: $0.78 of the $150 budget.
+  Total spent so far: $1.03 of the $150 budget. v4 reused the v3 writer
+  replies from the cache and reran only the reviews.
+  - **v4:** writer and reviewer agree on the type label for 20 of 24
+    reviewed questions (83%). The 4 disagreements are exactly the ambiguous
+    cases: the Brooklyn death toll and gang-link questions, the NATO chief's
+    warning, a candidate's background. The unanswerable set now holds the
+    divorce-debt question and "What did a dad's Instagram post… capture
+    about weekends for parents?" (borderline: the headline half-answers it).
   - **v2 fixed what it targeted:** two-part questions gone; time-sensitive
     questions appear ("How many people have Russian investigators said died
     in the Moscow plane fire so far?"); the reviewer catches questions that
@@ -444,9 +452,12 @@ chart, and whether it supports or contradicts what we expected.
 - **Expectation:** v3 would keep 60–70%.
 - **Verdict:** Contradicts. Stricter checking found real writer errors, but
   two checks (type label, "natural" for unanswerable questions) add noise.
-- **Implication (proposed):** the reviewer assigns the type label instead of
-  judging the writer's (disagreement recorded, not a rejection), and an
+- **Implication (done in v4):** the reviewer assigns the type label instead
+  of judging the writer's (disagreement recorded, not a rejection), and an
   unanswerable question needs only the reviewer's agreement that it is
-  unanswerable and a single ask. Then stop tuning: about 50% kept at about
-  $0.035 per kept question is affordable, and the remaining rejections are
-  mostly right.
+  unanswerable and a single ask. Keep rate 60%. Prompt tuning stops here:
+  at about $0.016 per kept question the remaining rejections are mostly
+  right and affordable. The type label carries an ambiguity of about 17%
+  (the disagreement rate), to be stated with any evergreen vs
+  time-sensitive result; a cleaner subset uses only questions where both
+  models agree.

@@ -4,27 +4,15 @@ How the system is put together: the agents, what each one consumes and
 produces, and how data flows between them. Keep this file and its Mermaid
 diagram up to date whenever the agent design or data flow changes.
 
-**Status (2026-11-04):** proposed design. The folder structure and module
-stubs exist. Implemented: data loading (`driftmon/data.py`), exploration
-(`scripts/exploration/`), periods (`driftmon/periods.py`), cleaning
-(`driftmon/cleaning.py`, `scripts/prepare_data.py`), cached embeddings
-(`driftmon/embeddings.py`), the stale and cumulative refreshed indexes
-(`driftmon/index.py`, D10) and whole-period drift statistics for both
-techniques (`driftmon/drift/`, `scripts/run_drift.py`, F4). **Agents A and B
-run in LangGraph** (`driftmon/graph.py`, `scripts/run_pipeline.py`) with typed
-reports (`MonitoringReport`, `DriftReport`), within-category comparisons and
-severity bands (D11, F5), emerging topics, term-context shifts and the
-measure-correlation check (D12, F6), and the routing decision after B.
-Query drift waits for the LLM query stream. C, D and E are not built yet,
-so both routes currently end the run. Charts (`driftmon/charts.py`,
-`scripts/make_charts.py`) and a dashboard skeleton (`app/streamlit_app.py`,
-reading saved runs via `driftmon/dashboard_data.py`) show A and B's results.
-The LLM layer (`driftmon/llm.py`, D15) is built: budgeted, cached,
-structured calls with refusal fallback, live or batch. Its jobs (question
-writing, judging) come next. Items marked *(proposal Pn)* come
-from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
-marked *(D7)* were added after checking the design against every requirement
-in the assignment (`docs/requirements-coverage.md`).
+**Status (2026-11-06):** Agents A, B and C run in LangGraph (A → B → route → C),
+with typed reports, tests and the Streamlit dashboard. Built: data cleaning,
+cached embeddings, stale and refreshed FAISS indexes saved to disk (D22),
+document and query drift (D11, D12, D24), the LLM layer (D15), the question
+set (D23) and retrieval evaluation (D25). Not built: Agents D and E, the
+alternative-model index, and the Wikipedia long-form set with chunking
+(D26, requested by the stakeholder). Items marked *(proposal Pn)* come from
+`docs/questions.md` Part 4 (D5); items marked *(D7)* were added after
+checking the design against every requirement (`docs/requirements-coverage.md`).
 
 ## 1. Overview
 
@@ -60,37 +48,47 @@ never makes the decision.
 
 ```mermaid
 flowchart TD
-    subgraph SIM["Simulator: stands in for production (not an agent)"]
-        DS[("HuffPost: baseline 2016-17, periods 2018-2022")] --> BATCH["Per-period document batches"]
-        DS --> QGEN["LLM: query stream + golden eval set (historical + recent)"]
+    subgraph DATA["Data, replayed as incoming batches (not an agent)"]
+        HP[("HuffPost articles: baseline 2016-17, then 2018 to 2022")]
+        WK[("Wikipedia long-form articles at year-end snapshots")]
+        WK --> CH["Section-aware chunking"]
+        HP --> QGEN["LLM question writer + reviewer: question set (historical + recent)"]
+        CH --> QGEN
     end
 
-    BATCH --> EMB["Embeddings (disk cache)"]
+    HP --> EMB["Embeddings, bge-small (disk cache)"]
+    CH --> EMB
     EMB --> STALE[("Stale index: baseline only")]
-    EMB --> FRESH[("Refreshed index: baseline + new period")]
-    BATCH --> ALT[("Alternative-model index: used only when model evaluation is triggered")]
+    EMB --> FRESH[("Refreshed index: baseline + new periods")]
+    EMB --> ALT[("Alternative-model index: only for model evaluation")]
 
-    BATCH --> A["A. Data Monitoring"]
+    HP --> A["A. Data Monitoring"]
+    CH --> A
     QGEN -->|"query stream"| A
-    A -->|"MonitoringReport: snapshots, eligible segments"| B["B. Semantic Drift Detection (documents + queries)"]
+    A -->|"MonitoringReport"| B["B. Semantic Drift Detection (documents + queries)"]
     EMB --> B
     B -->|"DriftReport"| G1{"Any significant drift?"}
-    G1 -->|"yes: drifted + control segments"| C["C. Retrieval Evaluation"]
+    G1 -->|"yes: flagged + control segments"| C["C. Retrieval Evaluation"]
     G1 -->|"no: small regression check"| C
-    QGEN -->|"golden eval set"| C
+    QGEN -->|"question set"| C
     STALE --> C
     FRESH --> C
+    ALT --> C
     C -->|"RetrievalReport"| G2{"Full impact run?"}
     G2 -->|"yes"| D["D. RAG Impact Assessment"]
     G2 -->|"regression check only"| E["E. Recommendation"]
     B -->|"drift scores"| D
-    D -->|"borderline: more queries (max 1 loop)"| C
+    D -->|"borderline: more questions (max 1 loop)"| C
     D -->|"ImpactReport"| E
-    E -->|"trigger model evaluation (max 1 loop)"| C
-    ALT --> C
-    E -->|"Recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
+    E -->|"re-index or model evaluation, then re-check (max 1 loop)"| C
+    E -->|"recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
     OUT --> UI["Streamlit dashboard"]
+
+    classDef planned stroke-dasharray: 6 4
+    class WK,CH,ALT,G2,D,E planned
 ```
+
+Solid boxes are built and tested; dashed boxes are designed, not built yet.
 
 ## 3. Agents and their contracts
 

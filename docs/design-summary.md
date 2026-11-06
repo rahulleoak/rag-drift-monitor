@@ -16,9 +16,54 @@ it.
 | Set | What | Why |
 |---|---|---|
 | **HuffPost News Category** (time-based drift) | 77,840 cleaned articles. Baseline 2016–17; new data arrives one year at a time, 2018–2022 | Real, dated drift with a known event to check against (COVID in 2020) |
-| **Wikipedia, long-form** (chunking, new) | About 150–200 articles from Wikipedia's "vital articles" list, captured as they stood at the end of 2017, 2018 … 2022 | Long documents with sections, so chunking matters. The same article is edited over time, which is the "documents become outdated" case. Same years as HuffPost. |
+| **Wikipedia, long-form** (chunking; planned, not built yet) | A sample of long articles, each captured as it stood at the end of each year, 2017–2022 | Long documents with sections, so chunking matters. The same article is edited over time, which is the "documents become outdated" case. Same years as HuffPost. |
 
-## 3. Agents (LangGraph)
+## 3. Architecture and agents (LangGraph)
+
+```mermaid
+flowchart TD
+    subgraph DATA["Data, replayed as incoming batches (not an agent)"]
+        HP[("HuffPost articles: baseline 2016-17, then 2018 to 2022")]
+        WK[("Wikipedia long-form articles at year-end snapshots")]
+        WK --> CH["Section-aware chunking"]
+        HP --> QGEN["LLM question writer + reviewer: question set (historical + recent)"]
+        CH --> QGEN
+    end
+
+    HP --> EMB["Embeddings, bge-small (disk cache)"]
+    CH --> EMB
+    EMB --> STALE[("Stale index: baseline only")]
+    EMB --> FRESH[("Refreshed index: baseline + new periods")]
+    EMB --> ALT[("Alternative-model index: only for model evaluation")]
+
+    HP --> A["A. Data Monitoring"]
+    CH --> A
+    QGEN -->|"query stream"| A
+    A -->|"MonitoringReport"| B["B. Semantic Drift Detection (documents + queries)"]
+    EMB --> B
+    B -->|"DriftReport"| G1{"Any significant drift?"}
+    G1 -->|"yes: flagged + control segments"| C["C. Retrieval Evaluation"]
+    G1 -->|"no: small regression check"| C
+    QGEN -->|"question set"| C
+    STALE --> C
+    FRESH --> C
+    ALT --> C
+    C -->|"RetrievalReport"| G2{"Full impact run?"}
+    G2 -->|"yes"| D["D. RAG Impact Assessment"]
+    G2 -->|"regression check only"| E["E. Recommendation"]
+    B -->|"drift scores"| D
+    D -->|"borderline: more questions (max 1 loop)"| C
+    D -->|"ImpactReport"| E
+    E -->|"re-index or model evaluation, then re-check (max 1 loop)"| C
+    E -->|"recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
+    OUT --> UI["Streamlit dashboard"]
+
+    classDef planned stroke-dasharray: 6 4
+    class WK,CH,ALT,G2,D,E planned
+```
+
+Solid boxes are built and tested; dashed boxes are designed, not built yet.
+
 
 Each agent reads the previous agents' reports. Statistics and decisions are
 plain, tested Python. The LLM writes test questions, answers, judgements and
@@ -69,7 +114,9 @@ and Opus reviews them.
   (Cohen's kappa).
 - **Total LLM spend so far:** $9.18, using our own key.
 
-## 6. Chunking strategy and how it affects drift detection
+## 6. Chunking strategy and how it affects drift detection (planned)
+
+This part is designed but not built yet; results will follow.
 
 **Strategy:**
 - Split at section headings first, so a chunk never mixes two sections.
@@ -83,17 +130,13 @@ both hide drift.
 - Averaging one vector over the whole article dilutes a small new section
   into the rest.
 
-**Experiment:** read each article four ways:
-1. the first 512 tokens only;
-2. one averaged vector;
-3. chunks of about 128 tokens;
-4. chunks of about 256 tokens.
-
-The text added between two snapshots (from Wikipedia's revision history)
-tells us exactly what changed. So we can measure how many real changes each
-way detects, and how many false alarms it raises. The stale vs refreshed
-experiment then shows the practical cost: the stale index returns the
-outdated version of the same article.
+**How we plan to show it:** compare drift detection on whole articles
+(first 512 tokens, or one averaged vector) with detection on chunks. The
+text that changed between two snapshots comes from Wikipedia's revision
+history, so we know what really changed and can check what each way of
+reading the article catches. The stale vs refreshed experiment then shows
+the practical cost: the stale index returns the outdated version of the
+same article.
 
 ## 7. Main assumptions and limitations
 
@@ -108,7 +151,7 @@ outdated version of the same article.
 
 1. Is Wikipedia at yearly snapshots a good choice for the long-form set,
    with company annual reports (SEC 10-K) as the fallback?
-2. Does the four-way chunking experiment answer "how chunking affects drift
+2. Does comparing whole-article and chunked drift detection answer "how chunking affects drift
    detection" in the way you expected?
 3. For the bonus, is applying re-indexing and re-checking a good choice of
    fix?

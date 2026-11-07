@@ -850,14 +850,74 @@ chart, and whether it supports or contradicts what we expected.
     good questions; that costs coverage, not correctness.
   - The changed-facts check is useful but not exact; its flags are
     evidence to check, which is how Agent E will present them.
-- **Limits:** one labeller and small samples (a single item moves a part by
-  5–7 points). A second labeller is invited with a blank sheet and
-  `docs/labelling-guide.md`; `scripts/label_sheet.py compare` then gives
-  the agreement between people, the baseline the LLM numbers are read
-  against.
+- **Second labeller (2026-11-07):** a second person, with no project
+  context, labelled the same blank sheet using only
+  `docs/labelling-guide.md` (no calibration round).
+
+  | Part | Person vs person | Second labeller vs LLM |
+  |---|---|---|
+  | Relevance, "answers or not" | **15/15** | 14/15 (judge never more lenient) |
+  | Relevance, exact grade | 14/15 (kappa 0.89) | 12/15 (kappa 0.70) |
+  | Questions | 14/15 | 10/15 (the reviewer's stricter rules, as above) |
+  | Changed facts | 18/20 | 17/20 (precision 85%, same as the author's) |
+
+  Read against the person-vs-person baseline: on the cut the results use,
+  the judge is one item short of human agreement; both people put the
+  changed-facts check at 85% precision; the question reviewer is stricter
+  than either person, consistently.
+- **Limits:** small samples (a single item moves a part by 5-7 points);
+  two labellers.
 - **Reproduce:** `python scripts/label_sheet.py score`
   (`runs/labels/agreement.csv`; first pass in `agreement_first_pass.csv`).
 - **Expectation:** agreement high on the answers cut (yes); facts precision
   about 90% by my reading (lower: 85%).
 - **Verdict:** Supports using the Opus judge for F15 and the D27 check as a
   flagging step.
+
+## F20. Answers, stale vs refreshed: not re-indexing loses almost every new answer, the system stays silent rather than wrong, and drift scores do not predict where
+- **Date:** 2026-11-07
+- **Setup:** Agent D (D28). All 438 test questions (423 answerable, 15
+  unanswerable) answered by Sonnet from the top 5 of the stale and the
+  refreshed index; each answer graded alone by Opus (correct 0/1/2,
+  grounded, declined), not told which index. 876 answers, 875 judged (one
+  answer failed and is left out). Cost $3.61 (batch) plus the $0.34 pilot.
+- **Result:**
+
+  | Questions | n | Correct, stale | Correct, refreshed | Loss (95% interval) |
+  |---|---|---|---|---|
+  | Baseline 2016-17 (historical control) | 49 | 100% | 100% | 0 |
+  | 2018 | 99 | 1% | 100% | 0.99 (0.97-1.00) |
+  | 2019 | 70 | 0% | 100% | 1.00 |
+  | 2020 | 83 | 0% | 96% | 0.96 (0.92-1.00) |
+  | 2021 | 69 | 0% | 99% | 0.99 (0.96-1.00) |
+  | 2022 | 53 | 0% | 98% | 0.98 (0.94-1.00) |
+
+  - **Silent, not wrong:** on the stale index the assistant declined 98-100%
+    of the time when the top 5 held no answer. Answers with a claim not in
+    the articles: 1 of 438 on the stale index (a decline that named an extra
+    shooting from memory), 2 on the refreshed index (small added details).
+  - **Unanswerable questions:** declined 15/15 on the stale index and 14/15
+    on the refreshed one; the one answer came correctly from a different
+    article (the question was unanswerable only from its own source).
+  - **Refreshed misses** (5): all declines where the top 5 held no answer:
+    retrieval misses, not answer-step errors.
+- **Which drift matters:** of the 19 segments with at least 8 questions
+  (outside the baseline), every one has a material loss: 7 are flagged by
+  Agent B ("drift that hurts") and 12 are not ("harm without drift": e.g.
+  politics 2018-2020, U.S. news 2019-2020, world news 2018). Across
+  segments, no drift measure predicts the size of the loss (Spearman 0.18
+  to 0.40, all p > 0.1, 15 segments with drift scores). No segment was
+  borderline, so the evidence loop back to C did not trigger.
+- **What it means:** on a news archive, the harm comes from new events
+  missing from the index, whatever the section's distribution shift.
+  Drift scores tell *what* changed (useful for explaining and for
+  re-tuning), not *whether* to re-index: re-index on a schedule. Same
+  conclusion as F15, now at the answer level.
+- **Reproduce:** `python scripts/run_pipeline.py` (`runs/<run>/impact.json`,
+  `impact_answers.csv`, `impact_segments.csv`, `impact_correlations.csv`);
+  run `20261107-143926`.
+- **Expectation:** answers would follow retrieval (yes); some invented
+  answers on the stale index (no: almost none); drifted segments would
+  lose more (no).
+- **Verdict:** Supports "re-index on a schedule"; contradicts "re-index
+  where drift is high" as the main trigger.

@@ -5,8 +5,8 @@ agents read it. Keeping them here makes the dependencies between agents
 explicit and testable. Tables are stored as lists of plain records so every
 report can be saved as JSON.
 
-Built so far: MonitoringReport (A), SegmentDrift and DriftReport (B).
-Planned: RetrievalReport (C), ImpactReport (D), Recommendation (E).
+Built so far: MonitoringReport (A), SegmentDrift and DriftReport (B),
+RetrievalReport (C), ImpactReport (D). Planned: Recommendation (E).
 """
 from __future__ import annotations
 
@@ -100,6 +100,25 @@ class RetrievalReport(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+class ImpactReport(BaseModel):
+    """Agent D: answer quality, stale vs refreshed, and which drift matters (D28)."""
+
+    questions: int                                   # questions answered on both indexes
+    sample: str = "all"                              # "all", or how the pilot sample was drawn
+    threshold: float                                 # material loss in correct answers (fixed before results)
+    by_period: list[dict[str, Any]] = Field(default_factory=list)
+    by_status: list[dict[str, Any]] = Field(default_factory=list)       # flagged / control / other / baseline
+    by_type: list[dict[str, Any]] = Field(default_factory=list)         # evergreen vs time-sensitive
+    unanswerable: list[dict[str, Any]] = Field(default_factory=list)    # declined correctly, by index
+    segments: list[dict[str, Any]] = Field(default_factory=list)        # class and likely cause per segment
+    classes: dict[str, int] = Field(default_factory=dict)
+    borderline: list[str] = Field(default_factory=list)                 # segments that may need more evidence
+    correlations: list[dict[str, Any]] = Field(default_factory=list)    # drift measure vs quality loss
+    examples: list[dict[str, Any]] = Field(default_factory=list)        # answers that show the harm
+    judge: dict[str, Any] = Field(default_factory=dict)                 # requests, failures, cost
+    notes: list[str] = Field(default_factory=list)
+
+
 class PipelineState(TypedDict, total=False):
     """The LangGraph state. Inputs first, then one report per agent."""
 
@@ -117,3 +136,6 @@ class PipelineState(TypedDict, total=False):
     llm: Any           # LLMClient for the judged steps, or None to skip them
     retrieval: RetrievalReport
     retrieval_tables: dict[str, Any]  # per-question tables for Agent D and the run folder
+    impact: ImpactReport
+    impact_tables: dict[str, Any]     # per-answer and per-segment tables for Agent E and the run folder
+    impact_sample: int | None         # pilot: answer only this many questions (None = all)

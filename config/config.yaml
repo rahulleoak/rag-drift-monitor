@@ -158,6 +158,8 @@ llm:
     questions:       {effort: medium, max_tokens: 4000, expected_output: 900}
     question_review: {effort: medium, max_tokens: 3000, expected_output: 700}
     relevance:       {effort: low, max_tokens: 3000, expected_output: 600}
+    answers:         {effort: low, max_tokens: 2000, expected_output: 400}
+    answer_judge:    {effort: low, max_tokens: 3000, expected_output: 500}
 
 # D26: long-form documents where chunking applies (stakeholder request, 2026-11-06).
 # Wikipedia articles captured at the last revision before the end of each period
@@ -223,6 +225,10 @@ evaluation:
 
 impact:
   min_retrieval_drop: null       # practical-significance thresholds, set before running (Q11)
-  min_answer_quality_drop: null
+  min_answer_quality_drop: 0.10  # D28: a drop in correct answers of 10+ points (stale vs refreshed) is material, if its interval excludes 0
+  min_segment_questions: 8       # segments with fewer judged questions are reported, not classified
+  answer_k: 5                    # articles the answer step reads (the judged top k, D25)
+  recovered_correct: 0.6         # refreshed index answers at least this share correctly -> the content was missing (re-index)
+  retrieval_ok: 0.6              # top k holds an answer for at least this share -> retrieval is not the problem
   bootstrap_resamples: 2000
   max_evidence_loops: 1          # how many times Impact may ask Retrieval Eval for more queries

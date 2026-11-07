@@ -245,9 +245,12 @@ def evaluate(cfg: Mapping[str, Any], questions: pd.DataFrame, qvecs: np.ndarray,
     resamples, seed = int(cfg["impact"]["bootstrap_resamples"]), int(cfg["seed"])
     # unanswerable questions have no relevant article by design; they are for Agent D (abstention)
     q = questions[questions["set"] == "answerable"].reset_index(drop=True).copy()
-    qvecs = qvecs[(questions["set"] == "answerable").to_numpy()]
+    qvecs_all, qvecs = qvecs, qvecs[(questions["set"] == "answerable").to_numpy()]
     q["drift_status"] = [drift_status(p, c, base, flagged, controls) for p, c in zip(q["period"], q["category"])]
     runs = retrieve_all(q, qvecs, indexes, base, k)
+    unans = questions["set"].eq("unanswerable").to_numpy()
+    runs_unanswerable = (retrieve_all(questions[unans].reset_index(drop=True), qvecs_all[unans], indexes, base, k)
+                         if unans.any() else pd.DataFrame(columns=runs.columns))
 
     # (b) known item, refreshed index: each period's questions vs the baseline's on the same index
     ki = known_item(q, runs, k).merge(q[["question_id", "period", "category", "drift_status"]],
@@ -264,7 +267,7 @@ def evaluate(cfg: Mapping[str, Any], questions: pd.DataFrame, qvecs: np.ndarray,
                                 ["overlap", "newer_share", "source_displaced"], "index", resamples, seed)
                       if len(change) else pd.DataFrame())
 
-    out: dict[str, Any] = {"questions": q, "runs": runs, "known_item": ki, "known_summary": known,
+    out: dict[str, Any] = {"questions": q, "runs": runs, "runs_unanswerable": runs_unanswerable, "known_item": ki, "known_summary": known,
                            "known_by_status": known_by_status, "ranking_change": change,
                            "ranking_summary": change_summary, "judge": {"requests": 0}}
     if llm is None:

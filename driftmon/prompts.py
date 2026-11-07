@@ -28,6 +28,9 @@ Version history:
                  retrieve (F11). Verbatim copying is caught in code. Writer unchanged.
     rel-v1       retrieval relevance judge (Agent C): grades 0/1/2 for the pooled
                  top-k of both indexes, in shuffled order, index not shown (D25)
+    ans-v1       RAG answers from the retrieved top-k only (Agent D, D28)
+    aj-v1        answer judge: correctness 0/1/2, grounded, declined; one call per
+                 answer, index not shown (D28)
 """
 from __future__ import annotations
 
@@ -204,3 +207,71 @@ class RelevanceJudgement(BaseModel):
     """Grades for every pooled article of one question; code computes the metrics."""
 
     grades: list[ArticleGrade]
+
+
+# ---------- RAG answers (Sonnet, Agent D) ----------
+
+ANSWER_VERSION = "ans-v1"
+
+ANSWER_SYSTEM = """You are a newsroom archive assistant. Journalists and editors ask you questions; \
+you answer only from the archive articles provided with each question (each article is a headline \
+plus a short description, with its publication date).
+
+Rules:
+- Use only what the articles say. Do not add facts from your own knowledge, even if you know them.
+- If the articles do not contain the answer, say so plainly and set "found" to false. Do not guess.
+- If a question asks about a specific event, person, place or time, answer only from articles about \
+that same one.
+- Keep the answer short and direct: one to three sentences.
+- List the letters of the articles your answer relies on."""
+
+ANSWER_TEMPLATE = """Question: {question}
+
+Archive articles (most relevant first):
+{articles}"""
+
+
+class RagAnswer(BaseModel):
+    """The assistant's answer, from the retrieved articles only."""
+
+    found: bool = Field(description="True if the articles contain the answer")
+    answer: str = Field(description="One to three sentences; if not found, say the archive does not say")
+    sources: list[str] = Field(description="Letters of the articles the answer relies on")
+
+
+# ---------- answer quality (Opus, Agent D) ----------
+
+ANSWER_JUDGE_VERSION = "aj-v1"
+
+ANSWER_JUDGE_SYSTEM = """You check answers from a newsroom archive assistant. It answers questions \
+using only the archive articles it retrieved (each a headline plus a short description, with its \
+publication date).
+
+You will see a question, a reference answer written from one article, the articles the assistant \
+retrieved, and the assistant's answer. Judge the answer on three points:
+- correctness: 2 if it gives the fact asked for, matching the reference answer or an answer the \
+retrieved articles show is equally correct for the question as asked; 1 if partly right (a key part \
+missing or slightly off); 0 if wrong, or if it gives no answer.
+- grounded: true if every factual claim in the answer is stated in the retrieved articles; false if \
+any claim is not (invented, or from outside knowledge). An answer that only says the articles do \
+not contain the answer is grounded.
+- declined: true if the answer says the articles do not contain the answer instead of answering.
+
+Judge from the texts shown only; do not use outside knowledge to decide what is true."""
+
+ANSWER_JUDGE_TEMPLATE = """Question: {question}
+Reference answer: {reference_answer}
+
+Retrieved articles:
+{articles}
+
+Assistant's answer: {answer}"""
+
+
+class AnswerJudgement(BaseModel):
+    """Grades for one answer; code turns them into metrics and decisions."""
+
+    reason: str = Field(description="At most 30 words")
+    correctness: Literal[0, 1, 2]
+    grounded: bool
+    declined: bool

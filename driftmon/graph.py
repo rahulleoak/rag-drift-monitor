@@ -4,9 +4,9 @@ Flow: A Data Monitoring -> B Drift Detection -> C Retrieval Evaluation
 -> D RAG Impact Assessment -> E Recommendation, over a typed shared state
 (``schemas.PipelineState``).
 
-Built so far: A -> B -> routing decision -> C. Both routes run C (the
-regression check on a small question set); D and E are not built yet, so the
-run ends after C. The decision is recorded in the state (``next_step``).
+Built so far: A -> B -> routing decision -> C -> D. Both routes run C (the
+regression check on a small question set); E is not built yet, so the run
+ends after D. The decision is recorded in the state (``next_step``).
 
 Conditional edges, decided in Python:
     - after B: no flagged drift -> C runs a small regression check only,
@@ -24,6 +24,7 @@ from langgraph.graph import END, START, StateGraph
 
 from driftmon.agents.data_monitoring import data_monitoring
 from driftmon.agents.drift_detection import drift_detection
+from driftmon.agents.impact_assessment import impact_assessment
 from driftmon.agents.retrieval_eval import retrieval_evaluation
 from driftmon.schemas import PipelineState
 
@@ -42,17 +43,19 @@ def _record_route(state: PipelineState) -> dict[str, Any]:
 
 
 def build_graph():
-    """Compile the agent graph built so far (A -> B -> routing decision -> C)."""
+    """Compile the agent graph built so far (A -> B -> routing decision -> C -> D)."""
     g = StateGraph(PipelineState)
     g.add_node("data_monitoring", data_monitoring)
     g.add_node("drift_detection", drift_detection)
     g.add_node("route", _record_route)
     g.add_node("retrieval_evaluation", retrieval_evaluation)
+    g.add_node("impact_assessment", impact_assessment)
     g.add_edge(START, "data_monitoring")
     g.add_edge("data_monitoring", "drift_detection")
     g.add_edge("drift_detection", "route")
     # both routes run C; C reads next_step to choose the full or the small question set
     g.add_conditional_edges("route", route_after_drift, {FULL_EVALUATION: "retrieval_evaluation",
                                                          REGRESSION_CHECK: "retrieval_evaluation"})
-    g.add_edge("retrieval_evaluation", END)  # D and E are not built yet
+    g.add_edge("retrieval_evaluation", "impact_assessment")
+    g.add_edge("impact_assessment", END)  # E is not built yet
     return g.compile()

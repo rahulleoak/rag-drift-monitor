@@ -1,7 +1,7 @@
 """Run the LangGraph pipeline and save every agent's report to ``runs/<run_id>/``.
 
 Built so far: Agent A (Data Monitoring) -> Agent B (Drift Detection) -> the
-routing decision -> Agent C (Retrieval Evaluation).
+routing decision -> Agent C (Retrieval Evaluation) -> Agent D (RAG Impact).
 
 Writes:
     monitoring.json    Agent A's MonitoringReport
@@ -15,11 +15,14 @@ Writes:
     route.txt          the routing decision after Agent B
     retrieval.json     Agent C's RetrievalReport
     retrieval_*.csv    Agent C's per-question tables (judged, known item, ranking change, runs)
+    impact.json        Agent D's ImpactReport
+    impact_*.csv       Agent D's tables (answers, paired, segments, correlations)
 
 Usage (from the repository root):
     python scripts/run_pipeline.py --estimate   # everything except the judge; prints its cost
     python scripts/run_pipeline.py              # including the relevance judge (LLM spend)
-    python scripts/run_pipeline.py --no-judge   # Agent C without the judged comparison
+    python scripts/run_pipeline.py --no-judge   # Agents C and D without LLM calls
+    python scripts/run_pipeline.py --pilot 20   # Agent D on a 20-question sample only
 
 The judge runs as a batch (half price). If the run is interrupted while it
 waits, run the same command again: it collects the batch already submitted.
@@ -55,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--estimate", action="store_true", help="no LLM spend: print the judge's cost")
     mode.add_argument("--no-judge", action="store_true", help="skip the LLM relevance judge")
+    parser.add_argument("--pilot", type=int, help="Agent D on this many questions only")
     args = parser.parse_args(argv)
     config = load_config()
     run_dir = resolve_path(config["paths"]["runs"]) / datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -78,7 +82,8 @@ def main(argv: list[str] | None = None) -> int:
             llm = _EstimateOnly(llm)
     state = build_graph().invoke({"config": config, "docs": docs, "vectors": vectors,
                                   "queries": queries, "query_vectors": query_vectors,
-                                  "questions": questions, "question_vectors": question_vectors, "llm": llm})
+                                  "questions": questions, "question_vectors": question_vectors, "llm": llm,
+                                  "impact_sample": args.pilot})
 
     mon, drift = state["monitoring"], state["drift"]
     (run_dir / "monitoring.json").write_text(mon.model_dump_json(indent=2), encoding="utf-8")
@@ -125,8 +130,9 @@ def main(argv: list[str] | None = None) -> int:
     print("\n=== Agent B: correlation of drift measures across segments (Spearman) ===")
     print(corr.set_index("measure").round(2).to_string())
     _report_retrieval(state, run_dir)
+    _report_impact(state, run_dir)
     if args.estimate and llm is not None:
-        print(f"\nEstimate only: the judge would cost about ${llm.estimate:.2f} "
+        print(f"\nEstimate only: the uncached LLM calls would cost about ${llm.estimate:.2f} "
               f"({llm.uncached} uncached requests, batch price); spent so far ${llm.spent():.2f}")
     print(f"\nFlagged (vs baseline): {len(drift.drifted_segments)}; controls: "
           f"{len(drift.control_segments)}; next step: {state['next_step']}")
@@ -169,6 +175,41 @@ def _report_retrieval(state, run_dir: Path) -> None:
         print(f"Note: {note}")
 
 
+def _report_impact(state, run_dir: Path) -> None:
+    """Save Agent D's report and tables, and print the headline numbers."""
+    rep, tables = state.get("impact"), state.get("impact_tables", {})
+    if rep is None:
+        return
+    (run_dir / "impact.json").write_text(rep.model_dump_json(indent=2), encoding="utf-8")
+    for name, df in tables.items():
+        if len(df):
+            df.to_csv(run_dir / f"impact_{name}.csv", index=False)
+    print(f"\n=== Agent D: answers, stale vs refreshed ({rep.questions} questions; {rep.sample}) ===")
+
+    def show(rows, cols):
+        if rows:
+            df = pd.DataFrame(rows)
+            print(df[[c for c in cols if c in df.columns]].round(3).to_string(index=False))
+    cols = ["questions", "stale_correct", "refreshed_correct", "loss_correct", "loss_low", "loss_high",
+            "stale_hallucinated", "refreshed_hallucinated", "stale_declined_ok"]
+    show(rep.by_period, ["period"] + cols)
+    print("    by drift status:")
+    show(rep.by_status, ["drift_status"] + cols)
+    if rep.unanswerable:
+        print("    unanswerable questions (should decline):")
+        show(rep.unanswerable, ["index", "questions", "declined", "hallucinated"])
+    if rep.classes:
+        print(f"    segment classes (material loss >= {rep.threshold:.0%}, interval excludes 0): {rep.classes}")
+        show(rep.segments, ["segment_id", "questions", "stale_correct", "refreshed_correct", "loss_correct",
+                            "loss_low", "loss_high", "class", "cause"])
+    if rep.correlations:
+        print("    drift measure vs loss in correct answers (Spearman, across segments):")
+        show(rep.correlations, ["measure", "segments", "spearman", "p_value"])
+    print(f"    judge: {rep.judge}")
+    for note in rep.notes:
+        print(f"Note: {note}")
+
+
 class _NoCalls:
     """Stand-in API client for --estimate: any call is an error."""
 
@@ -181,6 +222,7 @@ class _EstimateOnly:
 
     def __init__(self, llm: LLMClient) -> None:
         self.llm, self.estimate, self.uncached = llm, 0.0, 0
+        self.estimate_only = True
 
     def spent(self) -> float:
         return self.llm.spent()

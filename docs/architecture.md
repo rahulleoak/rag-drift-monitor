@@ -4,24 +4,15 @@ How the system is put together: the agents, what each one consumes and
 produces, and how data flows between them. Keep this file and its Mermaid
 diagram up to date whenever the agent design or data flow changes.
 
-**Status (2026-11-04):** proposed design. The folder structure and module
-stubs exist. Implemented: data loading (`driftmon/data.py`), exploration
-(`scripts/exploration/`), periods (`driftmon/periods.py`), cleaning
-(`driftmon/cleaning.py`, `scripts/prepare_data.py`), cached embeddings
-(`driftmon/embeddings.py`), the stale and cumulative refreshed indexes
-(`driftmon/index.py`, D10) and whole-period drift statistics for both
-techniques (`driftmon/drift/`, `scripts/run_drift.py`, F4). **Agents A and B
-run in LangGraph** (`driftmon/graph.py`, `scripts/run_pipeline.py`) with typed
-reports (`MonitoringReport`, `DriftReport`), within-category comparisons and
-severity bands (D11, F5), emerging topics, term-context shifts and the
-measure-correlation check (D12, F6), and the routing decision after B.
-Query drift waits for the LLM query stream. C, D and E are not built yet,
-so both routes currently end the run. Charts (`driftmon/charts.py`,
-`scripts/make_charts.py`) and a dashboard skeleton (`app/streamlit_app.py`,
-reading saved runs via `driftmon/dashboard_data.py`) show A and B's results. Items marked *(proposal Pn)* come
-from `docs/questions.md` Part 4 and were approved on 2026-11-04 (D5). Items
-marked *(D7)* were added after checking the design against every requirement
-in the assignment (`docs/requirements-coverage.md`).
+**Status (2026-11-06):** Agents A, B and C run in LangGraph (A → B → route → C),
+with typed reports, tests and the Streamlit dashboard. Built: data cleaning,
+cached embeddings, stale and refreshed FAISS indexes saved to disk (D22),
+document and query drift (D11, D12, D24), the LLM layer (D15), the question
+set (D23) and retrieval evaluation (D25). Not built: Agents D and E, the
+alternative-model index, and the Wikipedia long-form set with chunking
+(D26, requested by the stakeholder). Items marked *(proposal Pn)* come from
+`docs/questions.md` Part 4 (D5); items marked *(D7)* were added after
+checking the design against every requirement (`docs/requirements-coverage.md`).
 
 ## 1. Overview
 
@@ -57,37 +48,47 @@ never makes the decision.
 
 ```mermaid
 flowchart TD
-    subgraph SIM["Simulator: stands in for production (not an agent)"]
-        DS[("HuffPost: baseline 2016-17, periods 2018-2022")] --> BATCH["Per-period document batches"]
-        DS --> QGEN["LLM: query stream + golden eval set (historical + recent)"]
+    subgraph DATA["Data, replayed as incoming batches (not an agent)"]
+        HP[("HuffPost articles: baseline 2016-17, then 2018 to 2022")]
+        WK[("Wikipedia long-form articles at year-end snapshots")]
+        WK --> CH["Section-aware chunking"]
+        HP --> QGEN["LLM question writer + reviewer: question set (historical + recent)"]
+        CH --> QGEN
     end
 
-    BATCH --> EMB["Embeddings (disk cache)"]
+    HP --> EMB["Embeddings, bge-small (disk cache)"]
+    CH --> EMB
     EMB --> STALE[("Stale index: baseline only")]
-    EMB --> FRESH[("Refreshed index: baseline + new period")]
-    BATCH --> ALT[("Alternative-model index: used only when model evaluation is triggered")]
+    EMB --> FRESH[("Refreshed index: baseline + new periods")]
+    EMB --> ALT[("Alternative-model index: only for model evaluation")]
 
-    BATCH --> A["A. Data Monitoring"]
+    HP --> A["A. Data Monitoring"]
+    CH --> A
     QGEN -->|"query stream"| A
-    A -->|"MonitoringReport: snapshots, eligible segments"| B["B. Semantic Drift Detection (documents + queries)"]
+    A -->|"MonitoringReport"| B["B. Semantic Drift Detection (documents + queries)"]
     EMB --> B
     B -->|"DriftReport"| G1{"Any significant drift?"}
-    G1 -->|"yes: drifted + control segments"| C["C. Retrieval Evaluation"]
+    G1 -->|"yes: flagged + control segments"| C["C. Retrieval Evaluation"]
     G1 -->|"no: small regression check"| C
-    QGEN -->|"golden eval set"| C
+    QGEN -->|"question set"| C
     STALE --> C
     FRESH --> C
+    ALT --> C
     C -->|"RetrievalReport"| G2{"Full impact run?"}
     G2 -->|"yes"| D["D. RAG Impact Assessment"]
     G2 -->|"regression check only"| E["E. Recommendation"]
     B -->|"drift scores"| D
-    D -->|"borderline: more queries (max 1 loop)"| C
+    D -->|"borderline: more questions (max 1 loop)"| C
     D -->|"ImpactReport"| E
-    E -->|"trigger model evaluation (max 1 loop)"| C
-    ALT --> C
-    E -->|"Recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
+    E -->|"re-index or model evaluation, then re-check (max 1 loop)"| C
+    E -->|"recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
     OUT --> UI["Streamlit dashboard"]
+
+    classDef planned stroke-dasharray: 6 4
+    class ALT,G2,D,E planned
 ```
+
+Solid boxes are built and tested; dashed boxes are designed, not built yet.
 
 ## 3. Agents and their contracts
 
@@ -95,7 +96,7 @@ flowchart TD
 |---|---|---|---|
 | **A. Data Monitoring** | Period document batches, query stream | Fixes the baseline snapshot. Tracks volume, text length, category mix (chi-square), new-term rate, empty descriptions. Merges renamed sections (`categories.normalise`) and reports sections new since the baseline (e.g. U.S. NEWS) as a structural change, not drift (D6). Marks period × category segments with enough data. Summarises the query stream the same way (volume, new-term rate) *(D7)*. | `MonitoringReport` (B) |
 | **B. Semantic Drift Detection** | `MonitoringReport`, embeddings | Technique 1: MMD + permutation test, per-document novelty, centroid shift, dispersion *(P3)*. Technique 2: Jensen–Shannon divergence and log-odds emerging terms. Each period is compared with the baseline and with the previous period *(P1)*, both as a whole and within each category, so a change in topic mix is not mistaken for a change in meaning (F2, D6). Benjamini–Hochberg correction; severity bands calibrated on within-baseline drift *(P7)*; lexical × semantic drift type *(P2)*. Also: the same techniques on the **query stream** (query drift) *(D7)*; **term-context shift** for key terms (how far the meaning of articles containing a term moves, and its neighbouring words before and after) *(D7)*; **emerging topics** by clustering each period's most novel articles, labelled with their top terms *(D7)*. LLM explains flagged segments from the numbers and examples. | `DriftReport`: per-segment scores, p-values, severity, examples, drifted + control segments (C, D, E) |
-| **C. Retrieval Evaluation** | `DriftReport`, golden eval set, both indexes | Selects questions from drifted and control segments. Known-item MRR and Recall@K; LLM-judged Precision@K and nDCG@K over pooled results of both indexes. Per-segment deltas with bootstrap CIs; worst queries with what was retrieved. **Ranking change** between stale and refreshed: top-K overlap, rank correlation, and which older articles were displaced by newer ones *(D7)*. Runs historical and recent questions separately *(D7)*. When E triggers model evaluation, re-runs the affected segments with the alternative embedding model *(D7)*. | `RetrievalReport` (D) |
+| **C. Retrieval Evaluation** | `DriftReport`, golden eval set, both indexes | Saves each FAISS index to disk with a manifest and reloads it when the embeddings are unchanged (D22). Selects questions from drifted and control segments. Known-item MRR and Recall@K; LLM-judged Precision@K and nDCG@K over pooled results of both indexes. Per-segment deltas with bootstrap CIs; worst queries with what was retrieved. **Ranking change** between stale and refreshed for baseline questions: top-K overlap, share of newer articles, and whether the source article was displaced *(D7, D25)*. The judge grades the pooled top 5 of both indexes in one blind, shuffled call per question *(D25)*. Runs historical and recent questions separately *(D7)*. When E triggers model evaluation, re-runs the affected segments with the alternative embedding model *(D7)*. | `RetrievalReport` (D) |
 | **D. RAG Impact Assessment** | `RetrievalReport`, `DriftReport` | Generates answers from both indexes; LLM judges correctness, groundedness, relevance. Quality deltas with CIs. Relates each drift signal to quality loss across segments. Classifies each segment: drift that hurts / drift that does not / quality loss without drift / healthy. Compares historical vs recent questions: historical questions are the control and should score about the same on both indexes *(D7)*. | `ImpactReport` (E); may send C back for more queries once |
 | **E. Recommendation** | `ImpactReport` + B and C evidence | `policy.py` rules map evidence patterns to actions, one rule per action in the brief (see D7 for the triggers); LLM writes the explanation; a check rejects any recommendation without cited evidence. **Trigger model evaluation** is carried out, not just recommended: it sends C back to test the alternative model, and the result becomes evidence *(D7)*. | List of `Recommendation` (dashboard) |
 
@@ -122,7 +123,9 @@ agent breaks the next one.
 | Cleaned documents, all periods, with period and drift-sample flag | `data/processed/documents.parquet` | No |
 | Cleaning reports (retention table, every removed document) | `runs/prepare/` (CSV) | No |
 | Small committed sample | `data/sample/` | Yes |
-| Embeddings (`cache/embeddings/<model>/`) and LLM responses | `cache/` | No |
+| Embeddings (`cache/embeddings/<model>/`) and LLM responses (`cache/llm/<job>/`) | `cache/` | No |
+| FAISS indexes (stale, refreshed per year) with manifests, from Agent C (D22) | `indexes/` | No |
+| LLM cost ledger (every billed request) | `runs/llm_costs.csv` | No |
 | Run outputs (reports, charts) | `runs/<run_id>/` | No |
 | Exploration tables | `runs/explore/<dataset>/` (CSV) | No |
 | Charts for a run | `runs/<run_id>/charts/` (PNG) | No |
@@ -131,6 +134,14 @@ agent breaks the next one.
 
 Every dataset is mapped onto one record shape (`doc_id, date, category,
 title, text`) in `driftmon/data.py`, so switching datasets is a config change.
+
+**Storage (no database server).** Vector search uses FAISS exact
+inner-product indexes held in memory and rebuilt from cached embeddings at
+the start of a run (about a second for 78k vectors). Documents live in a
+parquet file, embeddings in a numpy cache, LLM replies as JSON files, costs
+in a CSV ledger. No Chroma, Qdrant or Neo4j: at this scale a server adds
+installation for reviewers and approximate-search noise for no benefit
+(Q13, D21).
 
 ## 5. Where the LLM is used (and where it is not)
 

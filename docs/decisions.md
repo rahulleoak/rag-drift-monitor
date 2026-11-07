@@ -591,3 +591,457 @@ date and reason, and add a new entry that supersedes it.
   palette passes the colour-blindness and contrast checks, labels sit in ink
   colours, and the text inside coloured cells switches between white and
   navy by fill brightness.
+
+## D15. The LLM layer: budget, cache, structured output, refusals
+- **Date:** 2026-11-05
+- **Status:** Accepted (budget set by the author, 2026-11-05)
+- **Context:** the LLM jobs (D9) spend real money on the author's key, and
+  every quality number depends on them. Budget: **$150 in total**; $20 of
+  credit is loaded now, so the first stretch is planned to spend under about
+  $10. The stakeholder answer on spending (question 4) was not needed to
+  start.
+- **Choices** (all in `driftmon/llm.py`, the only module that calls an LLM):
+  1. **Budget enforced in code, before spending:** each request (or batch)
+     gets a cautious cost estimate; if the running total in the cost ledger
+     (`runs/llm_costs.csv`) plus the estimate would pass `llm.budget_usd`,
+     nothing is sent. Every billed reply is recorded with its real tokens and
+     cost, at published prices (in the config).
+  2. **Disk cache** keyed on model, prompt version, system and user prompt,
+     schema and settings: reruns are free and repeatable. A prompt change
+     bumps its version, so stale answers are never reused.
+  3. **Structured output:** every reply must match a JSON schema generated
+     from a pydantic model (strict: all fields required, no extras) and is
+     validated again in Python.
+  4. **Refusals:** live calls use the API's server-side fallback
+     (`fallbacks: "default"`). The Batch API has none, so a batch refusal is
+     retried live with fallback. Anything still refused is returned as
+     refused and counted, never dropped silently.
+  5. **Broken replies** (cut off at the output cap, or not matching the
+     schema) are recorded in the ledger but not cached, so a rerun retries
+     them.
+  6. **Thinking effort per job** (config): "medium" for question writing and
+     review to begin with; tuned after the pilot measures cost and quality.
+- **Why:** money and reproducibility are controlled in one tested place, and
+  failures are visible rather than silent.
+- **Evidence:** `tests/test_llm.py` (7 tests with a fake API: strict
+  schemas, caching across restarts, the budget refusing before any call,
+  live and batch refusals, broken replies retried, batch at half price).
+
+## D16. How test questions are written and accepted
+- **Date:** 2026-11-05
+- **Status:** Accepted (first version; the pilot decides what to tune)
+- **Context:** every retrieval and answer-quality number rests on the test
+  questions. The author's concern: do not build on low-quality questions.
+- **Choices:**
+  1. **Source articles:** sampled per period, baseline included (the
+     control). Excluded: templated columns ("HuffPost Rise", "Funniest
+     Tweets", "Daily Meditation", "What to watch", ...; list in the config)
+     and records under 15 words, which rarely state an answerable fact.
+     72,288 of 77,840 cleaned articles remain eligible.
+  2. **Writer (Sonnet 5.5):** one question per article, as a journalist or
+     editor would ask the archive assistant: specific, self-contained,
+     paraphrased (not the headline), 6–30 words; a reference answer from the
+     article only; evergreen or time-sensitive; and an honest "answerable
+     from the article" flag.
+  3. **Checks in code, before review:** length; no run of 4 consecutive
+     headline words; at most 70% of content words from the headline;
+     the writer's own "not answerable" flag; near-duplicate questions
+     (embedding cosine ≥ 0.95).
+  4. **Reviewer (Opus 5.5):** five yes/no checks per surviving question:
+     answerable from the article alone, unambiguous, needs the article,
+     reference answer correct, natural. **Code keeps a question only if
+     every check is yes**; the reviewer gives a short reason either way.
+  5. **Everything is kept for inspection:** every draft, its check results
+     and the reason it was rejected.
+  6. **Diversity check (P3):** the spread of kept questions vs the spread of
+     their source articles, to catch generic, collapsed phrasing.
+- **Why:** a stronger, different model checks the cheaper model's work
+  (D9), and the decision stays in code. Rejections are visible, so the
+  prompt can be tuned on evidence.
+- **Evidence:** `tests/test_simulate.py`; the pilot (F7) will measure the
+  keep rate, the reasons and the cost.
+
+## D17. Question writing, version 2 and 3: stricter questions, an unanswerable set, measured bias
+- **Date:** 2026-11-05
+- **Status:** Accepted (author, 2026-11-05). **To check against results:**
+  the author asked to revisit whether these choices were right once the
+  retrieval and answer results exist (see "Revisit" below).
+- **Context:** the first pilot (F7) found no time-sensitive questions,
+  copying from the description, a lenient reviewer, outside facts in
+  questions and two-part questions. Looking at one rejected teaser ("Who Is
+  Responsible For Debt When You Get A Divorce Or Break Up?") raised three
+  more points: the reference answer described the article instead of
+  answering; 20% of sampled articles are teasers with no stated fact; and
+  rejecting teasers may bias the test set away from the lifestyle and
+  service sections where COVID drift was strongest (F5).
+- **Choices:**
+  1. **One fact per question,** and up to two questions per article: a
+     second only for a time-sensitive fact.
+  2. **Direct reference answers,** never "the article says…" (also checked
+     in code).
+  3. **Sharper time-sensitive rule:** counts still being reported, current
+     rules, who holds a role now, ongoing situations.
+  4. **Copy check extended to the description** (7 consecutive words; 5
+     rejected proper names such as "8-year-old Malayan tiger named Eko").
+  5. **Stricter reviewer:** eight checks, including single question and the
+     type label, and it must say false whenever its reason names a problem.
+  6. **Common knowledge allowed, invented event details not** (version 3,
+     after version 2 rejected "Justin Trudeau", "Canada" and "Pennsylvania
+     senator"): realistic for journalists, at the cost of a little of the
+     writer's own knowledge entering the test. Stated as a limitation.
+  7. **An unanswerable set** (teaser articles): kept on purpose to test
+     whether the assistant admits the archive cannot answer instead of
+     guessing (groundedness).
+  8. **Keep rates reported per section and period** in every run, so any
+     bias in what survives is visible; sampling will draw more from the
+     flagged sections and the controls (politics).
+- **Revised 2026-11-05 (r-v4, after the third pilot):** the reviewer no longer
+  grades the writer's type label (it proved ambiguous, F8); it assigns its
+  own label without seeing the writer's, and that label is final.
+  Disagreement is recorded as a measure of ambiguity (17% in the pilot),
+  not a rejection. An unanswerable question is kept if the reviewer agrees
+  it is unanswerable and it asks one thing ("natural" and "unambiguous" no
+  longer apply: such questions are broad and restate the headline by
+  nature). Keep rate rose to 60%.
+- **Revised 2026-11-06 (r-v5, after F11):** "natural" no longer treats reused
+  names, places, numbers or facts as copying (copy-rejected questions were
+  not easier to retrieve); verbatim copying stays caught in code. Oversample
+  keep rate 35% → 58% (F12). Prompt tuning ends here.
+- **Revisit when results exist:** (a) is the unanswerable set useful in the
+  groundedness results? (b) do keep rates differ by section enough to bias
+  the drift-vs-quality analysis? (c) did allowing common knowledge make
+  retrieval easier than it should be?
+- **Evidence:** F8.
+
+## D18. The judge cannot search, and does not learn; its built-in knowledge is a stated limitation
+- **Date:** 2026-11-05
+- **Status:** Accepted (raised by the author, 2026-11-05)
+- **Context:** the reviewer (and later the answer judge) must judge from the
+  article or the retrieved context, not from elsewhere.
+- **Facts, checked in code:**
+  1. **No outside search.** A Claude model can search the web only if a
+     request declares a search tool; no request in this project declares
+     any tool (`driftmon/llm.py`, `_params`). Each request contains the
+     instructions, one article and the question; a cached reply in
+     `cache/llm/question_review/` shows exactly what was sent.
+  2. **No learning across calls.** Every request is independent; the model
+     has no memory of earlier articles and is not changed by our calls
+     (under Anthropic's commercial terms, API data is not used for training
+     by default). The only memory is our own disk cache of replies.
+- **Limitation:** the model's built-in knowledge from training cannot be
+  switched off, only constrained by instructions and checked. Evidence it
+  holds the line: the reviewer rejected questions for facts it surely knows
+  but the articles do not state ("the Paris deal", "blood-testing startup",
+  the name of a primary winner). Using general knowledge for the
+  evergreen / time-sensitive label is intended (how news evolves, not facts
+  about the story).
+- **Where it matters next:** the answer judge (Agent D) could accept an
+  answer that is true in the world but not supported by the retrieved
+  articles. Safeguards: the groundedness check, and the hand-labelled
+  sample (P8) that measures how often the judge departs from the text.
+  To be stated in the README.
+
+## D19. Review each question twice; three label groups
+- **Date:** 2026-11-06
+- **Status:** Accepted (author, 2026-11-06), after the test in F9.
+- **Context:** F8/F9: reviewer decisions can differ between runs, and the
+  writer and reviewer often disagree on evergreen vs time-sensitive.
+- **Choices:**
+  1. **Two independent reviews per question** (`simulation.reviews_per_question`);
+     kept only if both accept it. Independence comes from a replicate
+     number in the LLM cache key (`LLMRequest.replicate`); replicate 0 keeps
+     the original key, so earlier reviews were reused, not re-bought.
+  2. **Label groups:** "evergreen" or "time_sensitive" when the writer and
+     every review agree, "disputed" otherwise. Analyses report the clear
+     groups separately and never treat one model's label as truth. A single
+     convenience label is the majority of the three.
+  3. **Reviewer consistency is reported in every run** (same decision, same
+     label).
+- **Why:** cheap protection against random lapses, and a measured
+  reliability number for the walkthrough. It does not catch systematic
+  errors (F9: the "milestone" question passed twice); the hand labels do.
+- **Evidence:** F9; `tests/test_simulate.py` (two disagreeing reviews
+  reject a question; label groups).
+
+## D20. Oversample articles likely to state a revisable fact
+- **Date:** 2026-11-06
+- **Status:** Accepted (author, 2026-11-06)
+- **Why we did it:** the experiment needs time-sensitive questions, where a
+  stale archive gives an outdated answer (who holds an office, a toll still
+  being counted). Random sampling yields very few: 1 clear time-sensitive
+  question of 13 kept (F9). At that rate the ~180-question set would hold
+  about 15, too few to say anything about outdated answers.
+- **Options considered:**
+  1. *Accept the natural rate:* honest, but too thin to analyse.
+  2. *Ask the writer to always produce a time-sensitive question:* forces
+     unnatural questions from articles that have no revisable fact.
+  3. *Oversample a pool of likely-revisable articles* (chosen): a word
+     filter on headline + description ("at least", "so far", "missing",
+     "death toll", "still", "ongoing", "cases", "new rules", ...; list in
+     `simulation.oversample_patterns`).
+- **How it is reported:** every question carries `sample_pool` ("random"
+  or "oversample"). Oversampled questions are **never mixed into
+  archive-wide rates**; they are analysed as their own group (outdated
+  answers), and the README says so.
+- **Known bias:** the pool is 9% of eligible articles and leans towards
+  hard news (politics 32%, world news 19%); it says nothing about lifestyle
+  sections' time-sensitive facts.
+- **Evidence:** F10.
+
+## D21. Knowledge graph / ontology (OWL, RDF, Neo4j, Protégé): considered, not adopted
+- **Date:** 2026-11-06
+- **Status:** Not adopted for this project; recorded as future work.
+- **Context:** a colleague suggested modelling how relationships between
+  entities change with an ontology (OWL/RDF), stored in a graph database
+  (Neo4j), edited and visualised in Protégé.
+- **What is right about it:** the brief asks for "shifts in semantic
+  relationships", and many time-sensitive facts are relationship changes
+  ("Biden — holds office — President"). A temporal knowledge graph would
+  make such changes explicit and easy to explain, and is an established
+  approach.
+- **Why not here:**
+  1. **Extraction is the hard part, not storage.** Turning 78k one-to-two
+     sentence descriptions into entities and relations needs an LLM or a
+     relation-extraction model: cost, time, and extraction errors that would
+     themselves look like drift.
+  2. **OWL/RDF buys formal reasoning we do not use.** The system measures
+     change; it does not infer new facts. Designing and defending an
+     ontology is days of work, with four days left.
+  3. **Infrastructure for little gain.** Neo4j is another service for
+     reviewers to install; a few thousand relations fit in memory
+     (pandas / networkx). Protégé is a manual editor for hand-built
+     ontologies, not for automated monitoring.
+  4. **The RAG under test is vector-based;** a graph would not change
+     retrieval unless we also built GraphRAG (scope creep).
+  5. **Relationship shift is already measured** distributionally, with a
+     significance test and size-matched baseline (term-context shift, F6:
+     "cases", "test", "home", "virus").
+- **Lightweight middle ground, if time allows:** an entity co-occurrence
+  graph per period for a few key entities (networkx), showing neighbours
+  gained and lost (e.g. "Biden" with Obama and "vice" in 2016–17; with
+  Congress and "administration" in 2021). A visual complement to F6, no new
+  infrastructure.
+- **Future work:** temporal knowledge graphs for relationship drift, and
+  GraphRAG for questions about who holds which role.
+
+## D22. Vector store revisited against the brief: FAISS stays, indexes saved to disk with Agent C
+- **Date:** 2026-11-06
+- **Status:** Accepted (author, 2026-11-06). Adds to Q13.
+- **Context:** the author asked whether the brief expects a vector database.
+  The brief's technology table lists "Vector database: Qdrant / FAISS /
+  Chroma", and says the stack is open and not every listed technology
+  must be used. FAISS is one of the three named options.
+- **What FAISS is, precisely:** a vector search library, not a database
+  server. Here it stores the vectors and does exact nearest-neighbour
+  search; the article metadata (date, section, text) sits next to it in
+  `data/processed/documents.parquet`, joined by document id. Together they
+  do the job of a vector database for a single-user analysis system.
+- **Why not Qdrant or Chroma:**
+  1. **Exact search keeps the experiment clean.** Their default indexes are
+     approximate (HNSW), which adds small random retrieval errors; a quality
+     drop could then be drift or search noise.
+  2. **Six indexes are cheap with FAISS** (one stale, one refreshed per
+     later year): a few lines and about a second to build.
+  3. **Nothing to install** for reviewers reproducing the results.
+- **Gap closed with Agent C:** indexes are currently rebuilt in memory on
+  every run from the embedding cache. Agent C will save each index to disk
+  (`faiss.write_index`, under `indexes/`, gitignored) with a small manifest
+  (model, document ids, build date), and reload them when the embeddings
+  have not changed. This makes the store persistent, lets the dashboard and
+  demos load instantly, and records exactly which documents each index
+  held.
+- **Walkthrough answer:** "FAISS is listed in the brief; we chose exact
+  search because approximate search would blur the very effect we measure."
+
+## D23. The full question set: four tagged sources, one batch
+- **Date:** 2026-11-06
+- **Status:** Accepted (sampling built; the run waits for the author's go).
+- **Context:** the evaluation needs questions where drift was flagged, where
+  it was not (controls), from the archive as it is, and time-sensitive ones
+  (D20), within a $20 credit.
+- **Choice** (`simulation.full_set` in the config; `simulate.full_sample`):
+  8 articles per flagged section (14 sections), 3 per control segment (23),
+  40 random baseline articles (the control questions) and 20 random per
+  later year, and 34 per period from the likely-revisable pool. No article
+  is drawn twice; each carries `sample_pool` and `sample_segment`, so every
+  analysis can keep the groups apart. Flagged and control segments come
+  from the latest drift run, so the sample follows what Agent B found.
+- **Dry run:** 525 articles (flagged 112, control 69, random 140,
+  oversample 204). Estimated $11.55 as a batch (the estimate has run about
+  2–3× high; expected about $5–8).
+- **Known imbalance:** 39 of the 69 control articles are from 2018, because
+  most low-drift segments are 2018 sections; 2020 has 48 flagged articles.
+  Reported, not corrected: it reflects where drift was and was not found.
+
+## D24. Query drift: the simulated questions as the query stream
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author); code built and tested, numbers
+  wait for the full question set.
+- **Context:** the brief asks to monitor incoming queries and says user queries
+  evolve and bring new terminology. There is no real query log.
+- **Options considered:**
+  1. *All generated questions as the stream.* Simple, but the flagged and
+     control articles were picked *because* of document drift, so their
+     questions would inflate query drift by design.
+  2. *Only the pools drawn the same way in every period* (random and
+     oversample). Smaller (about 80–130 questions a period), but a fair
+     comparison between periods.
+  3. *A separately generated query log* with personas. Closer to real users,
+     but extra cost and still written from the same articles.
+- **Choice:** 2. Each period's stream questions are compared with the
+  baseline's using the same two techniques as for documents: MMD with a
+  permutation test and centroid shift on query embeddings; excess JSD,
+  log-odds emerging terms and new-term rate on question words (question
+  wording such as "did", "according" is ignored). Benjamini–Hochberg across
+  periods. Unanswerable questions count: real users ask those too. Agent A
+  summarises the stream (volume, length, new-term rate, unanswerable share).
+- **Scale:** the 2017-vs-2016 questions give a rough "ordinary year" row.
+  The document severity bands (D11) need far more data than the stream has,
+  so query drift reports significance and times-ordinary, not bands.
+- **Limitation (README):** the questions are written from each period's
+  articles, so query drift partly mirrors document drift by construction; a
+  real query log can also drift on its own (new users, new tasks).
+- **Code:** `driftmon/queries.py`; Agent A and B nodes; `query_drift.csv` in
+  each run; tests in `tests/test_queries.py`.
+
+## D25. Agent C: three retrieval comparisons, one judge call per question
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author); built and tested, numbers wait
+  for the full question set.
+- **Context:** the brief asks Agent C to evaluate retrieval across periods and
+  find changes in relevance and rankings, and the key experiment is stale vs
+  refreshed. A stale index cannot contain a later article, so known-item
+  scores alone are one-sided (D2), and they are inflated anyway (F11).
+- **Choice:** three comparisons, each answering one question:
+  1. *(a) Did not re-indexing hurt?* Each later period's questions on the
+     stale index and that period's refreshed index. Opus grades the pooled
+     top 5 of both (0 = not relevant, 1 = on topic, 2 = answers). Metrics:
+     answer@5 (the context the answer step reads contains an answer),
+     precision@5, nDCG@5 against the pooled ideal; paired difference per
+     question with a bootstrap interval; by period, by drift status from
+     Agent B (flagged / control / other) and by question type. Baseline
+     questions are judged on stale vs the latest refreshed index: the
+     historical control.
+  2. *(b) Does the retriever cope with drifted content?* On the same
+     refreshed index, each period's questions vs the baseline's: MRR and
+     Recall@10 of the source article. One index for both groups, so index
+     size is not the explanation. Weighted down (F11).
+  3. *(c) Are old questions crowded out?* Baseline questions on stale vs each
+     refreshed index: top-10 overlap, share of the top 10 from newer periods,
+     and whether the source article fell out. Free (no LLM). This replaces
+     the rank correlation listed earlier: with mostly different documents
+     in two top-10 lists, overlap and displacement say more.
+- **Judge design:**
+  - One request per question, grading every pooled article together, in a
+    shuffled order, never saying which index found which article (tested).
+    Cheaper than one call per article and blind to the index.
+  - Top 5, not 10: about half the cost, and it is what the answer step reads.
+  - The judge sees the reference answer but is told other articles may
+    answer equally well, so an older article that still answers gets credit.
+  - An article the judge skips is left ungraded and the question is dropped
+    from the judged metrics, never silently scored 0 (tested). Counts are
+    reported.
+  - Unanswerable questions are not used here (no relevant article exists by
+    design); they are for Agent D's abstention check.
+- **Regression-check route** (no drift flagged): only random-pool questions.
+- **Indexes (D22):** saved to `indexes/` with a manifest (model, fingerprint
+  of document ids and vectors, periods and document ids per index); reloaded
+  only when the fingerprint matches, otherwise rebuilt (tested). 650 MB for
+  the six indexes; stale holds 60k articles, refreshed 2022 77.8k.
+- **Cost:** about 1 cent per question as a batch; `run_pipeline.py --estimate`
+  prints the exact estimate before any spend.
+- **Code:** `driftmon/evaluation/retrieval.py`, `retrieval_metrics.py`,
+  `agents/retrieval_eval.py`, prompt `rel-v1`; tests in
+  `tests/test_retrieval.py`; dashboard page "Retrieval".
+
+## D26. Long-form documents: Wikipedia articles at yearly snapshots, chunked
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author); not built yet.
+- **Context:** the stakeholder (Ani, 2026-11-06, `docs/questions.md`) asked
+  for long-form documents where chunking applies, next to HuffPost, and for
+  an explanation of the chunking strategy and how it affects drift
+  detection. HuffPost articles are one or two sentences, so chunking was a
+  stated limitation until now.
+- **Options considered:**
+  1. *Wikipedia articles captured at the end of each year (2017–2022).* Same
+     years as HuffPost; the same document is edited over time ("documents
+     become outdated or replaced"); fits the newsroom use case (reference
+     material); clear sections. Cons: page markup needs cleaning; the LLM
+     has read Wikipedia, so answers may come from memory (handled by
+     answering only from the retrieved text and judging groundedness); the
+     API asks for contact info in the User-Agent (a project URL, not an
+     email).
+  2. *Company annual reports (SEC 10-K risk sections, EDGAR-CORPUS).* Most
+     enterprise-like and the hardest chunking case (long, mostly repeated
+     text with small new paragraphs). Cons: the dataset appears to end in
+     2020; a second use case beside the newsroom; the SEC wants an email if
+     we fetch filings ourselves.
+  3. *arXiv papers.* Clear topic drift, but free abstracts are too short to
+     chunk and full text means PDF parsing; papers are never updated.
+- **Choice:** 1. The author would revisit 2 only if a test showed it to be
+  better.
+- **Plan:**
+  - About 150–200 articles sampled from Wikipedia's "vital articles" list
+    (stratified by topic, so the choice is not hand-picked), plus a small,
+    labelled set of articles tied to known events (e.g. pandemic, vaccine)
+    as the known-drift check.
+  - Each article as it stood at the last revision before the end of 2017
+    (baseline), 2018, … 2022.
+  - Chunks split at section headings, then about 256 tokens with about 32
+    tokens of overlap (bge-small reads at most 512 tokens).
+  - **Chunking experiment:** four ways to read each article: first 512
+    tokens only; one averaged vector; chunks of about 128; chunks of about
+    256 tokens. The text added between two snapshots (from the revision
+    diff) is the ground truth, so we can count how many known changes each
+    one detects. Expectation: truncation misses changes deep in the
+    article, and averaging dilutes small changes.
+  - Agents A–C run on the chunks; stale vs refreshed then shows the stale
+    index returning the outdated version of the same article.
+- **Cost:** about $3–5 for questions and judging, after the credit top-up.
+
+## D27. Address the changed-numbers blind spot: detect, measure harm, act
+- **Date:** 2026-11-06
+- **Status:** Accepted (approved by the author). Detection built (F18: first rules failed the hand check and were tightened); harm (Agent D) and action (Agent E) to follow.
+- **Context:** F17 measured a blind spot of embedding-based drift: when an
+  updated document changes only a number, its chunk vector barely moves
+  (median change 0.0008 against 0.0127 for other edits, about 16 times
+  less; 62% of such chunks are among the least-changed quarter). Examples:
+  "the Black Death … killed over 75 million people" became "over 20
+  million"; "from 1347 to 1453" became "1347 to 1353" (no measurable
+  change). These are exactly the edits that make an answer outdated
+  (tolls, counts, dates), so drift scores alone would miss the drift that
+  matters most for answers, and the brief names "existing documents become
+  outdated" as a core problem.
+- **Options considered:**
+  1. *Accept and document it as a limitation.* No work, but leaves the
+     most answer-relevant change undetected.
+  2. *Lower the embedding thresholds.* Would flood alerts: number edits
+     sit among ordinary edits, not above them.
+  3. *Add a plain text check for changed facts, then test whether it
+     matters, then act on it.* Small, testable, no LLM for detection.
+- **Choice:** 3, in all three stages:
+  - **Detect (Agents A/B):** a "changed facts" check for updated documents.
+    Each changed sentence is matched with the most similar sentence of the
+    previous version in the same section; if their numbers differ (after
+    ignoring formatting such as "2217" vs "2,217"), it is reported as a
+    changed fact, with both sentences as evidence. A third signal next to
+    the embedding and word techniques.
+  - **Measure harm (Agent D):** for documents with changed facts, ask the
+    same question of the old and new version and check whether the answer
+    changes.
+  - **Act (Agent E):** a rule: changed facts in an indexed document →
+    re-index that document (a targeted refresh), citing the sentences.
+- **Why:** the check costs little, runs without an LLM and catches what
+  the embeddings cannot see; the answer test then shows whether it
+  matters.
+- **Validation (stated honestly):** the check uses the same idea that found
+  the blind spot, so catching those cases proves nothing on its own. It is
+  validated in two ways: a hand-checked sample of flagged changes (17/20 real, F19)
+  (precision: are they real fact changes?), and Agent D (do flagged
+  documents give different answers more often than unflagged ones?). If
+  Agent D shows no difference, the check is reported as not useful.
+- **Limits:** applies only to documents that are edited (Wikipedia), not to
+  HuffPost, where each period brings new articles; there, the
+  time-sensitive questions in Agent D cover the same risk. Changed names
+  (e.g. a new office holder) are not caught by a number check; left out
+  unless time allows.

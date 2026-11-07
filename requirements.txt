@@ -23,6 +23,9 @@ scikit-learn>=1.6,<2
 sentence-transformers>=5.0,<7
 faiss-cpu>=1.9,<2
 
+# Long-form documents: Wikipedia markup to plain text (D26)
+mwparserfromhell>=0.6,<1
+
 # Orchestration
 langgraph>=1.0,<2
 

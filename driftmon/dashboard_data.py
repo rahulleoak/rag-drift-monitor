@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from driftmon.schemas import DriftReport, MonitoringReport
+from driftmon.schemas import DriftReport, MonitoringReport, RetrievalReport
 
 RUN_PATTERN = "[0-9]*-[0-9]*"
 
@@ -37,6 +37,7 @@ class Run:
     term_shifts: pd.DataFrame
     correlations: pd.DataFrame
     charts: dict[str, Path] = field(default_factory=dict)
+    retrieval: RetrievalReport | None = None   # Agent C, if the run included it
 
     @property
     def baseline(self) -> str:
@@ -61,6 +62,8 @@ def load_run(runs_dir: Path, run_id: str) -> Run:
     mon = MonitoringReport.model_validate_json((path / "monitoring.json").read_text(encoding="utf-8"))
     drift = DriftReport.model_validate_json((path / "drift.json").read_text(encoding="utf-8"))
     route = path / "route.txt"
+    rj = path / "retrieval.json"
+    retrieval = RetrievalReport.model_validate_json(rj.read_text(encoding="utf-8")) if rj.exists() else None
     whole = pd.DataFrame([s.model_dump() for s in drift.whole_period])
     segs = pd.DataFrame([s.model_dump() for s in drift.segments])
     corr = pd.DataFrame(drift.metric_correlations)
@@ -73,7 +76,21 @@ def load_run(runs_dir: Path, run_id: str) -> Run:
                whole=whole, segments=segs, topics=pd.DataFrame(drift.topics),
                term_shifts=pd.DataFrame(drift.term_shifts),
                correlations=corr.set_index("measure") if "measure" in corr else corr,
-               charts=charts)
+               charts=charts, retrieval=retrieval)
+
+
+def stale_vs_refreshed(run: Run, measure: str = "answer") -> pd.DataFrame:
+    """Long table for the stale-vs-refreshed chart: one row per period and index."""
+    if run.retrieval is None or not run.retrieval.judged_by_period:
+        return pd.DataFrame(columns=["period", "index", "value", "questions"])
+    t = pd.DataFrame(run.retrieval.judged_by_period)
+    rows = []
+    for r in t.to_dict("records"):
+        for side, label in (("stale", "Stale index (2016-17 only)"), ("refreshed", "Refreshed index")):
+            rows.append({"period": str(r["period"]), "index": label, "value": r[f"{side}_{measure}"],
+                         "questions": r["questions"], "delta": r[f"delta_{measure}"],
+                         "delta_low": r[f"delta_{measure}_low"], "delta_high": r[f"delta_{measure}_high"]})
+    return pd.DataFrame(rows)
 
 
 def severity_grid(run: Run) -> pd.DataFrame:

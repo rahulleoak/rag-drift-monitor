@@ -118,6 +118,19 @@ def test_graph_flags_the_shifted_period_and_routes_to_full_evaluation():
     assert state["next_step"] == FULL_EVALUATION
 
 
+def test_graph_reports_the_query_stream_and_query_drift():
+    from tests.test_queries import _stream
+    docs, vecs = _synthetic_corpus()
+    stream, qvecs = _stream()
+    state = build_graph().invoke({"config": _config(), "docs": docs, "vectors": vecs,
+                                  "queries": stream, "query_vectors": qvecs})
+    assert [r["period"] for r in state["monitoring"].query_stream] == ["2016-17", "2020"]
+    qd = state["drift"].query_drift
+    assert [r["period"] for r in qd] == ["2017 (inside baseline)", "2020"] and qd[1]["significant"]
+    without = build_graph().invoke({"config": _config(), "docs": docs, "vectors": vecs})
+    assert isinstance(without["drift"].query_drift, str)  # no question set: says so, no crash
+
+
 def test_graph_routes_to_regression_check_without_drift():
     docs, vecs = _synthetic_corpus(shift=0.0)
     docs.loc[docs["period"] == "2020", "title"] = [" ".join(RNG.choice(WORDS_OLD, 4))

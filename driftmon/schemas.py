@@ -27,7 +27,8 @@ class MonitoringReport(BaseModel):
     data_quality: list[dict[str, Any]]         # cleaning retention per period (empty descriptions etc.)
     renamed_sections: list[dict[str, Any]]     # raw labels merged into another name
     segments: list[dict[str, Any]]             # period x category, with eligibility and reason
-    query_stream: str = "not available yet (needs the LLM simulator)"
+    # per-period query volume, length and new-term rate; a note if no question set exists yet
+    query_stream: list[dict[str, Any]] | str = "not available (no question set generated yet)"
 
     def eligible_segments(self) -> list[dict[str, Any]]:
         return [s for s in self.segments if s["eligible"]]
@@ -77,7 +78,26 @@ class DriftReport(BaseModel):
     topics: list[dict[str, Any]] = Field(default_factory=list)        # emerging topics (D12)
     term_shifts: list[dict[str, Any]] = Field(default_factory=list)   # term-context shifts (D12)
     metric_correlations: list[dict[str, Any]] = Field(default_factory=list)  # P6, across segments
-    query_drift: str = "not available yet (needs the LLM query stream)"
+    # each period's queries vs the baseline queries (driftmon.queries); a note if unavailable
+    query_drift: list[dict[str, Any]] | str = "not available (no question set generated yet)"
+
+
+class RetrievalReport(BaseModel):
+    """Agent C: stale vs refreshed retrieval, per period and drift status (D25)."""
+
+    mode: str                                   # "full_evaluation" or "regression_check"
+    questions: int                              # answerable questions evaluated
+    questions_by_status: dict[str, int]         # flagged / control / other / baseline
+    index_store: dict[str, Any]                 # where the indexes live, and whether they were reloaded
+    known_item: list[dict[str, Any]]            # (b) MRR / Recall@k on each refreshed index, by who asks
+    known_item_by_status: list[dict[str, Any]]  # (b) period questions by drift status
+    ranking_change: list[dict[str, Any]]        # (c) baseline questions: overlap, newer share, displaced
+    judged_by_period: list[dict[str, Any]] = Field(default_factory=list)   # (a) stale vs refreshed
+    judged_by_status: list[dict[str, Any]] = Field(default_factory=list)   # (a) by period x drift status
+    judged_by_type: list[dict[str, Any]] = Field(default_factory=list)     # (a) evergreen vs time-sensitive
+    judge: dict[str, Any] = Field(default_factory=dict)                    # requests, problems, cost
+    worst_queries: list[dict[str, Any]] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
 
 
 class PipelineState(TypedDict, total=False):
@@ -87,6 +107,13 @@ class PipelineState(TypedDict, total=False):
     docs: Any          # pandas DataFrame of cleaned documents
     vectors: Any       # numpy array aligned with docs
     tokens: list[list[str]]
+    queries: Any       # pandas DataFrame: the query stream (simulated questions), or None
+    query_vectors: Any  # numpy array aligned with queries
     monitoring: MonitoringReport
     drift: DriftReport
     next_step: str     # routing decision after B
+    questions: Any     # pandas DataFrame: every kept question (golden set), or None
+    question_vectors: Any  # numpy array aligned with questions
+    llm: Any           # LLMClient for the judged steps, or None to skip them
+    retrieval: RetrievalReport
+    retrieval_tables: dict[str, Any]  # per-question tables for Agent D and the run folder

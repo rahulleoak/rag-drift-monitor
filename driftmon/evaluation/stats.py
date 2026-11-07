@@ -1,9 +1,7 @@
 """Statistical helpers shared by the agents. Pure functions.
 
-Benjamini-Hochberg correction now; bootstrap confidence intervals (including
-paired, for stale vs refreshed), rank correlation with confidence intervals
-and within-baseline null distributions are added with the agents that use
-them.
+Benjamini-Hochberg correction; bootstrap confidence intervals for a mean
+(pass per-question differences for a paired stale-vs-refreshed comparison).
 """
 from __future__ import annotations
 
@@ -28,3 +26,20 @@ def benjamini_hochberg(p_values: Sequence[float]) -> np.ndarray:
     q = np.empty(n)
     q[order] = np.minimum(q_sorted, 1.0)
     return q
+
+
+def bootstrap_mean_ci(values: Sequence[float], resamples: int = 2000, level: float = 0.95,
+                      seed: int = 0) -> tuple[float, float, float]:
+    """Mean and percentile bootstrap confidence interval (questions resampled).
+
+    For a paired comparison (stale vs refreshed on the same questions), pass
+    the per-question differences. Returns (mean, low, high); NaNs if empty.
+    """
+    v = np.asarray(values, dtype=np.float64)
+    v = v[~np.isnan(v)]
+    if len(v) == 0:
+        return float("nan"), float("nan"), float("nan")
+    rng = np.random.default_rng(seed)
+    means = v[rng.integers(0, len(v), size=(resamples, len(v)))].mean(axis=1)
+    tail = (1 - level) / 2 * 100
+    return float(v.mean()), float(np.percentile(means, tail)), float(np.percentile(means, 100 - tail))

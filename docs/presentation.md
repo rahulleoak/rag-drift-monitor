@@ -279,8 +279,9 @@ a measurement, not an opinion.
 - **Two different models (D9):** Sonnet 5.5 writes questions and answers, Opus
   5.5 judges, so the judge is not grading its own style.
 - **Blind judging:** the judge never sees which index produced an answer.
-- **Trust in the judge is measured:** about 40 hand-labelled items, agreement
-  reported (P8).
+- **Trust in the judge is measured (F19):** 50 blind hand-labelled items;
+  the relevance judge matches on "answers or not" 14/15 and is never more
+  lenient; changed-facts check precision 17/20.
 - **Cost control:** every LLM response cached to disk, a 20-question pilot
   before full runs, Batch API at half price.
 
@@ -336,8 +337,11 @@ as D5.
   about a second, with no models or keys.
 - **Config, not hard-coding:** periods, thresholds, models and the category
   mapping all live in one file.
-- **Caching:** embeddings cached (a rerun takes 14 s instead of 80 s); LLM
-  responses will be too.
+- **Caching:** embeddings cached (a rerun takes 14 s instead of 80 s); every
+  LLM response cached too, so reruns cost nothing.
+- **Money is controlled in code:** a $150 budget enforced *before* any
+  request is sent, a ledger of every billed call, a 20-question pilot before
+  any full run, and half-price batches for bulk jobs (D15).
 - **Decisions are logged** with options, reasons and evidence (D1–D9); when one
   changes, it is marked "Revised", not deleted (e.g. Q2, Q7, Q12).
 - **Requirements traceability:** `docs/requirements-coverage.md` maps every
@@ -364,6 +368,24 @@ Honest moments that show judgement, good for a "what we learned" slide:
   temperature setting, so reproducibility comes from caching every response.
 - **Expected COVID to be the most novel content; it was not** (F4). Instead of
   hiding it, it became the central hypothesis for the impact experiment.
+- **Tuning the test-question writer taught us what "good" means** (F7, F8):
+  version 1 kept 75% but had no time-sensitive questions and copied the
+  articles; version 2 fixed that but rejected ordinary knowledge like
+  "Justin Trudeau"; version 3 showed that even Opus cannot consistently say
+  whether "what police said at the time" will go out of date. A strong model
+  as a reviewer is useful, but its yes/no checks need the same scrutiny as
+  any other measurement. Version 4 let the reviewer assign the label itself:
+  60% kept, and the two models agree on the label 83% of the time, the
+  ambiguity we now state with any time-sensitive result.
+- **Oversampling on purpose, and saying so** (D20, F10): random sampling gave
+  1 clear time-sensitive question in 13; a word-filtered pool of
+  likely-revisable articles gave 4 in 9. Those questions are always
+  reported as their own group, never mixed into archive-wide rates.
+- **Correcting our own reading of the data:** after v4 I attributed three
+  flipped decisions to the reviewer's randomness; a controlled test (same
+  prompt, two reviews) showed most of it was the prompt change, and the
+  reviewer agrees with itself 92% of the time (F9). Good example of testing
+  an explanation before acting on it.
 - **Expected politics to be the most drifted section; it never was** (F5),
   which exposed how the election year inflates "normal" for that section.
 - **Two of our own measures needed correcting** (D12): a word-shift ratio
@@ -372,6 +394,26 @@ Honest moments that show judgement, good for a "what we learned" slide:
 - **A metric that looked fine was mostly noise:** raw word-distribution
   divergence scored 2018 below an ordinary year. Subtracting what random
   shuffling gives ("excess") fixed it (D10).
+
+## 12b. From prototype to production (README section and one slide)
+
+- **Local by design** (CLAUDE.md rule; reviewers can clone, install, run;
+  public data only; 220 MB fits a laptop). A take-home that needs cloud
+  accounts risks never being run.
+- **What a company deployment would change:** shared vector database
+  (Qdrant, pgvector or managed) instead of in-memory FAISS; shared storage
+  with backups; logins, permissions and audit logs; a secrets manager;
+  scheduled monitoring with alerts; run history.
+- **Why the move is cheap:** storage sits behind a few small interfaces
+  (`VectorIndex`, the document loader, the LLM cache); agents and
+  statistics do not change. Qdrant with exact search could replace FAISS.
+- **Framed for Rivvun** (enterprise AI for contracts and commercial
+  obligations): confidential customer documents (access control, audit,
+  separation per customer, data location); accountability (decisions in
+  code, evidence on every recommendation, cost ledger); continuous
+  monitoring. The method transfers: new clause language, superseded
+  policies and renamed terms are the contract-archive version of
+  "coronavirus → covid". Do not guess Rivvun's tech stack; keep it generic.
 
 ## 13. Limitations to state up front
 
@@ -395,10 +437,29 @@ Honest moments that show judgement, good for a "what we learned" slide:
 - **"Isn't this a pipeline, not agents?"** See section 6: real dependencies,
   routing on intermediate results, loops back for more evidence; decisions in
   code by design.
-- **"How do you know the LLM judge is right?"** Hand labels, agreement
-  reported; a different model from the one being judged; blind to the index.
+- **"How do you know the LLM judge is right?"** Blind hand labels: 14/15 on
+  the answers cut, and where it disagrees it is stricter, not more generous (F19); a different model from the one being judged; blind to the index.
+- **"Is the LLM reviewer consistent?"** Measured: reviewing the same question
+  twice gives the same keep/reject decision 92% of the time and the same
+  label 100% of the time (F9). Its errors are mostly systematic (it
+  consistently accepted one paraphrase that added a detail), which repeat
+  reviews cannot catch; that is what the hand labels are for.
+- **"Could the judge just look things up or use what it already knows?"** It
+  cannot search: no request declares a search tool, and each call holds
+  only the instructions and one article. It does not learn from our calls.
+  Its built-in knowledge cannot be removed, only constrained and checked;
+  evidence it holds the line: it rejected questions for facts it surely
+  knows but the article does not state ("the Paris deal"). (D18)
 - **"Why HuffPost and not enterprise documents?"** Public, timestamped, with a
   known drift event to validate against; limitations stated.
+- **"Didn't the brief ask for a vector database?"** It lists "Qdrant / FAISS /
+  Chroma" as options; we use FAISS with exact search, because approximate
+  search would add retrieval noise to the very effect we measure (D22).
+- **"Why not a knowledge graph?"** Considered (D21): it would make relationship
+  changes explicit, but extraction from one-sentence descriptions is the hard
+  part, OWL reasoning and a graph database add days and infrastructure for
+  no change to retrieval, and relationship shift is already measured with a
+  significance test (F6). Future work: temporal knowledge graphs, GraphRAG.
 - **"What would you do with more time?"** Keyword search (BM25) to test the
   wording-vs-meaning hypothesis; fine-tuning experiment for the retraining
   recommendation; longer documents to show chunking.

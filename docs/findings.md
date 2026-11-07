@@ -360,3 +360,504 @@ chart, and whether it supports or contradicts what we expected.
     stale index should retrieve court cases. 🔨
   - A first version of the term-shift ratio was inflated for small groups
     (noisy centroids); fixed by matching group sizes (D12).
+
+## F7. Question pilot: good questions, cheap, and five things we had not accounted for
+- **Date:** 2026-11-05
+- **Result:** 20 articles (5 baseline, 3 per later year) → **15 questions
+  kept**. Cost **$0.18** in total: Sonnet writing $0.064 (20 calls, about
+  $0.003 each), Opus reviewing $0.112 (15 calls, about $0.0075 each); the
+  advance estimate ($0.51) was about 3× too high (output assumed 900 tokens;
+  actual about 130–185). No refusals, no broken replies. Questions are as
+  varied as their source articles (diversity ratio 1.03, P3: no collapse).
+  - **Rejected (5):** 4 by the writer's own "not answerable" flag, all
+    teasers with no stated fact ("Hopes And Fears In The GOP
+    Establishment", "Dad's Instagram Post Sums Up The Struggle Of
+    Weekends"); 1 for reusing the headline ("How many FCC complaints… 60
+    Minutes interview"). The checks worked as designed.
+  - **Kept questions are specific and paraphrased**, e.g. "How much in U.S.
+    goods did China target with new tariff increases in August 2019?" from
+    "Trade War Escalates With China Announcing Tariff Hikes On $75 Billion".
+- **Not accounted for:**
+  1. **No time-sensitive questions at all** (15 of 15 evergreen). These are
+     the questions where a stale archive gives a superseded answer (D13), so
+     the impact experiment needs them.
+  2. **Questions echo the description**, not the headline: the reviewer
+     noted "borrows heavily from the description" twice, but the copy check
+     only compares with the headline. Copied wording makes retrieval look
+     easier than it is.
+  3. **The reviewer passed all 15**, even when its own reason named a
+     problem ("'Pennsylvania' is unstated in the article but harmless",
+     "partly echoes its own answer"). Its yes/no checks are lenient; the
+     code only sees the yes/no.
+  4. **Questions add outside facts** (Pennsylvania, the Paris agreement,
+     "blood-testing"). Realistic for a journalist, but it lets the writer's
+     own knowledge leak into the test.
+  5. **A third are two-part questions** ("How many…, and did police…?"),
+     which are harder to judge as right or wrong.
+- **Reproduce:** `python scripts/generate_questions.py` (cached: a rerun
+  costs nothing); every draft and decision in
+  `runs/questions/pilot/questions.csv`; costs in `runs/llm_costs.csv`.
+- **Expectation:** a keep rate around 70–80%; some time-sensitive questions.
+- **Verdict:** Mixed. Quality and cost are better than expected; the
+  question mix and the checks need tightening before scaling up.
+- **Implication:** a version-2 prompt and checks (see journal), then a
+  second pilot before generating the ~180-question set. At about $0.01 per
+  kept question, the small set costs about $1–2, and the full plan is far
+  inside the budget.
+
+## F8. Question pilots 2 and 3: stricter checks halve the keep rate; type labels are ambiguous even for Opus
+- **Date:** 2026-11-05
+- **Setup:** the same 20 articles as the first pilot (F7), so versions compare
+  directly.
+- **Result:**
+
+  | Version | Drafts | Kept | Keep rate | Time-sensitive kept | Unanswerable kept | Cost |
+  |---|---|---|---|---|---|---|
+  | v1 (F7) | 20 | 15 | 75% | 0 | n/a | $0.18 |
+  | v2 | 24 | 9 | 38% | 3 | 0 | $0.28 |
+  | v3 | 25 | 9 | 36% | 2 | 0 | $0.33 |
+  | **v4** (reviewer labels the type; looser unanswerable rule) | 25 | **13 + 2** | **60%** | 2 | **2** | $0.25 |
+
+  Total spent so far: $1.03 of the $150 budget. v4 reused the v3 writer
+  replies from the cache and reran only the reviews.
+  - **v4:** writer and reviewer agree on the type label for 20 of 24
+    reviewed questions (83%). The 4 disagreements are exactly the ambiguous
+    cases: the Brooklyn death toll and gang-link questions, the NATO chief's
+    warning, a candidate's background. The unanswerable set now holds the
+    divorce-debt question and "What did a dad's Instagram post… capture
+    about weekends for parents?" (borderline: the headline half-answers it).
+  - **v2 fixed what it targeted:** two-part questions gone; time-sensitive
+    questions appear ("How many people have Russian investigators said died
+    in the Moscow plane fire so far?"); the reviewer catches questions that
+    give away their own answer and wrong type labels.
+  - **v2 overshot:** "no outside facts" rejected common knowledge ("Justin
+    Trudeau", "Canada", "Pennsylvania senator"); the 5-word description copy
+    check rejected proper names; no unanswerable question survived, partly
+    because the writer treated the description as the whole article.
+  - **v3's remaining rejections are about half correct** (invented details:
+    "after the US decision on the Paris deal"; a winner the article never
+    names; "on Sunday" with no date) **and half noise:**
+    - **The type label is unstable even for Opus:** the same question ("Did
+      police see any initial indication that the Brooklyn shootings were
+      linked to gangs?") was accepted as time-sensitive in v2 and rejected
+      as "should be evergreen" in v3. Whether "what police said at the
+      time" is time-sensitive is genuinely ambiguous.
+    - **"Natural" rejects unanswerable questions for restating the
+      headline,** which they inherently do.
+  - Diversity stayed healthy (ratio 1.03–1.05: no collapse into generic
+    phrasing).
+- **Reproduce:** `python scripts/generate_questions.py --name pilot_v2` /
+  `--name pilot_v3` with the matching prompt versions (cached: reruns are
+  free); tables in `runs/questions/pilot_v2/` and `pilot_v3/`.
+- **Expectation:** v3 would keep 60–70%.
+- **Verdict:** Contradicts. Stricter checking found real writer errors, but
+  two checks (type label, "natural" for unanswerable questions) add noise.
+- **Implication (done in v4):** the reviewer assigns the type label instead
+  of judging the writer's (disagreement recorded, not a rejection), and an
+  unanswerable question needs only the reviewer's agreement that it is
+  unanswerable and a single ask. Keep rate 60%. Prompt tuning stops here:
+  at about $0.016 per kept question the remaining rejections are mostly
+  right and affordable. The type label carries an ambiguity of about 17%
+  (the disagreement rate), to be stated with any evergreen vs
+  time-sensitive result; a cleaner subset uses only questions where both
+  models agree.
+
+## F9. How reliable is the question reviewer? Mostly consistent; its errors are systematic, not random
+- **Date:** 2026-11-06
+- **Two observations from comparing v3 and v4 (F8), the reason for this test:**
+  1. 8 of 25 decisions flipped between v3 and v4. 5 were the intended
+     effect; 3 had nothing to do with the change. One of those let a
+     question with an invented detail through: "What did the Pretty Little
+     Liars cast members do together to mark *a milestone*?" (v3 rejected it;
+     the article never says "milestone").
+  2. Opus labels fewer questions time-sensitive than the writer (3 vs 6 of
+     the reviewed drafts), so with Opus's label final, time-sensitive
+     questions became scarcer.
+- **Test (v5):** the same 20 articles and the same r-v4 prompt, each
+  question reviewed **twice independently**; a question is kept only if both
+  reviews accept it. Labels are grouped: "evergreen" or "time_sensitive" if
+  the writer and both reviews agree, otherwise "disputed".
+- **Result:**
+  - **Same keep/reject decision in 22 of 24 double-reviewed questions
+    (92%); identical type label in 24 of 24 (100%).**
+  - **Correction to observation 1:** the 3 "unexplained" v3→v4 flips were
+    not mainly random. The reviewer prompt also changed between v3 and v4
+    (r-v3 → r-v4), so those flips mix the prompt change with randomness.
+    Measured with the *same* prompt, the reviewer disagrees with itself on
+    about 8% of decisions.
+  - **The "milestone" question passed both reviews** ("'milestone'
+    reasonably paraphrases freedom from plot holes"). It is a consistent
+    judgement under r-v4, not a random lapse, so reviewing twice cannot
+    catch it. Systematic errors like this are what the hand labels (P8)
+    are for.
+  - **Only 1 question changed** (15 → 14 kept): "What did a dad's Instagram
+    post… capture about weekends for parents?" left the unanswerable set
+    (review 2: the headline answers it, which is defensible). The other
+    split decision (the Uttarakhand missing count) was rejected by review 1
+    for a hedged reference answer ("about 140" vs the article's 140).
+  - **Labels:** among the 13 kept answerable questions, 9 clear evergreen,
+    **1 clear time-sensitive**, 3 disputed. The two reviews never disagree
+    on the label: the disagreement is between writer and reviewer, a
+    systematic difference in interpretation, not noise.
+  - Cost: $0.25 for the second reviews; $1.27 spent in total.
+- **Reproduce:** `python scripts/generate_questions.py --name pilot_v5`
+  (cached); `runs/questions/pilot_v5/questions.csv`.
+- **Expectation:** double review would catch random lapses such as the
+  "milestone" question, and lower the keep rate noticeably.
+- **Verdict:** Mixed. The reviewer is more consistent than feared (92%);
+  double review changed one decision and could not catch the systematic
+  miss.
+- **Implication:**
+  - Double review stays for the full set: it is cheap (about $1.50 more for
+    ~300 drafts) and gives a measured reliability figure; it protects
+    against random lapses, not systematic ones.
+  - Hand labels must be drawn to include kept questions, so systematic
+    reviewer errors are measured.
+  - **Clear time-sensitive questions are very scarce (1 of 13).** An
+    analysis of "outdated answers" needs an explicit oversample of articles
+    likely to contain revisable facts (tolls, counts still being reported,
+    ongoing situations), stated as such.
+
+## F10. The oversample quadruples clear time-sensitive questions, at a lower keep rate
+- **Date:** 2026-11-06
+- **Setup:** 20 articles from the likely-revisable pool (D20), same period
+  counts as the random pilots, same prompts, double review (D19).
+- **Result:**
+
+  | Sample | Articles | Kept answerable | Clear time-sensitive | Disputed label | Keep rate | Writer–reviewer label agreement | Cost |
+  |---|---|---|---|---|---|---|---|
+  | Random (v5, F9) | 20 | 13 | 1 (8%) | 3 | 56% | 83% | $0.25 (2nd reviews only) |
+  | **Oversample** | 20 | 9 | **4 (44%)** | 1 | 35% | 91% | $0.60 |
+
+  - Kept time-sensitive questions are what the experiment needs: "How many
+    people had died in the New Zealand mosque shootings as of March 17,
+    2019?"; "How many U.S. states had detected the Omicron variant as of
+    early December 2021?"; "How many COVID-19 cases did North Paulding High
+    School in Georgia report…?"
+  - Labels are less ambiguous here (agreement 91% vs 83%).
+  - The keep rate is lower mainly because both reviewers reject questions
+    that reuse the description's wording (19 "not natural" votes): breaking
+    news is full of specific names and places ("Carr fire in northern
+    California… on Saturday"), which are hard to paraphrase. Some of these
+    flags treat proper names as copying; the strictness also keeps
+    retrieval from being artificially easy.
+  - Reviewer consistency 96% (decisions), 100% (labels). Total spent $1.87.
+- **Reproduce:** `python scripts/generate_questions.py --name oversample_pilot --oversample`.
+- **Expectation:** more time-sensitive questions.
+- **Verdict:** Supports; the keep rate cost is acceptable (about $0.07 per
+  kept question).
+- **Implication:** about 200 oversampled articles would give roughly 40
+  clear time-sensitive questions for about $6 (live) or $3 (batch); no
+  further prompt tuning.
+
+## F11. Rejecting "copied" wording does not make retrieval harder; every question finds its article easily
+- **Date:** 2026-11-06
+- **Question:** the reviewers reject questions that reuse the article's
+  wording as "not natural" (F10). Is that justified, i.e. do those questions
+  make retrieval artificially easy?
+- **Method (no LLM cost):** for every drafted question from the random v5
+  pilot and the oversample pilot (51 questions), embed the question and
+  search the *whole* archive (77,840 articles); record where its source
+  article ranks, and the share of its content words found in the article.
+- **Result:**
+
+  | Group | Questions | Source ranked 1st | In top 10 | Word overlap |
+  |---|---|---|---|---|
+  | Kept | 23 | 91% | 100% | 0.53 |
+  | Rejected as "not natural" (copying) | 14 | 79% | 86% | 0.62 |
+  | Rejected for other reasons | 14 | 79% | 100% | 0.56 |
+
+  1. **Copy-rejected questions are not easier to retrieve**, in fact a
+     little harder, despite slightly more shared words. The rejection does
+     not protect the evaluation from easy matches. (Small groups: the
+     differences are not significant; the point is that there is no sign of
+     the feared effect.)
+  2. **Every group is easy:** a question written from one article finds that
+     article first among 77,840 about 80–90% of the time. This is the
+     circularity expected when questions are written from their own source
+     (Q8): known-item retrieval on the refreshed index will be near its
+     ceiling and say little.
+- **Reproduce:** the analysis snippet in the journal entry of 2026-11-06
+  (uses `driftmon.index.VectorIndex`, the cached question embeddings and
+  `data/processed/questions_{pilot_v5,oversample_pilot}.parquet`).
+- **Expectation:** copy-rejected questions would retrieve their source more
+  easily.
+- **Verdict:** Contradicts.
+- **Implication:**
+  - The "natural" check should stop counting reused names and facts as a
+    problem: verbatim copying is already caught by the code checks (4
+    headline words, 7 description words). It still rejects awkward
+    phrasing. Proposed as reviewer r-v5.
+  - The informative retrieval comparison is stale vs refreshed (where the
+    stale index lacks the source), plus harder questions in newer wording
+    about older topics (D7, item 2), not known-item rank on the refreshed
+    index. Revisit D2's weighting of known-item metrics when Agent C runs.
+
+## F12. Reviewer r-v5 (names and facts are not copying): oversample keep rate 35% → 58%
+- **Date:** 2026-11-06
+- **Change:** "natural" no longer counts reused names, places, numbers or
+  facts as copying; only awkward phrasing or a whole copied sentence fails
+  it (F11 showed copy-rejected questions were not easier to retrieve).
+  Writer unchanged; reviews rerun twice on both pilots.
+- **Result:**
+
+  | Pilot | Kept before (r-v4) | Kept after (r-v5) | Clear time-sensitive | Reviewer consistency |
+  |---|---|---|---|---|
+  | Random (20 articles) | 13 + 1 unanswerable | 14 + 1 | 1 | 92% |
+  | Oversample (20 articles) | 9 | **15** | **6** (was 4) | 87% |
+
+  - **Correctly rescued:** "How many boxes of documents from the probe into
+    violations at the former Rocky Flats weapons plant have gone missing?",
+    "How many victims have California's wildfires claimed so far, as of
+    early August 2018?", the New Zealand and SEC questions.
+  - **Correctly rejected now:** "What happened to the Navy SEAL who died
+    during a Fleet Week demonstration?" (half-answers itself).
+  - **Still lenient:** "Who was killed by the Carr fire… on Saturday?" (no
+    date; a similar "on Sunday" question was rejected earlier); a yes/no
+    question about Bernie Sanders that common knowledge answers; the
+    "milestone" question (F9) still passes. These are what the hand labels
+    (P8) must measure.
+  - Spent so far: $2.82 of $150.
+- **Reproduce:** `python scripts/generate_questions.py --name pilot_v6` and
+  `--name oversample_v2 --oversample` (cached).
+- **Expectation:** more kept questions, especially in the oversample.
+- **Verdict:** Supports. Prompt tuning ends here; the remaining errors are
+  reviewer leniency, measured by hand labels rather than more prompts.
+
+## F15. Stale vs refreshed: not re-indexing loses almost every new question; drift level does not change that
+- **Date:** 2026-11-06
+- **Setup:** Agent C (D25) on the full question set (423 answerable
+  questions). Opus grades the pooled top 5 of the stale and refreshed index
+  in one blind, shuffled call per question. 423 of 423 judged, no failures,
+  no skipped articles; cost $1.65 as a batch (the estimate was $3.17).
+- **Result (a), judged, "answer" = an article in the top 5 answers the question:**
+
+  | Period | Questions | Stale answer | Refreshed answer | Stale nDCG@5 | Refreshed nDCG@5 | Δ nDCG (95% CI) |
+  |---|---|---|---|---|---|---|
+  | 2016-17 (baseline questions) | 49 | 1.00 | 1.00 | 0.968 | 0.969 | +0.001 (−0.006 to 0.008) |
+  | 2018 | 99 | 0.01 | 1.00 | 0.081 | 0.966 | +0.885 (0.848 to 0.921) |
+  | 2019 | 70 | 0.00 | 1.00 | 0.022 | 0.970 | +0.948 |
+  | 2020 | 83 | 0.00 | 0.964 | 0.010 | 0.944 | +0.933 |
+  | 2021 | 69 | 0.00 | 0.986 | 0.012 | 0.968 | +0.955 |
+  | 2022 | 53 | 0.00 | 0.981 | 0.018 | 0.969 | +0.951 |
+
+  1. **Without re-indexing, questions about new events fail almost
+     completely** (0–1% answered), in every year and for every question
+     type, including "evergreen" ones: they are about specific events the
+     stale index never saw. The stale index returns related but wrong
+     articles, as F4 predicted: "Which food delivery company released data on
+     what takeout items have grown more popular during the coronavirus
+     pandemic?" gets 2016 hepatitis A and E. coli outbreak stories (all
+     graded 0); the refreshed index ranks "The Delivery Foods Americans Are
+     Ordering More During Lockdown" first (grade 2).
+  2. **Re-indexing does not hurt old questions:** baseline questions score
+     the same on both (Δ nDCG +0.001), although by 2022 14% of their top 10
+     are newer articles (c) and no source article is pushed out.
+  3. **Drift level does not change the picture.** Later-period questions,
+     by Agent B's drift status:
+
+     | Status | Questions | Stale answer | Refreshed answer | Refreshed nDCG@5 |
+     |---|---|---|---|---|
+     | Flagged sections | 123 | 0.000 | 0.992 | 0.960 |
+     | Control sections | 166 | 0.006 | 0.982 | 0.958 |
+     | Other | 85 | 0.000 | 0.988 | 0.976 |
+
+     Flagged sections lose as much as control sections without
+     re-indexing, and retrieve as well as them after it. On this archive,
+     **the drift that matters is new content the index does not have**, not
+     how far a section's meaning moved. 2020 is the hardest year on the
+     refreshed index (answer 0.964, nDCG 0.944; MRR 0.904 in (b)), but the
+     intervals overlap the other years.
+- **Caveats:** questions are written from their source article, so they
+  are easy to retrieve (F11); a stale index cannot hold a later article, so
+  (a) is one-sided by construction (D2). The judge is checked against hand
+  labels (P8) before these numbers are final.
+- **Reproduce:** `python scripts/run_pipeline.py` (cached; `runs/20261106-113106/`:
+  `retrieval.json`, `retrieval_judged.csv`, `retrieval_grades.csv`).
+- **Expectation:** stale worse on new questions (yes); drifted sections hit
+  harder than controls (no).
+- **Verdict:** Mixed: supports the re-indexing recommendation; contradicts
+  "more drift, more damage". Agent D (answer quality) and the Wikipedia set,
+  where the stale index holds an outdated version of the *same* article,
+  test the subtler case.
+
+## F16. Chunking: chunk-level comparison follows real edits far better than whole-article vectors
+- **Date:** 2026-11-06
+- **Setup:** the Wikipedia set (D26): 165 articles at the end of 2017
+  (baseline) and of each year 2018–2022; 815 article × year pairs with a
+  baseline version (2 articles are new since the baseline). Ground truth:
+  the share of the later version's words in sentences that are new or
+  rewritten since the baseline version. Each way of reading an article
+  gives a change score; we measure how well it follows the ground truth
+  (Spearman rank correlation, and AUC for a "big change" = at least 20% of
+  the text new or rewritten, threshold set before looking).
+- **Result:**
+
+  | How the article is read | Follows real change (Spearman) | Spots big changes (AUC) |
+  |---|---|---|
+  | First 512 tokens only (whole-article embedding) | 0.51 | 0.77 |
+  | One averaged vector of all chunks | 0.78 | 0.89 |
+  | **Chunks of ~256 tokens** (our default) | **0.87** | **0.93** |
+  | Chunks of ~128 tokens | 0.89 | 0.95 |
+  | Chunks, largest single change instead of average | 0.55–0.56 | 0.80–0.82 |
+
+  1. **A whole-article embedding sees only the start.** Every article is
+     longer than 512 tokens (median about 8,000); 91% of the text is never
+     read. Edits are spread through articles, so the start still moves a
+     little, but the score follows real change poorly (0.51).
+  2. **Averaging dilutes.** It ranks articles reasonably (0.78), but the
+     scores are tiny (0.006 on average in 2022, when 54% of the text had
+     changed), so any alert threshold would sit in the noise.
+  3. **Chunks work best.** 128-token chunks are slightly better than 256
+     (0.89 vs 0.87) but need nearly twice as many vectors (96,819 vs
+     52,058); 256 stays the default.
+  4. **Known-drift check passes:** the event set (COVID-19, vaccine,
+     Ukraine, …) changes more than the random sample (89% vs 54% of the
+     text by 2022) and its chunk scores are twice as high, rising sharply
+     in 2020.
+  5. **Lesson for drift detection: edited documents need a paired test.**
+     The archive-level MMD test (Agent B's technique) is built for new,
+     independent documents each period, as in HuffPost. Here the same
+     articles appear on both sides, so the test breaks: on article vectors
+     MMD² is negative with p = 1.0 in every year; on chunks it is mostly
+     not significant, because about half of the chunks are unchanged
+     copies. For documents that are edited rather than replaced, drift has
+     to be measured per document against its own earlier version, as
+     above.
+- **Reproduce:** `python scripts/fetch_wikipedia.py` then
+  `python scripts/longform_drift.py` (tables in `runs/longform/`;
+  about 4 minutes the first time, for 74k embeddings).
+- **Expectation:** truncation misses changes and averaging dilutes them
+  (yes, both). Not expected: the archive-level test does not apply to
+  edited documents.
+- **Verdict:** Supports chunking at about 256 tokens and per-document
+  comparison for updated documents.
+- **Follow-up:** ordinary-year bands and the number-edit blind spot in F17.
+
+## F17. Wikipedia against an ordinary year, and the blind spot: changed numbers barely move the vectors
+- **Date:** 2026-11-06
+- **Setup:** each article also captured at the end of 2016, so 2016 → 2017
+  is the "ordinary year" of editing (as D11 does for HuffPost). Each year
+  is compared with the year before (chunks of about 256 tokens). Bands:
+  above the 95th / 99th percentile of the ordinary year's article scores =
+  medium / high. Blind spot: an edited chunk counts as "number only" when
+  every new or rewritten sentence in it differs from an old sentence only
+  in its numbers.
+- **Result, year on year:**
+
+  | | Ordinary year (2017) | 2018 | 2019 | **2020** | 2021 | 2022 |
+  |---|---|---|---|---|---|---|
+  | Random sample: × ordinary (median) | 1.0 | 0.9 | 0.8 | 1.0 | 1.0 | 0.9 |
+  | Random sample: medium or high | 5% | 5% | 1% | 5% | 3% | 9% |
+  | Event set: × ordinary (median) | 1.2 | 0.8 | 1.1 | **4.3** | 3.4 | 3.0 |
+  | Event set: medium or high | 20% | 18% | 18% | **45%** | 17% | 17% |
+
+  The random sample changes at an ordinary pace every year (about 5% above
+  the medium line, as expected by construction). The event articles jump
+  in 2020 (4.3× an ordinary year) and stay high: the known-drift check
+  passes with the year-on-year view too. The amount of editing is steady
+  (about 55% of chunks unchanged each year, 56% in the ordinary year);
+  what changes is *what* gets edited.
+- **Result, blind spot:**
+
+  | Edited chunks | Chunks | Median change | Share in the least-changed quarter |
+  |---|---|---|---|
+  | Changed only by numbers | 100 | 0.0008 | 62% |
+  | Other edits | 21,107 | 0.0127 | 25% |
+
+  A chunk whose only edit is a number moves about 16 times less than a
+  typical edited chunk. Examples: "the Black Death … killed over 75
+  million people" → "over 20 million" (chunk change 0.006); "from 1347 to
+  1453" → "1347 to 1353" (0.000); bitcoin "over 4,000 altcoins" → "over
+  6,000" (0.007). Some number edits are only formatting ("2217" →
+  "2,217", "80s" → "1980s") and should be ignored; the embedding cannot
+  tell those apart from a changed fact.
+- **Reproduce:** `python scripts/fetch_wikipedia.py` then
+  `python scripts/longform_drift.py` (`runs/longform/year_on_year*.csv`,
+  `number_edits.csv`, `number_edit_examples.csv`).
+- **Expectation:** event articles above an ordinary year in 2020 (yes);
+  number edits nearly invisible to embeddings (yes).
+- **Verdict:** Supports. **Implication:** embedding drift cannot be the
+  only guard for facts that change by number (tolls, counts, dates); the
+  answer-level check in Agent D (does the answer change between the old
+  and new version?) is needed, and a cheap text check for changed numbers
+  could flag such edits for re-indexing.
+
+## F18. The changed-facts check: about one article in five changes a fact each year, almost always unseen by embedding drift
+- **Date:** 2026-11-06
+- **Setup:** the D27 check on the Wikipedia set, each year vs the year
+  before (2017 → 2022). A changed sentence is matched with the most
+  similar sentence of the previous version in the same section (word
+  overlap ≥ 0.6); it is a changed fact when a number was *replaced*.
+  Ignored: numbers only added (new context) or only removed (dropped
+  citations), formatting ("2217" vs "2,217"), citation lines, image
+  captions, fragments, and cleaning leftovers.
+- **First version failed the hand check:** of 12 sampled flags, about 2
+  were real; the rest were dropped ISBNs, added context ("In 2016, a
+  study…"), "seven" → "7" and markup leftovers. The rules above came from
+  that check (tests in `tests/test_facts.py`).
+- **Result:** 505 changed facts in 97 of 165 articles over five years.
+
+  | | 2018 | 2019 | 2020 | 2021 | 2022 |
+  |---|---|---|---|---|---|
+  | Random sample: articles with a changed fact | 18% | 23% | 25% | 22% | 20% |
+  | … of which the embedding band is "low" | 18% | 23% | 25% | 22% | 18% |
+  | Event set: articles with a changed fact | 9% | 45% | 55% | 58% | 50% |
+  | … of which the embedding band is "low" | 9% | 36% | 18% | 50% | 50% |
+
+  In the random sample, **almost every article whose facts changed looks
+  ordinary to embedding drift**. Event articles changed facts most from
+  2019; in 2020 most were caught anyway because they also changed a lot in
+  other ways, but in 2021–22 half had changed facts with a "low" band.
+- **Precision:** 17 of 20 in the author's blind labels (F19; my own
+  earlier reading of 25 flags said about 23). Real changes, e.g.
+  malaria "228 million cases … 405,000 deaths" → "229 million … 409,000";
+  tuberculosis deaths 1.6 → 1.5 million; Paris Agreement signatories 194
+  → 193; Germany's president Gauck (2012) → Steinmeier (2017); Catholic
+  Church members 1.27 → 1.29 billion. Misses: a changed maths example
+  ("1/5" → "2/5") and a rearranged sentence.
+- **Reproduce:** `python scripts/longform_drift.py`
+  (`runs/longform/fact_changes.csv`, `fact_changes_summary.csv`,
+  `fact_changes_hand_check.csv`); 20 flags go into the hand-label sheet
+  (`scripts/label_sheet.py make`, part "facts").
+- **Expectation:** changed facts would mostly sit in low embedding bands
+  (yes, almost all).
+- **Verdict:** Supports D27's detection step. Usefulness is not yet shown:
+  Agent D must show that flagged articles give changed answers.
+
+## F19. Hand labels: the relevance judge matches a person on "answers or not" 14 times in 15, and is never more lenient
+- **Date:** 2026-11-07
+- **Setup:** the author labelled a blind sample of 50 items without seeing
+  the LLM verdicts (`scripts/label_sheet.py make`, seed from config):
+  15 relevance pairs (5 per judge grade), 15 questions (10 the reviewer
+  kept, 5 it rejected) and 20 changed facts flagged by the D27 check. After
+  a first pass, the author re-checked 5 items against the written rules and
+  corrected them (first pass: relevance 11/15 on answers or not, facts
+  16/20, questions 10/15).
+- **Result:**
+
+  | Part | Agreement with the LLM | Notes |
+  |---|---|---|
+  | Relevance (Opus judge, Agent C) | 11/15 exact grade; **14/15 on "answers" (grade 2) vs not**, kappa 0.6 on the 0/1/2 grade | In all 4 disagreements the judge gave the *lower* grade |
+  | Questions (Opus reviewer) | 11/15: all 10 kept questions are fair; the author would have kept 4 of the 5 rejected | Rejections came from the reviewer's stricter rules (could be answered without the article, clunky wording, no time anchor) |
+  | Changed facts (D27 check, no LLM) | **precision 17/20 (85%)** | Misses: two reworded sentences ("late 15th century" vs "late 1400s"), one changed maths example |
+
+- **What it means:**
+  - The cut F15 depends on (answers or not) is reliable, and the judge is
+    strict, never generous: if anything, the stale index's 0–1% answered
+    rate is not inflated by a lenient judge.
+  - The kept question set is clean (10/10). The reviewer throws away some
+    good questions; that costs coverage, not correctness.
+  - The changed-facts check is useful but not exact; its flags are
+    evidence to check, which is how Agent E will present them.
+- **Limits:** one labeller and small samples (a single item moves a part by
+  5–7 points). A second labeller is invited with a blank sheet and
+  `docs/labelling-guide.md`; `scripts/label_sheet.py compare` then gives
+  the agreement between people, the baseline the LLM numbers are read
+  against.
+- **Reproduce:** `python scripts/label_sheet.py score`
+  (`runs/labels/agreement.csv`; first pass in `agreement_first_pass.csv`).
+- **Expectation:** agreement high on the answers cut (yes); facts precision
+  about 90% by my reading (lower: 85%).
+- **Verdict:** Supports using the Opus judge for F15 and the D27 check as a
+  flagging step.

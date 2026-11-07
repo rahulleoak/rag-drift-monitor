@@ -12,6 +12,7 @@ paths:
   data_sample: data/sample
   cache: cache          # embeddings and LLM responses
   runs: runs            # one folder per pipeline run: reports and charts
+  indexes: indexes      # FAISS indexes with a manifest, saved by Agent C (D22)
 
 # Candidate datasets. Both are explored before one is chosen (Q1).
 datasets:
@@ -67,6 +68,41 @@ periods:
   sample_per_period: 1398
   min_segment_size: 50      # smallest period x category group that gets analysed
 
+# D16: the simulator writes the golden evaluation set (one question per article).
+simulation:
+  min_words: 15            # articles shorter than this rarely state an answerable fact
+  # Templated columns have no single right answer (F3): never used as sources.
+  exclude_title_patterns: ["funniest tweets", "tweets from", "huffpost rise", "daily meditation",
+                           "headline quiz", "what to watch", "sunday roundup", "morning email",
+                           "what you need to know"]
+  max_questions_per_article: 2   # D17: a second question only for a time-sensitive fact
+  reviews_per_question: 2        # D19: independent reviews; a question is kept only if all accept it
+  pilot_counts: {"2016-17": 5, "2018": 3, "2019": 3, "2020": 3, "2021": 3, "2022": 3}
+  # D20: oversample of articles likely to state a revisable fact (tolls, counts still
+  # being reported, ongoing situations, current rules), because random sampling gave
+  # too few time-sensitive questions (F9). Reported as its own group, never mixed
+  # into archive-wide rates.
+  oversample_patterns: ['\bat least\b', '\bso far\b', '\bmissing\b', 'death toll', '\btoll\b', '\bstill\b',
+                        '\bongoing\b', '\bcurrently\b', '\bnew (?:rules?|guidance|restrictions?)\b',
+                        '\bwill take effect\b', '\brising\b', '\bclimb(?:s|ed|ing)?\b',
+                        '\bsurg(?:e|es|ed|ing)\b', '\bcases\b', '\blatest\b', '\bremains?\b',
+                        '\binvestigat(?:ion|ing)\b', '\bdeveloping\b', '\bdead\b', '\bkilled\b']
+  # D23: the full question set. Articles are drawn from flagged sections, control
+  # sections, plain random, and the revisable-fact oversample; each is tagged.
+  full_set:
+    per_flagged_segment: 8     # per flagged period x section (Agent B's drifted segments)
+    per_control_segment: 3     # per low-drift control segment
+    random_baseline: 40        # plain random baseline articles (the control questions)
+    random_per_period: 20      # plain random articles per later period
+    oversample_per_period: 34  # likely-revisable articles per period (D20)
+  question_checks:
+    min_words: 6
+    max_words: 30
+    copy_ngram: 4              # reject a question repeating 4 consecutive headline words
+    copy_ngram_description: 7  # ... or 7 description words (D17; 5 rejected names such as "8-year-old Malayan tiger named Eko")
+    max_headline_overlap: 0.7  # reject if most of its content words come from the headline
+    duplicate_cosine: 0.95
+
 # HuffPost renamed several sections over the years (F1). Old label -> label
 # used from 2018 on, so the same section can be compared across periods.
 # Applied for analysis only; raw labels are kept and their changes reported.
@@ -98,6 +134,7 @@ embeddings:
 
 retrieval:
   top_k: 10
+  judge_k: 5                    # D25: the judge grades the pooled top 5 of both indexes (what the answer step reads)
   index_type: faiss_flat_ip               # exact search, Q13
 
 # D9: a different, stronger model judges than the one that writes questions
@@ -108,7 +145,54 @@ llm:
   generator_model: claude-sonnet-5-5   # writes test questions, reference answers and RAG answers
   judge_model: claude-opus-5-5         # judges relevance and answer quality; writes explanations
   use_batch_api: true                  # bulk jobs run through the Batch API (50% cheaper, not instant)
-  budget_usd: null                     # spending cap; waiting for the stakeholder answer (question 4)
+  budget_usd: 150                      # D15: total spending cap (author, 2026-11-05); enforced before every call
+  max_retries: 4                       # SDK retries for rate limits and server errors
+  # Published prices, USD per million tokens (checked 2026-11-04). The Batch API
+  # costs half. Thinking tokens are billed as output.
+  prices:
+    claude-sonnet-5-5: {input: 2.0, output: 10.0}
+    claude-opus-5-5: {input: 4.0, output: 20.0}
+  # Per job: thinking effort (low / medium / high), output cap (thinking counts
+  # towards it), and the output size assumed when estimating cost in advance.
+  jobs:
+    questions:       {effort: medium, max_tokens: 4000, expected_output: 900}
+    question_review: {effort: medium, max_tokens: 3000, expected_output: 700}
+    relevance:       {effort: low, max_tokens: 3000, expected_output: 600}
+
+# D26: long-form documents where chunking applies (stakeholder request, 2026-11-06).
+# Wikipedia articles captured at the last revision before the end of each period
+# in `periods` (2016-17 = end of 2017, ...), followed by page id across renames.
+longform:
+  api: https://en.wikipedia.org/w/api.php
+  # Wikimedia asks for a descriptive User-Agent; a project URL, no personal email.
+  user_agent: "rag-drift-monitor/0.1 (research prototype; https://github.com/rahulleoak/rag-drift-monitor)"
+  request_pause_s: 0.2
+  vital_list: "Wikipedia:Vital articles/Level 3"   # about 1,000 broad topics in 11 sections
+  per_section: 14                                  # stratified random sample
+  # Known-drift check: articles tied to events of 2018-2022, labelled separately
+  # and never mixed into sample-wide rates.
+  event_titles: ["COVID-19 pandemic", "Coronavirus", "Vaccine", "Pandemic", "Social distancing",
+                 "Remote work", "Climate change", "Brexit", "Ukraine", "Joe Biden",
+                 "Cryptocurrency", "Artificial intelligence"]
+  skip_sections: ["references", "external links", "see also", "further reading", "notes", "bibliography",
+                  "sources", "citations", "footnotes", "notes and references", "works cited", "gallery",
+                  "explanatory notes", "general and cited sources", "general sources", "cited sources"]
+  min_words: 500               # shorter snapshots are not long-form (stubs or redirects)
+  chunking:
+    size_tokens: 256           # bge-small reads at most 512; 256 keeps a chunk to one point
+    overlap_tokens: 32         # last whole sentences of the previous chunk
+    min_tokens: 20             # a smaller final piece is merged into the previous chunk
+    compare_sizes: [128, 256]  # chunk sizes compared in the chunking experiment
+  # Set before looking at results: a pair counts as a "big change" when at least this
+  # share of the later version's words is in new or rewritten sentences.
+  big_change: 0.2
+  # Ordinary-year reference: each article at the end of 2016, so 2016 -> 2017 shows how
+  # much a normal year of editing changes an article (bands, as D11 does for HuffPost).
+  reference_period: {name: "2016", end: "2016-12-31"}
+  band_percentiles: {medium: 95, high: 99}
+  fact_min_similarity: 0.6     # D27: word overlap for a changed sentence to count as the same statement
+  mmd_sample: 1500             # chunks per side for the archive-level MMD test
+  mmd_permutations: 200
 
 drift:
   alpha: 0.05
@@ -132,6 +216,10 @@ drift:
 evaluation:
   queries_per_segment: null      # set once the LLM budget is known
   judge_validation_items: 40     # hand-labelled items used to check the LLM judge
+  question_set: full             # data/processed/questions_<name>.parquet (D23)
+  # D7: the query stream = questions from pools drawn the same way in every
+  # period; flagged/control pools are picked by document drift, so excluded here
+  query_stream_pools: [random, oversample]
 
 impact:
   min_retrieval_drop: null       # practical-significance thresholds, set before running (Q11)

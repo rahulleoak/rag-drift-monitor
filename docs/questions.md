@@ -32,6 +32,37 @@ that the card does not mention.
 
 ---
 
+## Stakeholder answers (Ani, received 2026-11-06)
+
+The questions actually sent were a shortened version of Part 1. Answers,
+quoted closely:
+
+- **Corpus / chunking:** "Please include longer documents as well, since
+  chunking is an important part of what we want to see. You can use HuffPost
+  for the time-based drift, but add a set of long-form documents (e.g. arXiv
+  papers, Wikipedia articles or public reports) where chunking applies.
+  Please explain your chunking strategy and how it affects drift detection."
+  -> **New requirement.** HuffPost stays; a long-form corpus is added (D26).
+- **Agentic:** stats and decisions in tested code, LLMs for generation,
+  judging and explanation, LangGraph routing: "that fits ... the right
+  split." -> D9/D15 confirmed.
+- **Recommend or apply fixes:** "Recommending fixes is enough. If you have
+  time, applying one fix (e.g. re-index) and re-checking would be a bonus,
+  not a requirement."
+- **Simulated queries and labels:** "LLM-generated queries with a
+  hand-checked sample is acceptable. Please document how you validated
+  them." -> P8 hand labels plus the reviewer checks (D16-D19) must be
+  written up as the validation method.
+- **LLM key:** "Please use your own key." (Whether reviewers will run the
+  code without a key was not answered: ship precomputed results so the
+  dashboard works without one.)
+- **Deadline:** "You try completing it by Friday next week" -> **Friday
+  2026-11-13** (was Tuesday 2026-11-10).
+- **Checkpoint:** a short design summary around Wednesday/Thursday is
+  welcome; quick feedback promised.
+
+---
+
 ## Part 1. Ask stakeholders (top 5)
 
 1. **Is the corpus framing acceptable?**

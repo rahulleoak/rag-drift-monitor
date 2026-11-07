@@ -1,8 +1,8 @@
 """Streamlit dashboard. Reads saved outputs from ``runs/<run_id>/``; it does not
 run the pipeline itself, so the demo cannot fail on a live LLM call (Q16).
 
-Pages (tabs): Overview, Data monitoring (Agent A), Drift (Agent B), and
-placeholders for Retrieval (C), Impact (D) and Recommendations (E), which fill
+Pages (tabs): Overview, Data monitoring (Agent A), Drift (Agent B), Retrieval
+(Agent C), and placeholders for Impact (D) and Recommendations (E), which fill
 in as those agents are built.
 
 Run (from the repository root):
@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.dashboard_data import list_runs, load_run, severity_grid  # noqa: E402
+from driftmon.dashboard_data import list_runs, load_run, severity_grid, stale_vs_refreshed  # noqa: E402
 
 st.set_page_config(page_title="RAG drift monitor", layout="wide")
 config = load_config()
@@ -123,7 +123,11 @@ with tabs[1]:
     st.markdown(f"**Segments:** {int(seg['eligible'].sum())} of {len(seg)} period × section groups "
                 "have enough articles to analyse")
     st.dataframe(seg, hide_index=True, width="stretch")
-    st.info("Query stream: " + run.monitoring.query_stream)
+    st.markdown("**Query stream** (simulated questions from the random and oversample pools)")
+    if isinstance(run.monitoring.query_stream, str):
+        st.info("Query stream: " + run.monitoring.query_stream)
+    else:
+        st.dataframe(pd.DataFrame(run.monitoring.query_stream).round(3), hide_index=True, width="stretch")
 
 with tabs[2]:
     st.subheader("Agent B · drift by section and year")
@@ -152,10 +156,74 @@ with tabs[2]:
             st.image(str(run.charts.get(f"dark/{key}", run.charts[key])))
         with st.expander("Table"):
             st.dataframe(table.round(3) if len(table) else table, width="stretch")
+    st.markdown("**Query drift** (each period's questions vs the baseline questions)")
+    if isinstance(run.drift.query_drift, str):
+        st.info("Query drift: " + run.drift.query_drift)
+    else:
+        qd = pd.DataFrame(run.drift.query_drift)
+        st.dataframe(qd.drop(columns=["examples"], errors="ignore").round(3), hide_index=True,
+                     width="stretch")
+        st.caption("The questions are written from each period's articles, so query drift partly "
+                   "mirrors document drift by construction; a real query log can drift on its own.")
     st.info("Explanations written by the LLM will appear here once the LLM parts are built.")
 
-for tab, agent, what in [(tabs[3], "C · Retrieval evaluation", "stale vs refreshed retrieval per segment"),
-                         (tabs[4], "D · RAG impact assessment", "answer quality and which drift matters"),
+def dumbbell(long: pd.DataFrame, title: str) -> alt.Chart:
+    """Per year: the stale and the refreshed index, joined by a hairline."""
+    order = ["Stale index (2016-17 only)", "Refreshed index"]
+    colour = alt.Color("index:N", scale=alt.Scale(domain=order, range=[T.series[1], T.series[0]]),
+                       legend=alt.Legend(title=None, orient="top"))
+    y = alt.Y("period:N", title=None, sort=sorted(long["period"].unique()))
+    x = alt.X("value:Q", title=title, scale=alt.Scale(domain=[0, 1]), axis=alt.Axis(format="%"))
+    tip = [alt.Tooltip("period:N", title="Year"), alt.Tooltip("index:N", title="Index"),
+           alt.Tooltip("value:Q", title=title, format=".0%"), alt.Tooltip("questions:Q", title="Questions"),
+           alt.Tooltip("delta:Q", title="Refreshed − stale", format="+.0%"),
+           alt.Tooltip("delta_low:Q", title="95% CI low", format="+.0%"),
+           alt.Tooltip("delta_high:Q", title="95% CI high", format="+.0%")]
+    rule = alt.Chart(long).mark_rule(color=T.axis, strokeWidth=2).encode(
+        y=y, x=alt.X("min(value):Q"), x2="max(value):Q")
+    dots = alt.Chart(long).mark_circle(size=140, opacity=1, stroke=T.surface, strokeWidth=2).encode(
+        y=y, x=x, color=colour, tooltip=tip)
+    return (rule + dots).properties(height=40 * max(long["period"].nunique(), 2))
+
+
+with tabs[3]:
+    st.subheader("Agent C · retrieval, stale vs refreshed")
+    rep = run.retrieval
+    if rep is None:
+        st.info("Not run yet. This page shows stale vs refreshed retrieval once Agent C has run.")
+    else:
+        m = st.columns(4)
+        m[0].metric("Questions", rep.questions)
+        m[1].metric("Mode", rep.mode.replace("_", " "))
+        m[2].metric("Judged questions", rep.judge.get("judged_questions", 0))
+        m[3].metric("Judge cost", f"${rep.judge.get('cost_usd', 0):.2f}")
+        long = stale_vs_refreshed(run, "answer")
+        if len(long):
+            st.markdown("**(a) Does the top 5 contain an answer?** Each year's questions on the stale "
+                        "index and on the refreshed index. 2016–17 questions are the historical control.")
+            st.altair_chart(themed(dumbbell(long, "Share of questions answered by the top 5")), width="stretch")
+            with st.expander("Table: by year and by drift status, with 95% intervals"):
+                st.dataframe(pd.DataFrame(rep.judged_by_period).round(3), hide_index=True, width="stretch")
+                st.dataframe(pd.DataFrame(rep.judged_by_status).round(3), hide_index=True, width="stretch")
+                st.dataframe(pd.DataFrame(rep.judged_by_type).round(3), hide_index=True, width="stretch")
+        else:
+            st.info("The judged comparison was not run (no LLM judge in this run).")
+        a, b = st.columns(2)
+        a.markdown("**(b) Known item on the same refreshed index** (weighted down: F11)")
+        a.dataframe(pd.DataFrame(rep.known_item).round(3), hide_index=True, width="stretch")
+        b.markdown("**(c) Old questions, stale vs refreshed top 10**")
+        b.dataframe(pd.DataFrame(rep.ranking_change).round(3), hide_index=True, width="stretch")
+        if rep.worst_queries:
+            with st.expander("Questions that lost most on the stale index"):
+                for w in rep.worst_queries:
+                    st.markdown(f"**{w['question']}** ({w['period']}, {w['category']}, {w['drift_status']}) · "
+                                f"nDCG stale {w['stale_ndcg']:.2f} → refreshed {w['refreshed_ndcg']:.2f}  \n"
+                                f"Stale top 3: {' · '.join(w['stale_top3'])}  \n"
+                                f"Refreshed top 3: {' · '.join(w['refreshed_top3'])}")
+        for note in rep.notes:
+            st.caption(note)
+
+for tab, agent, what in [(tabs[4], "D · RAG impact assessment", "answer quality and which drift matters"),
                          (tabs[5], "E · Recommendations", "actions with their evidence")]:
     with tab:
         st.subheader(f"Agent {agent}")

@@ -16,6 +16,241 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-07: hand labels scored (F19); labelling guide for a second person
+- **Built:** scored the author's 50 blind labels (F19): relevance judge
+  14/15 on "answers or not", never more lenient; all 10 kept questions
+  fair; changed-facts precision 17/20. `docs/labelling-guide.md` (plain
+  rules with made-up examples) and `label_sheet.py compare` (person vs
+  person agreement). 108 tests pass.
+- **Surprises:** the one-line instructions in the sheet were not enough;
+  the author needed several clarifications (what "article" means, ignore
+  the reference answer for relevance, added detail vs changed fact). The
+  guide now holds them, so every labeller gets the same rules. My own
+  reading of the facts flags (about 23/25) was more generous than the
+  blind labels (17/20).
+- **Open questions:** whether a second labeller is available by about
+  Wednesday 2026-11-11.
+- **Next:** the Agent D design, for approval before spending.
+
+## 2026-11-06 (evening): stakeholder answers; judge run; Wikipedia set downloaded
+- **Stakeholder (Ani):** long-form documents with chunking are required;
+  deadline moved to Friday 2026-11-13; design summary wanted now
+  (`docs/design-summary.md`, sent after the judge numbers were in).
+- **Decided:** Wikipedia at period-end snapshots for the long-form set
+  (D26). SEC 10-K reports only if a test showed them to be better.
+- **Built:** relevance judge run (F15: 423 of 423 judged, $1.65; total
+  spend $10.83). Wikipedia download, cleaning and section-aware chunking
+  (`driftmon/wikipedia.py`, `driftmon/chunking.py`,
+  `scripts/fetch_wikipedia.py`): 165 articles (12 in the event set) × 6
+  snapshots, about 51,000 chunks; summary in `runs/longform/summary.csv`.
+  Architecture diagram updated (dashed = not built). 98 tests pass.
+- **Surprises:**
+  - Drifted sections are not hurt more than control sections (F15). The
+    stale index fails every new-event question regardless of drift level.
+  - Every Wikipedia article is longer than 512 tokens (median about 8,000),
+    so about 91% of each article is invisible without chunking. About 45%
+    of chunks change from one year to the next.
+  - Climate change's lead sentence changes from "Global warming, also
+    referred to as climate change" (2017) to "climate change describes
+    global warming" (2022), a real terminology shift.
+- **Tried and fixed:** the first pipeline run used the system Python
+  (no langgraph); the project's `.venv` must be used.
+- **Later the same evening:** chunking experiment (F16), ordinary-year
+  bands and the changed-numbers blind spot (F17). The author asked to
+  address the blind spot in all three stages (D27): detect with a plain
+  "changed facts" check, measure harm in Agent D, act in Agent E. Whether
+  the check is useful is decided by Agent D, not assumed.
+- **Changed-facts check built (F18):** the first version flagged mostly
+  noise (about 2 of 12 real: dropped ISBNs, added context, markup); tightened
+  to "a number was replaced", now about 23 of 25 real by my reading. 20
+  flags added to the author's blind hand-label sheet. 107 tests pass.
+- **Next:** the Agent D design (answer quality; old vs new version answers
+  for changed facts), for approval before spending.
+
+## 2026-11-06 (end of session): ready to generate the full question set tomorrow
+- **State:** branch `llm-layer-and-pilot`, all committed and pushed (no PR
+  yet; ask the author first). 77 tests pass. Spent $2.82 of the $20 credit
+  ($150 budget). Prompts final: writer q-v3, reviewer r-v5 (F12).
+- **Built today:** double review and label groups (D19, F9), oversample
+  (D20, F10, F12), copy-vs-retrieval check (F11), full-set sampling (D23:
+  525 articles, estimated $11.55 batch, expected $5–8), vector-store
+  decision (D22), knowledge-graph suggestion reviewed (D21), prototype-to-
+  production framing (presentation §12b).
+- **Deferred by the author:** the full batch run, to start fresh tomorrow
+  rather than risk an interruption mid-run.
+- **Tomorrow, in order (Saturday 2026-11-07):**
+  1. **Make batches resumable first:** save each batch id to
+     `runs/questions/<name>/batch_ids.txt` the moment it is created
+     (`LLMClient.complete_many(on_submit=...)`), and add `--resume` to
+     `generate_questions.py` to collect a finished batch instead of
+     resubmitting. Requests are rebuilt deterministically (same seed, same
+     order), so custom ids match.
+  2. Run `python scripts/generate_questions.py --name full --full --batch`
+     (shown to the author as a dry run already).
+  3. Agent C (retrieval evaluation; save FAISS indexes, D22; weigh
+     known-item metrics down, F11) and the hand-label sheet.
+- **Money ahead:** after the question set about $9–12 of credit remains;
+  Agents C and D need roughly $10–15, so about $20 more credit by Sunday.
+- **Timeline:** about 28–35 hours of work left over Saturday–Monday, with
+  Tuesday as buffer. Cuttable if needed: a minimal model-evaluation loop.
+  **Correction (same evening, after re-reading the brief): query drift is
+  NOT cuttable.** The brief requires it twice ("User queries evolve and
+  introduce new terminology"; Agent A: "Monitor incoming documents and user
+  queries"). Minimum version (about 2 h): treat each period's generated
+  questions as that period's incoming queries and run Agent B's two
+  techniques on them.
+
+## 2026-11-06 (later): Reviewer r-v5; prompt tuning ends
+- **Built:** r-v5 "natural" check (names and facts are not copying).
+- **Results:** F12. Random pilot 15 kept (+1); oversample 15 kept (was 9),
+  6 clearly time-sensitive (was 4). Remaining errors are reviewer
+  leniency ("on Saturday", a common-knowledge yes/no question, the
+  "milestone" question), to be measured by hand labels. $2.82 spent.
+- **Next:** dry run of the full question set, shown to the author first.
+
+## 2026-11-06 (checkpoint): where we are, for the next session
+- **Branch:** `llm-layer-and-pilot` (pushed; no PR yet; ask the author
+  before opening one). Main has PRs #1–#5 merged.
+- **Done on this branch:** LLM layer (D15), question generator with
+  writer/reviewer (D16–D17), double review and label groups (D19),
+  oversample (D20), F7–F11, D18, D21, D22. Spent $1.87 of the $150 budget
+  ($20 credit loaded). 76 tests pass.
+- **Agreed, not yet done (in order):**
+  1. Reviewer r-v5: "natural" stops counting reused names and facts as
+     copying (F11); rerun reviews on `pilot_v5` and `oversample_pilot`
+     (about $0.50).
+  2. Dry run of the full question set (random ~300 articles weighted to
+     flagged sections and controls + oversample ~200), shown to the author
+     before spending (about $7–10 as a batch).
+  3. Agent C: retrieval evaluation, saving FAISS indexes to `indexes/` with
+     manifests (D22); weigh known-item metrics down (F11); then D, E.
+  4. README: include "From prototype to production" framed for Rivvun
+     (presentation.md §12b) and the judge's built-in-knowledge limitation
+     (D18).
+- **Deadline:** Tuesday 2026-11-10.
+
+## 2026-11-06 (later): Vector store checked against the brief
+- **Checked:** the brief lists FAISS as a vector database option; D22
+  records why FAISS (exact search) stays and what it is precisely.
+- **Planned for Agent C:** save the FAISS indexes to `indexes/` with a
+  manifest and reload them when embeddings are unchanged (currently rebuilt
+  in memory each run). `indexes/` added to .gitignore.
+- **Storage today:** raw data 84 MB, cleaned articles 9 MB (parquet),
+  embeddings 120 MB (numpy cache), LLM replies 1 MB (JSON), runs 2.5 MB;
+  all local and gitignored except `docs/figures/`.
+
+## 2026-11-06 (later): Is rejecting "copied" wording justified? Measured: no
+- **Checked:** F11. Copy-rejected questions retrieve their source article
+  at rank 1 79% of the time, kept ones 91%: the rejection does not prevent
+  easy matches. All questions find their own article easily (circularity,
+  Q8).
+- **Analysis snippet (reproduces F11):** embed each pilot question with
+  `Embedder.embed_queries`, search a `VectorIndex` over all cleaned
+  documents for the top 100, and record the source article's rank; group by
+  kept / rejected "not natural" / rejected otherwise.
+- **Recorded:** extensions to do only if ahead (requirements-coverage.md);
+  storage choices stated in architecture.md (FAISS in memory, files; no
+  database server).
+- **Proposed next:** reviewer r-v5 where "natural" no longer counts reused
+  names and facts as copying (code checks already catch verbatim copying);
+  then the full question set.
+
+## 2026-11-06 (later): Oversample pilot; knowledge-graph suggestion reviewed
+- **Built:** `simulate.revisable_fact_pool` and `--oversample` (D20); every
+  question tagged with its sample pool. 1 new test (76 in total).
+- **Results:** F10. Clear time-sensitive questions 4 of 9 kept (vs 1 of 13
+  random); keep rate 35%; $0.60; $1.87 spent in total.
+- **Reviewed:** a colleague's suggestion to model relationship change with
+  OWL/RDF, Neo4j and Protégé. Not adopted; reasons and a lightweight
+  alternative recorded in D21.
+- **Next:** generate the full question set (random + oversample) as a batch.
+
+## 2026-11-06: Double review and label groups tested
+- **Built:** independent repeat requests (`LLMRequest.replicate`, cache-safe),
+  two reviews per question with "kept only if both accept", three label
+  groups (clear evergreen, clear time-sensitive, disputed), reviewer
+  consistency in the run summary (D19). 2 new tests (75 in total).
+- **Results:** F9. Reviewer consistency 92% (decisions), 100% (labels).
+  Only one decision changed. Clear time-sensitive questions: 1 of 13 kept.
+  $1.27 spent in total.
+- **Correction:** the v3→v4 flips were mostly the prompt change, not
+  randomness; recorded in F9.
+- **Open:** time-sensitive questions are too scarce for their own analysis;
+  an oversample of "breaking news" articles is proposed.
+- **Next:** decide the oversample, then generate the ~180-question set.
+
+## 2026-11-05 (late night): Question reviewer version 4; prompt tuning stops
+- **Built:** reviewer r-v4 assigns the type label itself (without seeing
+  the writer's); disagreement recorded as `type_agreed`; unanswerable
+  questions kept if the reviewer agrees and they ask one thing. Agreement
+  rate shown in every run. Tests updated (73 pass).
+- **Results:** F8 updated. 60% kept (13 answerable + 2 unanswerable); label
+  agreement 83%; $0.25 for reviews only; $1.03 spent in total.
+- **Recorded:** D18, the judge cannot search or learn; its built-in
+  knowledge is a stated limitation (the author's question).
+- **Next:** the ~180-question set, sampled with extra weight on flagged
+  sections and controls, as a batch (about $3–6).
+
+## 2026-11-05 (late night): Question writer versions 2 and 3
+- **Built:** prompts q-v2/r-v2 then q-v3/r-v3 (D17): one fact per question,
+  up to two per article, direct reference answers, sharper time-sensitive
+  rule, description copy check, stricter reviewer with eight checks, an
+  unanswerable set, keep rates per section and period. Tests updated
+  (73 pass).
+- **Results:** F8. Keep rate 75% → 38% → 36%; time-sensitive questions now
+  appear; unanswerable set still empty. Spent $0.78 in total.
+- **Surprises:** Opus is inconsistent on the evergreen / time-sensitive label
+  for the same question across runs; "natural" rejects unanswerable
+  questions for restating the headline.
+- **Next (proposed to the author):** reviewer assigns the type label;
+  relax the unanswerable acceptance; rerun only the reviews (about $0.20);
+  then sample the ~180-question set weighted towards flagged and control
+  sections.
+
+## 2026-11-05 (night): First live LLM run: the question pilot (checkpoint 3 of 3)
+- **Fixed first:** the shell defines `ANTHROPIC_API_KEY` as an empty
+  string, which hid the `.env` key (python-dotenv never overrides an
+  existing variable). `llm.api_key()` now falls back to `.env` when the
+  environment value is empty, without changing the environment. Test added.
+  Nothing was spent by the failed attempt.
+- **Pilot:** F7. 15 of 20 questions kept for $0.18. First real spend.
+- **Surprises:** zero time-sensitive questions; questions echo the
+  description; the reviewer is lenient; outside facts leak into questions;
+  many two-part questions.
+- **Proposed next (to agree with the author):** prompt and checks version 2:
+  one fact per question; time-sensitive questions where the article
+  supports one; no facts that are not in the article; the copy check
+  extended to the description; stricter reviewer checks (no outside facts,
+  single question); then a second 20-article pilot (about $0.20) and the
+  author's review of the questions.
+
+## 2026-11-05 (night): Question generator built (checkpoint 2 of 3)
+- **Built:** `driftmon/prompts.py` (writer and reviewer prompts with
+  versions and schemas), `driftmon/simulate.py` (select, write, check,
+  review, decide), `scripts/generate_questions.py` (with `--dry-run`),
+  simulation settings in the config (D16). 4 new tests (72 in total).
+- **Dry run:** 20 pilot articles across all six periods; estimated cost
+  $0.51 (a cautious upper bound); nothing spent.
+- **Next:** checkpoint 3, the live pilot, then review the questions with the
+  author before generating more.
+
+## 2026-11-05 (night): LLM layer built (checkpoint 1 of 3)
+- **Context:** the author set a $150 total budget ($20 loaded now) and asked
+  to start the LLM work on a small scale while waiting for the stakeholder
+  answers: a discovery run to find what was not accounted for. Plan in three
+  committed checkpoints so an interruption loses nothing: (1) LLM layer,
+  (2) question generator, checks and Opus review, (3) the 20-question pilot.
+- **Built:** `driftmon/llm.py` (D15) and its config (budget, prices,
+  per-job effort). 7 new tests with a fake API (68 in total). No money
+  spent yet.
+- **Checked against current docs:** structured output via
+  `output_config.format`, server-side fallback (`fallbacks: "default"`,
+  beta `server-side-fallback-2026-07-01`; not available on the Batch API),
+  no temperature, Batch API request shapes; the installed SDK (2.4.0)
+  accepts all of them.
+- **Next:** checkpoint 2, the question generator with its quality checks
+  and the Opus review.
+
 ## 2026-11-05 (late night): Charts and dashboard in the Rivvun style
 - **Checked:** the charts and dashboard commit was complete after the
   interruption (clean tree, 61 tests, all six charts present).

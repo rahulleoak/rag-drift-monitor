@@ -1,7 +1,7 @@
 # Design summary for feedback
 
-**Project:** Semantic Drift Detection & RAG Quality Assurance
-**To:** Ani · **From:** Rahul · **Date:** 2026-11-06 · **Due:** Friday 2026-11-13
+**Project:** Semantic Drift Detection & RAG Quality Assurance\
+**To:** Ani · **From:** Rahul · **Date:** 2026-11-07 (first version 2026-11-06) · **Due:** Friday 2026-11-13
 
 ## 1. The problem and use case
 
@@ -16,9 +16,26 @@ it.
 | Set | What | Why |
 |---|---|---|
 | **HuffPost News Category** (time-based drift) | 77,840 cleaned articles. Baseline 2016–17; new data arrives one year at a time, 2018–2022 | Real, dated drift with a known event to check against (COVID in 2020) |
-| **Wikipedia, long-form** (chunking) | A sample of long articles, each captured as it stood at the end of each year, 2017–2022 | Long documents with sections, so chunking matters. The same article is edited over time, which is the "documents become outdated" case. Same years as HuffPost. |
+| **Wikipedia, long-form** (chunking) | 165 long articles, each captured as it stood at the end of each year, 2016–2022 | Long documents with sections, so chunking matters. The same article is edited over time, which is the "documents become outdated" case. Same years as HuffPost. |
 
 ## 3. Architecture and agents (LangGraph)
+
+Each agent reads the previous agents' reports. Statistics and decisions are
+plain, tested Python. The LLM writes test questions, answers, judgements and
+explanations, but never makes the decision.
+
+| Agent | Does | Status |
+|---|---|---|
+| **A. Data Monitoring** | Baseline snapshot. Tracks volume, length, category mix, new terms and new sections, for documents and for incoming queries | Built |
+| **B. Semantic Drift** | Two techniques: embedding drift (MMD with a permutation test, centroid shift, novelty) and word drift (Jensen–Shannon divergence, log-odds emerging terms). Per period and per section. Severity is measured against ordinary year-to-year change, not just p-values. Also emerging topics, changing word meanings, and query drift | Built |
+| *Route* | If nothing drifted, C runs a small regression check only | Built |
+| **C. Retrieval Evaluation** | The key experiment: a **stale index** (baseline only) vs a **refreshed index** (with new data), on the same questions. LLM-judged precision@5, nDCG@5 and "answer in the top 5", plus MRR and Recall@10, with bootstrap confidence intervals. Results split by drifted vs control sections, and by whether old questions get pushed out by newer articles | Built and run |
+| **D. RAG Impact** | Answers every question from both indexes; each answer graded on its own for correctness and groundedness, blind to the index. Loss per section with a confidence interval; labels each section as drift that hurts / drift that doesn't / harm without drift / healthy; relates drift scores to the loss. Borderline sections go back to C once for more evidence. On Wikipedia, tests whether changed facts change the answers | Built and run |
+| **E. Recommendation** | Rules map evidence to the brief's actions (monitor, re-index, re-index specific documents, chunking, retrieval settings, prompts, model evaluation, human review). Every recommendation must cite its evidence or it is rejected | Next |
+
+Dashboard: Streamlit, reading saved runs, so it works without an API key.
+
+**Data flow:**
 
 ```mermaid
 flowchart TD
@@ -27,8 +44,9 @@ flowchart TD
         WK[("Wikipedia long-form articles at year-end snapshots")]
         WK --> CH["Section-aware chunking"]
         HP --> QGEN["LLM question writer + reviewer: question set (historical + recent)"]
-        CH --> QGEN
     end
+    CH --> FACTS["Changed-facts check"]
+    FACTS --> OAT["Outdated-answer test: old vs new version answers"]
 
     HP --> EMB["Embeddings, bge-small (disk cache)"]
     CH --> EMB
@@ -48,37 +66,19 @@ flowchart TD
     STALE --> C
     FRESH --> C
     ALT --> C
-    C -->|"RetrievalReport"| G2{"Full impact run?"}
-    G2 -->|"yes"| D["D. RAG Impact Assessment"]
-    G2 -->|"regression check only"| E["E. Recommendation"]
+    C -->|"RetrievalReport"| D["D. RAG Impact Assessment"]
     B -->|"drift scores"| D
-    D -->|"borderline: more questions (max 1 loop)"| C
-    D -->|"ImpactReport"| E
-    E -->|"re-index or model evaluation, then re-check (max 1 loop)"| C
+    OAT -->|"does a changed fact change the answer?"| D
+    D -->|"borderline: grade ranks 6-10, answer from the top 10 (max 1 loop)"| C
+    D -->|"ImpactReport"| E["E. Recommendation"]
     E -->|"recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
     OUT --> UI["Streamlit dashboard"]
 
     classDef planned stroke-dasharray: 6 4
-    class ALT,G2,D,E planned
+    class ALT,E planned
 ```
 
 Solid boxes are built and tested; dashed boxes are designed, not built yet.
-
-
-Each agent reads the previous agents' reports. Statistics and decisions are
-plain, tested Python. The LLM writes test questions, answers, judgements and
-explanations, but never makes the decision.
-
-| Agent | Does | Status |
-|---|---|---|
-| **A. Data Monitoring** | Baseline snapshot. Tracks volume, length, category mix, new terms and new sections, for documents and for incoming queries | Built |
-| **B. Semantic Drift** | Two techniques: embedding drift (MMD with a permutation test, centroid shift, novelty) and word drift (Jensen–Shannon divergence, log-odds emerging terms). Per period and per section. Severity is measured against ordinary year-to-year change, not just p-values. Also emerging topics, changing word meanings, and query drift | Built |
-| *Route* | If nothing drifted, C runs a small regression check only | Built |
-| **C. Retrieval Evaluation** | The key experiment: a **stale index** (baseline only) vs a **refreshed index** (with new data), on the same questions. LLM-judged precision@5, nDCG@5 and "answer in the top 5", plus MRR and Recall@10, with bootstrap confidence intervals. Results split by drifted vs control sections, and by whether old questions get pushed out by newer articles | Built; LLM judging about to run |
-| **D. RAG Impact** | Answers from both indexes, judged for correctness and groundedness. Links each drift signal to quality loss. Labels each section as: drift that hurts / drift that doesn't / quality loss without drift / healthy | Next |
-| **E. Recommendation** | Rules map evidence to the brief's actions (monitor, re-index, change chunking or embeddings, retrieval settings, prompts, model evaluation, human review). Every recommendation must cite its evidence or it is rejected. Bonus: apply re-indexing and re-check | Next |
-
-Dashboard: Streamlit, reading saved runs, so it works without an API key.
 
 ## 4. Results so far (HuffPost)
 
@@ -93,27 +93,29 @@ Dashboard: Streamlit, reading saved runs, so it works without an API key.
   ordinary (1.2×), but 2022 vs the baseline is 4.7×.
 - **Query drift** is significant for every year (q ≤ 0.008). Word drift
   peaks in 2020–21 (coronavirus, covid, capitol).
-- **Retrieval, stale vs refreshed index** (Opus grades the top 5 of both,
-  blind to which index found what; 423 questions):
+- **Stale vs refreshed index, retrieval and answers** (438 questions; Opus
+  grades blind to which index was used):
 
-  | Questions from | Answer in top 5, stale | Answer in top 5, refreshed |
+  | Questions from | Answer in top 5 (stale / refreshed) | Correct answers (stale / refreshed) |
   |---|---|---|
-  | 2016-17 (baseline, the control) | 100% | 100% |
-  | 2018 to 2022 | 0–1% | 96–100% |
+  | 2016-17 (baseline, the control) | 100% / 100% | 100% / 100% |
+  | 2018 to 2022 | 0–1% / 96–100% | 0–1% / 96–100% |
 
   - Without re-indexing, questions about new events fail almost completely.
     The stale index returns related but wrong articles: a 2020 question about
     takeout during the pandemic gets 2016 hepatitis and E. coli stories.
+  - **It fails silently, not wrongly:** the assistant says the archive does
+    not have the answer instead of guessing (1 answer in 438 added a detail
+    from memory).
   - Re-indexing does not hurt old questions, even though by 2022 14% of
     their top 10 are newer articles.
-  - **Drifted sections are not hit harder than stable ones**, either before
-    or after re-indexing (refreshed: 99% vs 98% answered). On this archive,
-    the drift that matters is new content missing from the index, not how
-    far a section's meaning moved. Answer quality (Agent D) and the
-    Wikipedia set, where the stale index holds an *outdated version of the
-    same article*, test the subtler cases.
-  - The relevance judge matches my hand labels on "answers or not" 14 times
-    in 15, and was never more lenient than me (F19).
+  - **Drift scores do not predict where the harm is.** Every section with
+    enough questions lost answers: 7 flagged by drift detection and 12 not
+    (for example politics 2018–2020). No drift measure correlates
+    significantly with the size of the loss. New events in a familiar topic
+    do not shift a section's overall profile. On a news archive, the drift
+    that matters is new content missing from the index: re-index on a
+    schedule, and use drift scores to explain and prioritise.
 
 ## 5. Test questions and how they are validated
 
@@ -126,19 +128,22 @@ and Opus reviews them.
   - the writer's and reviewer's question types are compared (85% agree);
   - the reviewer agrees with itself 95% of the time on a repeat review.
 - **Result:** 423 answerable and 15 unanswerable questions kept, out of 653.
-- **Hand check (F19):** I labelled a blind sample of 50 items.
-  - Relevance judge: 14/15 on "answers or not".
-  - Question reviewer: all 10 kept questions are fair; it is stricter than
-    me, so it rejects some good ones.
-  - Changed-facts check: 17/20 flags are real changes.
-  - A second labeller is being invited, to compare person with person.
-- **Total LLM spend so far:** $9.18, using our own key.
+- **Hand check:** two people labelled the same blind sample of 50 items.
+
+  | | Person vs person | LLM vs each person |
+  |---|---|---|
+  | Relevance judge, "answers or not" | 15/15 | 14/15 (never more lenient) |
+  | Question reviewer | 14/15 | 10–11/15 (stricter than both people) |
+  | Changed-facts check | 18/20 | 17/20 (85% precision) |
+
+  A sample of judged answers is being labelled the same way.
+- **Total LLM spend so far:** about $15.60, using our own key.
 
 ## 6. Chunking strategy and how it affects drift detection
 
 Data: 165 Wikipedia articles (a random sample across topics, plus a few
 tied to known events), each as it stood at the end of every year,
-2017–2022. Every article is longer than the 512 tokens the model reads
+2016–2022. Every article is longer than the 512 tokens the model reads
 (median about 8,000), so without chunking about 90% of each article would
 never be seen.
 
@@ -154,41 +159,52 @@ both hide drift.
 - Averaging one vector over the whole article dilutes a small new section
   into the rest.
 
-**First result:** we compared each article with its own 2017 version,
-knowing exactly how much text was new or rewritten. How well each way of
-reading the article follows that real change (rank correlation, 1 =
-perfect): first 512 tokens only 0.51; one averaged vector 0.78 (and its
-scores are too small to set an alert threshold); chunks of about 256
-tokens 0.87. Articles tied to known events (COVID-19, vaccines, Ukraine)
-score about twice as high as the random sample, jumping in 2020. One
-lesson: our archive-wide drift test assumes each period brings new
-documents; for documents that are edited rather than replaced, drift has
-to be measured per document against its own earlier version.
+**Result:** we compared each article with its own 2017 version, knowing
+exactly how much text was new or rewritten. How well each way of reading
+the article follows that real change (rank correlation, 1 = perfect):
+first 512 tokens only 0.51; one averaged vector 0.78 (and its scores are
+too small to set an alert threshold); chunks of about 256 tokens 0.87.
+Articles tied to known events (COVID-19, vaccines, Ukraine) change 4.3
+times an ordinary year of editing in 2020; the random sample stays
+ordinary. One lesson: for documents that are edited rather than replaced,
+drift has to be measured per document against its own earlier version.
 
-Against an ordinary year of editing (2016 to 2017), the event articles
-change 4.3 times as much in 2020; the random sample stays ordinary. A
-blind spot: when only a number changes ("killed over 75 million" became
-"over 20 million"), the vectors barely move (about 16 times less than a
-typical edit), so drift scores alone miss changed facts. The answer check
-(Agent D) is designed to catch these.
-
-**Still to do:** the stale vs refreshed test, where the stale index
-returns the outdated version of the same article.
+**A blind spot, and how it was closed:** when only a number changes
+("killed over 75 million" became "over 20 million"), the vectors barely
+move (about 16 times less than a typical edit), so drift scores alone miss
+changed facts.
+- **Detect:** a plain text check matches each edited sentence with its
+  previous version and flags replaced numbers and dates. About one article
+  in five changes a fact each year, almost always with a "low" drift
+  score. Two labellers put its precision at 85%.
+- **Measure the harm:** questions written from 60 flagged edits and 60
+  edits that kept their numbers, answered from the old and the new version
+  of the archive. Flagged edits changed the answer **50%** of the time,
+  against **2%** (p < 0.001). The old index still finds the edited passage
+  (92%), so it serves the outdated fact with full confidence, e.g.
+  German tourism's GDP contribution "over EUR43.2 billion" vs "over
+  €105.3 billion".
+- **Act:** Agent E will recommend re-indexing the documents with changed
+  facts, citing the sentences.
 
 ## 7. Main assumptions and limitations
 
 - Years are replayed as incoming batches to simulate continuous monitoring.
 - The questions are written from each period's articles, so query drift
   partly mirrors document drift.
-- The LLM judges are checked against hand labels, not replaced by them.
+- The LLM judges are checked against hand labels from two people, not
+  replaced by them; samples are small (15–20 items per part).
 - The LLM has read Wikipedia, so answers are judged on whether they are
   grounded in the retrieved text.
+- The changed-facts check covers numbers and dates, not changed names (for
+  example a new office holder).
 
 ## 8. Feedback welcome on
 
-1. Is Wikipedia at yearly snapshots a good choice for the long-form set,
-   with company annual reports (SEC 10-K) as the fallback?
-2. Does comparing whole-article and chunked drift detection answer "how chunking affects drift
-   detection" in the way you expected?
-3. For the bonus, is applying re-indexing and re-checking a good choice of
-   fix?
+1. The main recommendation for the news archive will be scheduled
+   re-indexing, with drift used to explain and prioritise rather than to
+   trigger it. Does that fit what you expect?
+2. For the bonus, is a targeted re-index of the Wikipedia articles with
+   changed facts, followed by a re-check, a good choice of fix?
+3. Does comparing whole-article and chunked drift detection answer "how
+   chunking affects drift detection" in the way you expected?

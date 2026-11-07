@@ -51,17 +51,15 @@ def _jaccard(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(a | b) if a or b else 0.0
 
 
-def fact_changes(old_sections: Sequence[tuple[str, str]], new_sections: Sequence[tuple[str, str]],
-                 min_similarity: float = 0.6) -> list[FactChange]:
-    """Changed facts between two versions of a document, given as
-    (heading, text) sections.
+def matched_edits(old_sections: Sequence[tuple[str, str]], new_sections: Sequence[tuple[str, str]],
+                  min_similarity: float = 0.6) -> list[tuple[str, str, str, float]]:
+    """Edited sentences that contain a number, with their previous version.
 
     A new sentence that is not in the old version is matched with the old
     sentence, in the same section (or anywhere, if the section is new),
-    that shares the most words (numbers aside). If the overlap is at least
-    ``min_similarity`` and the two sentences' numbers differ, it is a
-    changed fact. Lower overlap means a rewrite or a new statement, not a
-    changed fact.
+    that shares the most words (numbers aside). Kept if the overlap is at
+    least ``min_similarity``: lower overlap means a rewrite or a new
+    statement. Returns (section, before, after, similarity).
     """
     old_by_section = {h: _sentences(t) for h, t in old_sections}
     old_all = [s for sents in old_by_section.values() for s in sents]
@@ -71,10 +69,7 @@ def fact_changes(old_sections: Sequence[tuple[str, str]], new_sections: Sequence
         candidates = old_by_section.get(heading) or old_all
         cand_words = [(s, _words(s)) for s in candidates]
         for sent in _sentences(text):
-            if sent in old_set:
-                continue
-            new_nums = numbers(sent)
-            if not new_nums:
+            if sent in old_set or not numbers(sent):
                 continue
             w = _words(sent)
             best, score = None, 0.0
@@ -82,17 +77,38 @@ def fact_changes(old_sections: Sequence[tuple[str, str]], new_sections: Sequence
                 j = _jaccard(w, sw)
                 if j > score:
                     best, score = s, j
-            if best is None or score < min_similarity:
-                continue
-            old_nums = numbers(best)
-            if sorted(old_nums) == sorted(new_nums):
-                continue                               # same numbers: wording or formatting only
-            removed = tuple(n for n in dict.fromkeys(old_nums) if n not in new_nums)
-            added = tuple(n for n in dict.fromkeys(new_nums) if n not in old_nums)
-            if not _replaced(removed, added) or _is_reference(sent) or _is_reference(best):
-                continue
-            out.append(FactChange(heading, best, sent, removed, added, round(score, 3)))
+            if best is not None and score >= min_similarity:
+                out.append((heading, best, sent, round(score, 3)))
     return out
+
+
+def fact_changes(old_sections: Sequence[tuple[str, str]], new_sections: Sequence[tuple[str, str]],
+                 min_similarity: float = 0.6) -> list[FactChange]:
+    """Changed facts between two versions of a document, given as
+    (heading, text) sections: edited sentences (``matched_edits``) whose
+    numbers differ, with a value replaced (not only added or removed).
+    """
+    out = []
+    for heading, best, sent, score in matched_edits(old_sections, new_sections, min_similarity):
+        old_nums, new_nums = numbers(best), numbers(sent)
+        if sorted(old_nums) == sorted(new_nums):
+            continue                               # same numbers: wording or formatting only
+        removed = tuple(n for n in dict.fromkeys(old_nums) if n not in new_nums)
+        added = tuple(n for n in dict.fromkeys(new_nums) if n not in old_nums)
+        if not _replaced(removed, added) or _is_reference(sent) or _is_reference(best):
+            continue
+        out.append(FactChange(heading, best, sent, removed, added, score))
+    return out
+
+
+def wording_edits(old_sections: Sequence[tuple[str, str]], new_sections: Sequence[tuple[str, str]],
+                  min_similarity: float = 0.6) -> list[tuple[str, str, str, float]]:
+    """Edited sentences whose numbers did *not* change: the comparison group
+    for the outdated-answer test (D28). Same kind of sentence as a changed
+    fact (a number, a close earlier version), but only the wording moved."""
+    return [(h, b, a, s) for h, b, a, s in matched_edits(old_sections, new_sections, min_similarity)
+            if sorted(numbers(b)) == sorted(numbers(a)) and " ".join(b.split()) != " ".join(a.split())
+            and not (_is_reference(a) or _is_reference(b))]
 
 
 _REFERENCE = re.compile(r"\bISBN\b|\bISSN\b|\bdoi\b|\bRetrieved\b|\bpp?\.\s*\d|\bVol\.|\d+px\b|\bthumb(?:nail)?\b|\bupright\b", re.I)   # citations, image captions

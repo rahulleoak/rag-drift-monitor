@@ -12,6 +12,12 @@ loss. Unanswerable questions test whether the system declines rather than
 inventing an answer.
 Writes: ``ImpactReport`` and the per-answer and per-segment tables.
 Consumed by Agent E.
+
+The loop (D28): a borderline segment (loss at least the threshold, but its
+interval includes zero) is sent back to Agent C once, which grades ranks
+6-10; D then answers those questions from the top 10. The result, in
+``ImpactReport.evidence``, says whether the harm is confirmed, whether the
+answers sat just outside the top 5, or whether a human should look.
 """
 from __future__ import annotations
 
@@ -66,6 +72,8 @@ def impact_assessment(state: PipelineState) -> dict[str, Any]:
                                        notes=["No LLM client or no judged retrieval: answers were not assessed."]),
                 "impact_tables": {}}
 
+    if state.get("deepen") and "deep" in tables:
+        return _evidence_round(state)
     periods = study_periods(cfg)
     base, later = periods[0].name, [p.name for p in periods[1:]]
     judged = tables["judged"]
@@ -130,6 +138,47 @@ def impact_assessment(state: PipelineState) -> dict[str, Any]:
         notes=notes)
     return {"impact": report, "impact_tables": {"answers": per_answer, "paired": pq, "segments": seg,
                                                 "correlations": corr}}
+
+
+def _evidence_round(state: PipelineState) -> dict[str, Any]:
+    """Answer the borderline segments' questions from the top 10 (Agent C
+    has graded ranks 6-10) and conclude per segment, in code."""
+    cfg, tables, llm, drift = state["config"], state["retrieval_tables"], state["llm"], state["drift"]
+    base = study_periods(cfg)[0].name
+    k10, threshold = int(cfg["retrieval"]["top_k"]), float(cfg["impact"]["min_answer_quality_drop"])
+    deep = tables["deep"]
+    q = tables["deep_questions"].merge(tables["judged"][["question_id", "stale_index", "refreshed_index"]],
+                                       on="question_id")
+    pairs = {r["question_id"]: (r["stale_index"], r["refreshed_index"]) for r in q.to_dict("records")}
+    plan = an.answer_plan(q, tables["runs"], pairs, k10)
+    before = llm.spent()
+    answers = llm.complete_many(an.answer_requests(plan, q, state["docs"], cfg))
+    judgements = _run(llm, an.judge_requests(plan, answers, q, state["docs"], cfg), None)
+    has = {}
+    for r in deep["answer_deep"].to_dict("records"):
+        has[(r["question_id"], "stale")] = r[f"stale_answer_at_{k10}"]
+        has[(r["question_id"], "refreshed")] = r[f"refreshed_answer_at_{k10}"]
+    per_answer = an.per_answer(plan, answers, judgements, q, has)
+    seg10 = an.segments(an.paired(per_answer, q), base, drift.drifted_segments, cfg).set_index("segment_id")
+    seg5 = state["impact_tables"]["segments"].set_index("segment_id")
+    rows = []
+    for sid in state["deepen"]:
+        if sid not in seg10.index:
+            continue
+        s5, s10 = seg5.loc[sid], seg10.loc[sid]
+        gain = float(s10["stale_correct"] - s5["stale_correct"])
+        rows.append({"segment_id": sid, "questions": int(s10["questions"]),
+                     "loss_top5": float(s5["loss_correct"]), "loss_top10": float(s10["loss_correct"]),
+                     "loss_top10_low": float(s10["loss_low"]), "loss_top10_high": float(s10["loss_high"]),
+                     "stale_correct_top5": float(s5["stale_correct"]), "stale_correct_top10": float(s10["stale_correct"]),
+                     "conclusion": an.evidence_conclusion(gain, bool(s10["material"]), threshold)})
+    report = state["impact"]
+    judge = {**report.judge, "evidence_cost_usd": round(llm.spent() - before, 4),
+             "evidence_relevance": deep["judge"]}
+    report = report.model_copy(update={"evidence": rows, "judge": judge})
+    return {"impact": report, "deepen": [],
+            "impact_tables": {**state["impact_tables"], "evidence": pd.DataFrame(rows),
+                              "evidence_answers": per_answer}}
 
 
 def _placeholder(a: LLMResult) -> LLMResult:

@@ -31,6 +31,9 @@ Version history:
     ans-v1       RAG answers from the retrieved top-k only (Agent D, D28)
     aj-v1        answer judge: correctness 0/1/2, grounded, declined; one call per
                  answer, index not shown (D28)
+    fq-v1 / wans-v1 / ac-v1  outdated-answer test on edited Wikipedia passages:
+                 a question from the new sentence, answers from each version's
+                 passages, and whether the two answers differ (D27, D28)
 """
 from __future__ import annotations
 
@@ -275,3 +278,76 @@ class AnswerJudgement(BaseModel):
     correctness: Literal[0, 1, 2]
     grounded: bool
     declined: bool
+
+
+# ---------- outdated-answer test on edited documents (Agent D, D27 / D28) ----------
+
+FACT_QUESTION_VERSION = "fq-v1"
+
+FACT_QUESTION_SYSTEM = """You help build a test set for an assistant that answers questions from \
+an encyclopedia. You will see one sentence from an encyclopedia article, with the article's title \
+and section.
+
+Write one question that a reader could ask, whose answer is a specific fact stated in the sentence: \
+a number, amount, date, count, ranking or name. Rules:
+- The question must make sense on its own: name the subject (do not say "the article" or "this \
+sentence").
+- Ask for one fact only, and do not put the answer in the question.
+- Give the answer as stated in the sentence, in a few words."""
+
+FACT_QUESTION_TEMPLATE = """Article: {title}
+Section: {section}
+Sentence: {sentence}"""
+
+
+class FactQuestion(BaseModel):
+    """One question about a fact stated in a sentence."""
+
+    question: str
+    answer: str = Field(description="A few words, as stated in the sentence")
+
+
+WIKI_ANSWER_VERSION = "wans-v1"
+
+WIKI_ANSWER_SYSTEM = """You are a reference assistant. You answer questions only from the \
+encyclopedia passages provided with each question.
+
+Rules:
+- Use only what the passages say. Do not add facts from your own knowledge, even if you know them, \
+and even if you believe a passage is out of date.
+- If the passages do not contain the answer, say so plainly and set "found" to false. Do not guess.
+- Keep the answer short and direct: one or two sentences, giving the specific fact asked for.
+- List the letters of the passages your answer relies on."""
+
+WIKI_ANSWER_TEMPLATE = """Question: {question}
+
+Passages (most relevant first):
+{passages}"""
+
+
+ANSWER_CHANGE_VERSION = "ac-v1"
+
+ANSWER_CHANGE_SYSTEM = """You compare two answers to the same question, given by an assistant \
+working from two different versions of a reference archive. Decide whether they state the same fact.
+
+- same: both give the same fact (wording, rounding or format may differ, e.g. "2,217" and "2217", \
+"about 8,000" and "8,000").
+- different: both give an answer, and the facts differ (a different number, date, amount, ranking \
+or name), even slightly.
+- one_declined: one answer gives the fact and the other says the information is not available.
+- both_declined: neither gives the fact.
+
+Judge only whether the two answers agree; do not decide which one is true."""
+
+ANSWER_CHANGE_TEMPLATE = """Question: {question}
+
+Answer 1: {answer_1}
+
+Answer 2: {answer_2}"""
+
+
+class AnswerChange(BaseModel):
+    """Whether two answers to one question state the same fact."""
+
+    reason: str = Field(description="At most 25 words")
+    verdict: Literal["same", "different", "one_declined", "both_declined"]

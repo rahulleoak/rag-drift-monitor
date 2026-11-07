@@ -4,9 +4,10 @@ Flow: A Data Monitoring -> B Drift Detection -> C Retrieval Evaluation
 -> D RAG Impact Assessment -> E Recommendation, over a typed shared state
 (``schemas.PipelineState``).
 
-Built so far: A -> B -> routing decision -> C -> D. Both routes run C (the
-regression check on a small question set); E is not built yet, so the run
-ends after D. The decision is recorded in the state (``next_step``).
+Built so far: A -> B -> routing decision -> C -> D, and the loop from D back
+to C. Both routes after B run C (the regression check on a small question
+set); E is not built yet, so the run ends after D. The decision after B is
+recorded in the state (``next_step``).
 
 Conditional edges, decided in Python:
     - after B: no flagged drift -> C runs a small regression check only,
@@ -30,6 +31,8 @@ from driftmon.schemas import PipelineState
 
 FULL_EVALUATION = "full_evaluation"
 REGRESSION_CHECK = "regression_check"
+MORE_EVIDENCE = "more_evidence"
+DONE = "done"
 
 
 def route_after_drift(state: PipelineState) -> str:
@@ -42,6 +45,21 @@ def _record_route(state: PipelineState) -> dict[str, Any]:
     return {"next_step": route_after_drift(state)}
 
 
+def route_after_impact(state: PipelineState) -> str:
+    """Back to C once for borderline segments (bounded by
+    ``impact.max_evidence_loops``); otherwise on."""
+    impact = state.get("impact")
+    loops = state.get("evidence_loops", 0)
+    limit = int(state["config"]["impact"]["max_evidence_loops"])
+    if impact is not None and impact.borderline and not impact.evidence and loops < limit:
+        return MORE_EVIDENCE
+    return DONE
+
+
+def _request_evidence(state: PipelineState) -> dict[str, Any]:
+    return {"deepen": list(state["impact"].borderline), "evidence_loops": state.get("evidence_loops", 0) + 1}
+
+
 def build_graph():
     """Compile the agent graph built so far (A -> B -> routing decision -> C -> D)."""
     g = StateGraph(PipelineState)
@@ -50,6 +68,7 @@ def build_graph():
     g.add_node("route", _record_route)
     g.add_node("retrieval_evaluation", retrieval_evaluation)
     g.add_node("impact_assessment", impact_assessment)
+    g.add_node("request_evidence", _request_evidence)
     g.add_edge(START, "data_monitoring")
     g.add_edge("data_monitoring", "drift_detection")
     g.add_edge("drift_detection", "route")
@@ -57,5 +76,7 @@ def build_graph():
     g.add_conditional_edges("route", route_after_drift, {FULL_EVALUATION: "retrieval_evaluation",
                                                          REGRESSION_CHECK: "retrieval_evaluation"})
     g.add_edge("retrieval_evaluation", "impact_assessment")
-    g.add_edge("impact_assessment", END)  # E is not built yet
+    g.add_conditional_edges("impact_assessment", route_after_impact,
+                            {MORE_EVIDENCE: "request_evidence", DONE: END})  # E is not built yet
+    g.add_edge("request_evidence", "retrieval_evaluation")
     return g.compile()

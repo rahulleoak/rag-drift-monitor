@@ -235,3 +235,22 @@ def drift_quality_correlation(seg: pd.DataFrame, drift_segments: pd.DataFrame) -
         rho, p = stats.spearmanr(x[ok], y[ok])
         rows.append({"measure": metric, "segments": int(ok.sum()), "spearman": float(rho), "p_value": float(p)})
     return pd.DataFrame(rows)
+
+
+CONFIRMED = "harm confirmed with more context"
+JUST_OUTSIDE = "answers just outside the top k (update retrieval configuration)"
+UNCLEAR = "still unclear (escalate to a human)"
+
+
+def evidence_conclusion(stale_gain: float, material_deep: bool, threshold: float) -> str:
+    """What the evidence loop shows for a borderline segment.
+
+    ``stale_gain``: how much the stale index's correct rate rose when the
+    answer step read the top 10 instead of the top 5. ``material_deep``:
+    whether the loss is material with the top 10.
+    """
+    if material_deep:
+        return CONFIRMED
+    if stale_gain >= threshold:
+        return JUST_OUTSIDE
+    return UNCLEAR

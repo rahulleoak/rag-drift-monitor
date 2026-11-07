@@ -87,21 +87,32 @@ def _shuffle_seed(question_id: str, seed: int) -> int:
 
 
 def relevance_requests(questions: pd.DataFrame, runs: pd.DataFrame, docs: pd.DataFrame,
-                       cfg: Mapping[str, Any]) -> tuple[list[LLMRequest], list[dict[str, str]]]:
+                       cfg: Mapping[str, Any], ranks: tuple[int, int] | None = None,
+                       skip: set[tuple[str, str]] | None = None
+                       ) -> tuple[list[LLMRequest], list[dict[str, str]], list[str]]:
     """One judge request per question: the pooled top-``judge_k`` of its two
     indexes, de-duplicated, shuffled, without saying which index found what.
 
-    Returns the requests and, per request, the letter -> doc_id mapping.
+    ``ranks`` (start, stop) grades other ranks instead (the evidence loop
+    grades ranks 6-10); ``skip`` holds (question_id, doc_id) pairs already
+    graded. Returns the requests, per request the letter -> doc_id mapping,
+    and the question id of each request (questions with nothing left to
+    grade get no request).
     """
     base, later = _periods(cfg)
-    k = int(cfg["retrieval"]["judge_k"])
+    start, k = ranks or (0, int(cfg["retrieval"]["judge_k"]))
+    skip = skip or set()
     job = cfg["llm"]["jobs"]["relevance"]
     by_run = runs.set_index(["question_id", "index"])["doc_ids"]
     text = docs.set_index("doc_id")
-    reqs, letters = [], []
+    reqs, letters, qids = [], [], []
     for q in questions.to_dict("records"):
         a, b = judged_pair(q["period"], base, later)
-        pool = list(dict.fromkeys(list(by_run[(q["question_id"], a)])[:k] + list(by_run[(q["question_id"], b)])[:k]))
+        pool = list(dict.fromkeys(list(by_run[(q["question_id"], a)])[start:k]
+                                  + list(by_run[(q["question_id"], b)])[start:k]))
+        pool = [d for d in pool if (q["question_id"], d) not in skip]
+        if not pool:
+            continue
         rng = np.random.default_rng(_shuffle_seed(q["question_id"], int(cfg["seed"])))
         pool = [pool[i] for i in rng.permutation(len(pool))]
         mapping = {ascii_uppercase[i]: d for i, d in enumerate(pool)}
@@ -115,10 +126,11 @@ def relevance_requests(questions: pd.DataFrame, runs: pd.DataFrame, docs: pd.Dat
                                schema=RelevanceJudgement, prompt_version=RELEVANCE_VERSION,
                                effort=job["effort"], max_tokens=int(job["max_tokens"])))
         letters.append(mapping)
-    return reqs, letters
+        qids.append(q["question_id"])
+    return reqs, letters, qids
 
 
-def collect_grades(questions: pd.DataFrame, results: Sequence[Any], letters: Sequence[Mapping[str, str]]
+def collect_grades(qids: Sequence[str], results: Sequence[Any], letters: Sequence[Mapping[str, str]]
                    ) -> tuple[pd.DataFrame, dict[str, int]]:
     """(question_id, doc_id, grade) rows from the judge, plus counts of problems.
 
@@ -126,7 +138,7 @@ def collect_grades(questions: pd.DataFrame, results: Sequence[Any], letters: Seq
     it is visible rather than silently scored 0.
     """
     rows, problems = [], {"failed_requests": 0, "missing_grades": 0, "unknown_letters": 0}
-    for qid, res, mapping in zip(questions["question_id"], results, letters):
+    for qid, res, mapping in zip(qids, results, letters):
         graded: dict[str, int] = {}
         if res.ok:
             for g in res.parsed.grades:
@@ -175,6 +187,38 @@ def judged_metrics(questions: pd.DataFrame, runs: pd.DataFrame, grades: pd.DataF
             row[f"delta_{m}"] = row[f"refreshed_{m}"] - row[f"stale_{m}"]
         out.append(row)
     return pd.DataFrame(out)
+
+
+def deepen(cfg: Mapping[str, Any], questions: pd.DataFrame, runs: pd.DataFrame, docs: pd.DataFrame,
+           grades: pd.DataFrame, llm: LLMClient, batch: bool | None = None) -> dict[str, Any]:
+    """The evidence loop (D28): for some questions, grade ranks judge_k+1 to
+    top_k of both indexes (articles already graded are not sent again), and
+    report whether an answer sits just outside the top judge_k.
+
+    Returns the new grades, per-question answer@top_k on both indexes, and
+    judge counts.
+    """
+    base, later = _periods(cfg)
+    k5, k10 = int(cfg["retrieval"]["judge_k"]), int(cfg["retrieval"]["top_k"])
+    done = set(zip(grades["question_id"], grades["doc_id"]))
+    reqs, letters, qids = relevance_requests(questions, runs, docs, cfg, ranks=(k5, k10), skip=done)
+    before = llm.spent()
+    results = llm.complete_many(reqs, batch=batch) if reqs else []
+    new, problems = collect_grades(qids, results, letters)
+    allg = pd.concat([grades, new], ignore_index=True).drop_duplicates(["question_id", "doc_id"], keep="last")
+    g = allg.set_index(["question_id", "doc_id"])["grade"]
+    by_run = runs.set_index(["question_id", "index"])["doc_ids"]
+    rows = []
+    for q in questions.to_dict("records"):
+        a, b = judged_pair(q["period"], base, later)
+        row = {"question_id": q["question_id"]}
+        for side, name in (("stale", a), ("refreshed", b)):
+            top = [g.get((q["question_id"], d), np.nan) for d in list(by_run[(q["question_id"], name)])[:k10]]
+            row[f"{side}_answer_at_{k10}"] = (np.nan if any(np.isnan(x) for x in top)
+                                              else rm.answer_at_k([int(x) for x in top], k10))
+        rows.append(row)
+    return {"grades": allg, "answer_deep": pd.DataFrame(rows),
+            "judge": {"requests": len(reqs), "cost_usd": round(llm.spent() - before, 4), **problems}}
 
 
 def known_item(questions: pd.DataFrame, runs: pd.DataFrame, k: int) -> pd.DataFrame:
@@ -274,10 +318,10 @@ def evaluate(cfg: Mapping[str, Any], questions: pd.DataFrame, qvecs: np.ndarray,
         return out
 
     # (a) judged stale vs refreshed
-    reqs, letters = relevance_requests(q, runs, docs, cfg)
+    reqs, letters, qids = relevance_requests(q, runs, docs, cfg)
     before = llm.spent()
     results = llm.complete_many(reqs, batch=batch)
-    grades, problems = collect_grades(q, results, letters)
+    grades, problems = collect_grades(qids, results, letters)
     per_q = judged_metrics(q, runs, grades, cfg).merge(
         q[["question_id", "period", "category", "drift_status", "sample_pool", "type_group"]], on="question_id")
     judged = per_q[per_q["judged"]]

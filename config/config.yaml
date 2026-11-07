@@ -160,6 +160,9 @@ llm:
     relevance:       {effort: low, max_tokens: 3000, expected_output: 600}
     answers:         {effort: low, max_tokens: 2000, expected_output: 400}
     answer_judge:    {effort: low, max_tokens: 3000, expected_output: 500}
+    fact_questions:  {effort: low, max_tokens: 2000, expected_output: 300}
+    wiki_answers:    {effort: low, max_tokens: 2000, expected_output: 400}
+    answer_change:   {effort: low, max_tokens: 2000, expected_output: 300}
 
 # D26: long-form documents where chunking applies (stakeholder request, 2026-11-06).
 # Wikipedia articles captured at the last revision before the end of each period
@@ -193,6 +196,12 @@ longform:
   reference_period: {name: "2016", end: "2016-12-31"}
   band_percentiles: {medium: 95, high: 99}
   fact_min_similarity: 0.6     # D27: word overlap for a changed sentence to count as the same statement
+  # D28: does a flagged changed fact change the answer? (the harm step of D27)
+  outdated:
+    items_per_group: 60          # flagged changed facts, and edited sentences with unchanged numbers
+    top_k: 3                     # passages the answer step reads from each version's chunk index
+    min_difference: 0.2          # flagged must change answers at least 20 points more often than the comparison group
+    alpha: 0.05                  # and the difference must be significant (Fisher's exact test)
   mmd_sample: 1500             # chunks per side for the archive-level MMD test
   mmd_permutations: 200
 

@@ -113,6 +113,7 @@ class ImpactReport(BaseModel):
     segments: list[dict[str, Any]] = Field(default_factory=list)        # class and likely cause per segment
     classes: dict[str, int] = Field(default_factory=dict)
     borderline: list[str] = Field(default_factory=list)                 # segments that may need more evidence
+    evidence: list[dict[str, Any]] = Field(default_factory=list)        # the loop back to C: top 10 instead of top 5
     correlations: list[dict[str, Any]] = Field(default_factory=list)    # drift measure vs quality loss
     examples: list[dict[str, Any]] = Field(default_factory=list)        # answers that show the harm
     judge: dict[str, Any] = Field(default_factory=dict)                 # requests, failures, cost
@@ -139,3 +140,5 @@ class PipelineState(TypedDict, total=False):
     impact: ImpactReport
     impact_tables: dict[str, Any]     # per-answer and per-segment tables for Agent E and the run folder
     impact_sample: int | None         # pilot: answer only this many questions (None = all)
+    deepen: list[str]                 # segments D sent back to C for more evidence (the loop)
+    evidence_loops: int               # how many times D has asked C for more evidence

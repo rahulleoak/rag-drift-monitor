@@ -148,3 +148,32 @@ def test_drift_quality_correlation():
                           "jsd_excess": [6, 5, 4, 3, 2, 1]})
     c = an.drift_quality_correlation(seg, drift).set_index("measure")
     assert c.at["mmd2", "spearman"] == 1 and c.at["jsd_excess", "spearman"] == -1
+
+
+def test_evidence_loop_grades_ranks_6_to_10_and_concludes(tmp_path):
+    from driftmon.agents.retrieval_eval import retrieval_evaluation
+    from driftmon.graph import DONE, MORE_EVIDENCE, _request_evidence, route_after_impact
+    from driftmon.schemas import RetrievalReport
+    state, api = _state(tmp_path)
+    state["config"]["retrieval"].update(top_k=5, judge_k=3)
+    state.update(impact_assessment(state))
+    assert route_after_impact(state) == DONE                      # nothing borderline: no loop
+    state["impact"] = state["impact"].model_copy(update={"borderline": [FLAGGED]})
+    assert route_after_impact(state) == MORE_EVIDENCE
+    state.update(_request_evidence(state))
+    state["retrieval"] = RetrievalReport(mode="full_evaluation", questions=0, questions_by_status={},
+                                         index_store={}, known_item=[], known_item_by_status=[], ranking_change=[])
+    state.update(retrieval_evaluation(state))                     # C, in deepen mode
+    deep = state["retrieval_tables"]["deep"]
+    assert deep["judge"]["requests"] > 0 and set(deep["answer_deep"]["question_id"]).issubset(
+        set(state["retrieval_tables"]["questions"]["question_id"]))
+    state.update(impact_assessment(state))                        # D, evidence round
+    ev = state["impact"].evidence
+    assert len(ev) == 1 and ev[0]["segment_id"] == FLAGGED and ev[0]["conclusion"] == an.CONFIRMED
+    assert state["deepen"] == [] and route_after_impact(state) == DONE  # bounded: at most one loop
+
+
+def test_evidence_conclusion():
+    assert an.evidence_conclusion(0.0, True, 0.1) == an.CONFIRMED
+    assert an.evidence_conclusion(0.3, False, 0.1) == an.JUST_OUTSIDE
+    assert an.evidence_conclusion(0.0, False, 0.1) == an.UNCLEAR

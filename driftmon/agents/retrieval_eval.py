@@ -13,6 +13,10 @@ On the regression-check route (no drift flagged) only the random-pool
 questions are evaluated: a small check that still catches quality loss
 without drift.
 Writes: ``RetrievalReport`` and the per-question tables. Consumed by Agent D.
+
+The loop (D28): when Agent D finds a borderline segment, it sends it back
+here once; C then grades ranks 6-10 for that segment's questions, so D can
+see whether answers sit just outside the top 5.
 """
 from __future__ import annotations
 
@@ -38,6 +42,8 @@ def _records(df: pd.DataFrame | None) -> list[dict[str, Any]]:
 def retrieval_evaluation(state: PipelineState) -> dict[str, Any]:
     """LangGraph node: build the RetrievalReport."""
     cfg, drift = state["config"], state["drift"]
+    if state.get("deepen"):
+        return _deepen(state)
     mode = state.get("next_step", "full_evaluation")
     questions = state.get("questions")
     if questions is None or not len(questions):
@@ -76,3 +82,18 @@ def retrieval_evaluation(state: PipelineState) -> dict[str, Any]:
         judged_by_type=_records(tables.get("judged_by_type")),
         judge=tables["judge"], worst_queries=rv.worst_queries(tables, state["docs"]), notes=notes)
     return {"retrieval": report, "retrieval_tables": tables}
+
+
+def _deepen(state: PipelineState) -> dict[str, Any]:
+    """The evidence loop: grade ranks 6-10 for the questions of the segments
+    Agent D sent back."""
+    cfg, tables = state["config"], state["retrieval_tables"]
+    base = study_periods(cfg)[0].name
+    q = tables["questions"]
+    seg = q["period"] + "|" + q["category"] + "|vs " + base
+    chosen = q[seg.isin(state["deepen"])].reset_index(drop=True)
+    deep = rv.deepen(cfg, chosen, tables["runs"], state["docs"], tables["grades"], state["llm"])
+    report = state["retrieval"].model_copy(update={"notes": state["retrieval"].notes + [
+        f"Evidence loop: graded ranks 6-{cfg['retrieval']['top_k']} for {len(chosen)} questions in "
+        f"{len(state['deepen'])} borderline segment(s) ({deep['judge']})."]})
+    return {"retrieval": report, "retrieval_tables": {**tables, "deep": deep, "deep_questions": chosen}}

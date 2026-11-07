@@ -921,3 +921,50 @@ chart, and whether it supports or contradicts what we expected.
   lose more (no).
 - **Verdict:** Supports "re-index on a schedule"; contradicts "re-index
   where drift is high" as the main trigger.
+
+## F21. The outdated-answer test: a flagged changed fact changes the answer half the time, an edit that kept its numbers almost never
+- **Date:** 2026-11-07
+- **Setup:** D27's harm step (D28). 60 changed facts flagged by the check
+  and 60 edited sentences whose numbers did not change (the comparison
+  group: same kind of sentence, a close earlier version, only the wording
+  moved), drawn at random from 505 and 6,856. Sonnet wrote one question
+  from each new sentence, blind to the group. Each question was answered
+  from the top 3 passages of the previous and the new year's chunk index
+  (all 165 articles of that year; local retrieval). Opus judged whether the
+  two answers state the same fact, in shuffled order, not told which
+  version is which. Thresholds fixed before results: at least 20 points
+  more often, Fisher's exact test p < 0.05. Cost about $0.77 (batch).
+- **Result:**
+
+  | | Flagged changed facts | Comparison (numbers unchanged) |
+  |---|---|---|
+  | Answers state a different fact | **50%** (30/60; interval 37-63%) | **2%** (1/60) |
+  | Old version cannot answer, new one can | 22% (13/60) | 5% (3/60) |
+  | Same answer | 27% (16/60) | 88% (53/60) |
+  | Edited sentence among the retrieved passages (old / new) | 92% / 98% | 88% / 88% |
+
+  Difference 48 points, Fisher p = 1.5e-10: **the check is useful** by the
+  rule set in advance. Counting "the old version cannot answer" as well,
+  72% of flagged edits change what a user gets, against 7%.
+- **Examples:** German tourism's contribution to GDP "over EUR43.2
+  billion" → "over €105.3 billion"; Delhi's warm season "9 April to 8
+  July" → "21 March to 15 June"; the Stele of the Vultures "c. 2525 BC" →
+  "c. 2450 BC"; the 2019 malaria figure (old version: only the 2018 one,
+  so it declined).
+- **Why some flagged edits give the same answer (27%):** the question was
+  about another fact in the sentence (the Great Depression's start, 1929,
+  when the end date changed), or the edit was a false alarm (the 15% the
+  hand labels found, F19).
+- **What it means:** the embeddings barely move on these edits (F17), yet
+  half of them change the answer; retrieval finds the edited passage
+  either way (92-98%), so the stale index serves the *old* fact with full
+  confidence. This is the drift that matters most for answers on edited
+  documents, and the cheap text check catches it. Agent E's rule: changed
+  facts in an indexed document → re-index that document, citing the
+  sentences.
+- **Reproduce:** `python scripts/outdated_answers.py`
+  (`runs/longform/outdated_items.csv`, `outdated_summary.csv`,
+  `outdated_verdict.json`).
+- **Expectation:** flagged edits would change answers clearly more often
+  (yes, by 48 points).
+- **Verdict:** Supports D27: detection (F18), harm (this), action (E).

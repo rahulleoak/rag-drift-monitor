@@ -809,8 +809,8 @@ chart, and whether it supports or contradicts what we expected.
   ordinary to embedding drift**. Event articles changed facts most from
   2019; in 2020 most were caught anyway because they also changed a lot in
   other ways, but in 2021–22 half had changed facts with a "low" band.
-- **Precision (my reading of 25 random flags, to be confirmed by the
-  author's blind labels):** about 23 of 25 are real changed facts, e.g.
+- **Precision:** 17 of 20 in the author's blind labels (F19; my own
+  earlier reading of 25 flags said about 23). Real changes, e.g.
   malaria "228 million cases … 405,000 deaths" → "229 million … 409,000";
   tuberculosis deaths 1.6 → 1.5 million; Paris Agreement signatories 194
   → 193; Germany's president Gauck (2012) → Steinmeier (2017); Catholic
@@ -824,3 +824,40 @@ chart, and whether it supports or contradicts what we expected.
   (yes, almost all).
 - **Verdict:** Supports D27's detection step. Usefulness is not yet shown:
   Agent D must show that flagged articles give changed answers.
+
+## F19. Hand labels: the relevance judge matches a person on "answers or not" 14 times in 15, and is never more lenient
+- **Date:** 2026-11-07
+- **Setup:** the author labelled a blind sample of 50 items without seeing
+  the LLM verdicts (`scripts/label_sheet.py make`, seed from config):
+  15 relevance pairs (5 per judge grade), 15 questions (10 the reviewer
+  kept, 5 it rejected) and 20 changed facts flagged by the D27 check. After
+  a first pass, the author re-checked 5 items against the written rules and
+  corrected them (first pass: relevance 11/15 on answers or not, facts
+  16/20, questions 10/15).
+- **Result:**
+
+  | Part | Agreement with the LLM | Notes |
+  |---|---|---|
+  | Relevance (Opus judge, Agent C) | 11/15 exact grade; **14/15 on "answers" (grade 2) vs not**, kappa 0.6 on the 0/1/2 grade | In all 4 disagreements the judge gave the *lower* grade |
+  | Questions (Opus reviewer) | 11/15: all 10 kept questions are fair; the author would have kept 4 of the 5 rejected | Rejections came from the reviewer's stricter rules (could be answered without the article, clunky wording, no time anchor) |
+  | Changed facts (D27 check, no LLM) | **precision 17/20 (85%)** | Misses: two reworded sentences ("late 15th century" vs "late 1400s"), one changed maths example |
+
+- **What it means:**
+  - The cut F15 depends on (answers or not) is reliable, and the judge is
+    strict, never generous: if anything, the stale index's 0–1% answered
+    rate is not inflated by a lenient judge.
+  - The kept question set is clean (10/10). The reviewer throws away some
+    good questions; that costs coverage, not correctness.
+  - The changed-facts check is useful but not exact; its flags are
+    evidence to check, which is how Agent E will present them.
+- **Limits:** one labeller and small samples (a single item moves a part by
+  5–7 points). A second labeller is invited with a blank sheet and
+  `docs/labelling-guide.md`; `scripts/label_sheet.py compare` then gives
+  the agreement between people, the baseline the LLM numbers are read
+  against.
+- **Reproduce:** `python scripts/label_sheet.py score`
+  (`runs/labels/agreement.csv`; first pass in `agreement_first_pass.csv`).
+- **Expectation:** agreement high on the answers cut (yes); facts precision
+  about 90% by my reading (lower: 85%).
+- **Verdict:** Supports using the Opus judge for F15 and the D27 check as a
+  flagging step.

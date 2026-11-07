@@ -279,8 +279,9 @@ a measurement, not an opinion.
 - **Two different models (D9):** Sonnet 5.5 writes questions and answers, Opus
   5.5 judges, so the judge is not grading its own style.
 - **Blind judging:** the judge never sees which index produced an answer.
-- **Trust in the judge is measured:** about 40 hand-labelled items, agreement
-  reported (P8).
+- **Trust in the judge is measured (F19):** 50 blind hand-labelled items;
+  the relevance judge matches on "answers or not" 14/15 and is never more
+  lenient; changed-facts check precision 17/20.
 - **Cost control:** every LLM response cached to disk, a 20-question pilot
   before full runs, Batch API at half price.
 
@@ -436,8 +437,8 @@ Honest moments that show judgement, good for a "what we learned" slide:
 - **"Isn't this a pipeline, not agents?"** See section 6: real dependencies,
   routing on intermediate results, loops back for more evidence; decisions in
   code by design.
-- **"How do you know the LLM judge is right?"** Hand labels, agreement
-  reported; a different model from the one being judged; blind to the index.
+- **"How do you know the LLM judge is right?"** Blind hand labels: 14/15 on
+  the answers cut, and where it disagrees it is stricter, not more generous (F19); a different model from the one being judged; blind to the index.
 - **"Is the LLM reviewer consistent?"** Measured: reviewing the same question
   twice gives the same keep/reject decision 92% of the time and the same
   label 100% of the time (F9). Its errors are mostly systematic (it

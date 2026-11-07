@@ -1036,7 +1036,7 @@ date and reason, and add a new entry that supersedes it.
   matters.
 - **Validation (stated honestly):** the check uses the same idea that found
   the blind spot, so catching those cases proves nothing on its own. It is
-  validated in two ways: a hand-checked sample of flagged changes
+  validated in two ways: a hand-checked sample of flagged changes (17/20 real, F19)
   (precision: are they real fact changes?), and Agent D (do flagged
   documents give different answers more often than unflagged ones?). If
   Agent D shows no difference, the check is reported as not useful.

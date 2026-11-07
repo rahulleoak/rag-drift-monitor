@@ -57,3 +57,14 @@ def test_fact_items_are_all_flagged_by_the_check():
     f = labels.sample_facts(changes, n=2, seed=0)
     assert len(f) == 2 and (f["verdict"] == 1).all() and f["text"].str.startswith("BEFORE:").all()
     assert "facts" in labels.INSTRUCTIONS
+
+
+def test_compare_labellers_skips_blanks_and_reports_per_part():
+    a = pd.DataFrame({"item_id": ["L1", "L2", "L3", "L4"], "part": ["relevance", "relevance", "facts", "facts"],
+                      "your_label": ["2", "1", "1", ""]})
+    b = pd.DataFrame({"item_id": ["L1", "L2", "L3", "L4"], "part": ["relevance", "relevance", "facts", "facts"],
+                      "your_label": ["2", "0", "1", "1"]})
+    got = labels.compare_labellers(a, b).set_index("part")
+    assert got.at["relevance", "both_labelled"] == 2 and got.at["relevance", "agreement"] == 0.5
+    assert got.at["relevance", "answers_agreement"] == 1.0      # both say L1 answers, L2 does not
+    assert got.at["facts", "both_labelled"] == 1               # L4 blank in one sheet

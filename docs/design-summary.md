@@ -112,7 +112,8 @@ Dashboard: Streamlit, reading saved runs, so it works without an API key.
     far a section's meaning moved. Answer quality (Agent D) and the
     Wikipedia set, where the stale index holds an *outdated version of the
     same article*, test the subtler cases.
-  - Caveat: the relevance judge is still being checked against hand labels.
+  - The relevance judge matches my hand labels on "answers or not" 14 times
+    in 15, and was never more lenient than me (F19).
 
 ## 5. Test questions and how they are validated
 
@@ -125,9 +126,12 @@ and Opus reviews them.
   - the writer's and reviewer's question types are compared (85% agree);
   - the reviewer agrees with itself 95% of the time on a repeat review.
 - **Result:** 423 answerable and 15 unanswerable questions kept, out of 653.
-- **Hand check:** I hand-label a blind sample of questions, relevance grades
-  and answers (about 40 items), and report agreement with the LLM judges
-  (Cohen's kappa).
+- **Hand check (F19):** I labelled a blind sample of 50 items.
+  - Relevance judge: 14/15 on "answers or not".
+  - Question reviewer: all 10 kept questions are fair; it is stricter than
+    me, so it rejects some good ones.
+  - Changed-facts check: 17/20 flags are real changes.
+  - A second labeller is being invited, to compare person with person.
 - **Total LLM spend so far:** $9.18, using our own key.
 
 ## 6. Chunking strategy and how it affects drift detection

@@ -118,3 +118,20 @@ def score(sheet: pd.DataFrame, key: pd.DataFrame) -> pd.DataFrame:
                 row["llm_rejected_you_kept"] = int(((llm == 0) & (you == 1)).sum())
         rows.append(row)
     return pd.DataFrame(rows)
+
+
+def compare_labellers(a: pd.DataFrame, b: pd.DataFrame) -> pd.DataFrame:
+    """Agreement between two people's sheets, per part: the human baseline
+    the LLM's agreement is read against. Rows either left blank are skipped."""
+    m = a[["item_id", "part", "your_label"]].merge(b[["item_id", "your_label"]], on="item_id", suffixes=("_a", "_b"))
+    for c in ("your_label_a", "your_label_b"):
+        m[c] = pd.to_numeric(m[c], errors="coerce")
+    m = m.dropna(subset=["your_label_a", "your_label_b"])
+    rows = []
+    for part, grp in m.groupby("part"):
+        x, y = grp["your_label_a"].astype(int).to_numpy(), grp["your_label_b"].astype(int).to_numpy()
+        row = {"part": part, "both_labelled": len(grp), "agreement": float((x == y).mean()), "kappa": cohen_kappa(x, y)}
+        if part == "relevance":
+            row["answers_agreement"] = float(((x == 2) == (y == 2)).mean())
+        rows.append(row)
+    return pd.DataFrame(rows)

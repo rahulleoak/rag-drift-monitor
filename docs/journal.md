@@ -16,6 +16,22 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-07: hand labels scored (F19); labelling guide for a second person
+- **Built:** scored the author's 50 blind labels (F19): relevance judge
+  14/15 on "answers or not", never more lenient; all 10 kept questions
+  fair; changed-facts precision 17/20. `docs/labelling-guide.md` (plain
+  rules with made-up examples) and `label_sheet.py compare` (person vs
+  person agreement). 108 tests pass.
+- **Surprises:** the one-line instructions in the sheet were not enough;
+  the author needed several clarifications (what "article" means, ignore
+  the reference answer for relevance, added detail vs changed fact). The
+  guide now holds them, so every labeller gets the same rules. My own
+  reading of the facts flags (about 23/25) was more generous than the
+  blind labels (17/20).
+- **Open questions:** whether a second labeller is available by about
+  Wednesday 2026-11-11.
+- **Next:** the Agent D design, for approval before spending.
+
 ## 2026-11-06 (evening): stakeholder answers; judge run; Wikipedia set downloaded
 - **Stakeholder (Ani):** long-form documents with chunking are required;
   deadline moved to Friday 2026-11-13; design summary wanted now

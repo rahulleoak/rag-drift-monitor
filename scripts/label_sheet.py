@@ -5,6 +5,12 @@
         and runs/labels/key.csv (the LLM verdicts: do not open before labelling)
     python scripts/label_sheet.py score
         agreement between your labels and the LLM, per part
+        (--sheet runs/labels/sheet_<name>.csv for another person's copy)
+    python scripts/label_sheet.py compare runs/labels/sheet.csv runs/labels/sheet_<name>.csv
+        agreement between people: the human baseline for the LLM's numbers
+
+Other labellers get a blank copy of the sheet plus docs/labelling-guide.md,
+never the key or anyone else's labels.
 
 Parts: kept and rejected questions (the question reviewer),
 (question, article) pairs (Agent C's relevance judge, from the run's
@@ -38,7 +44,10 @@ def main(argv: list[str] | None = None) -> int:
     make.add_argument("--rejected", type=int, default=5)
     make.add_argument("--per-grade", type=int, default=5)
     make.add_argument("--facts", type=int, default=20, help="changed facts from runs/longform (D27); 0 to skip")
-    sub.add_parser("score")
+    sc = sub.add_parser("score")
+    sc.add_argument("--sheet", help="a labelled copy of the sheet (default runs/labels/sheet.csv)")
+    cmp = sub.add_parser("compare")
+    cmp.add_argument("sheets", nargs="+", help="two or more labelled copies of the sheet, one per person")
     args = parser.parse_args(argv)
     out = resolve_path(cfg["paths"]["runs"]) / "labels"
     seed = int(cfg["seed"])
@@ -63,10 +72,26 @@ def main(argv: list[str] | None = None) -> int:
               f"do not open {out / 'key.csv'} until you are done.")
         return 0
 
-    sheet = pd.read_csv(out / "sheet.csv", encoding="utf-8-sig", dtype=str)
-    key = pd.read_csv(out / "key.csv", dtype={"item_id": str})
-    result = labels.score(sheet, key)
-    result.to_csv(out / "agreement.csv", index=False)
+    def read(path: Path) -> pd.DataFrame:
+        return pd.read_csv(path, encoding="utf-8-sig", dtype=str)
+
+    if args.cmd == "compare":
+        paths = [Path(p) for p in args.sheets]
+        if len(paths) < 2:
+            raise SystemExit("give at least two sheets")
+        tables = []
+        for i, p in enumerate(paths):
+            for q in paths[i + 1:]:
+                tables.append(labels.compare_labellers(read(p), read(q)).assign(pair=f"{p.stem} vs {q.stem}"))
+        result = pd.concat(tables, ignore_index=True)
+        result.to_csv(out / "agreement_people.csv", index=False)
+        print(result.round(3).to_string(index=False))
+        return 0
+
+    sheet_path = Path(args.sheet) if args.sheet else out / "sheet.csv"
+    result = labels.score(read(sheet_path), pd.read_csv(out / "key.csv", dtype={"item_id": str}))
+    name = "agreement.csv" if not args.sheet else f"agreement_{sheet_path.stem}.csv"
+    result.to_csv(out / name, index=False)
     print(result.round(3).to_string(index=False))
     return 0
 

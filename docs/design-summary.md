@@ -128,15 +128,17 @@ and Opus reviews them.
   - the writer's and reviewer's question types are compared (85% agree);
   - the reviewer agrees with itself 95% of the time on a repeat review.
 - **Result:** 423 answerable and 15 unanswerable questions kept, out of 653.
-- **Hand check:** two people labelled the same blind sample of 50 items.
+- **Hand check:** two people labelled the same blind sample of 50 items,
+  independently.
 
   | | Person vs person | LLM vs each person |
   |---|---|---|
-  | Relevance judge, "answers or not" | 15/15 | 14/15 (never more lenient) |
-  | Question reviewer | 14/15 | 10–11/15 (stricter than both people) |
-  | Changed-facts check | 18/20 | 17/20 (85% precision) |
+  | Relevance judge, "answers or not" | 12/15 | 14/15 and 11/15 (stricter, almost never more lenient) |
+  | Question reviewer | 13/15 | 10/15 each (stricter than both people) |
+  | Changed-facts check | 17/20 | 17/20 and 16/20 (80–85% precision) |
 
-  Answer judge vs a person: 15/15 on a blind sample of 15 answers.
+  Answer judge vs one person: 11/15 blind; all clear cases match, the 4
+  differences are borderline partial answers.
 - **Total LLM spend so far:** about $15.60, using our own key.
 
 ## 6. Chunking strategy and how it affects drift detection

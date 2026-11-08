@@ -16,6 +16,18 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-07 (late): answer hand labels; first-pass numbers lead
+- **Built:** scored the author's blind labels of 15 judged answers: 11/15
+  with the Opus answer judge on the first pass, 15/15 after re-reading the
+  rules (F20).
+- **Course correction:** both re-checks (this one and F19's) were
+  prompted by a reviewer from the same model family as the judge, and
+  every changed label moved toward the judge's grade. So the headline
+  numbers are now the independent ones: the first pass and the second
+  labeller (F19 relevance "answers or not": 14/15 and 11/15 vs 12/15
+  between the two people). The conclusions stand; the claims are weaker
+  and harder to attack.
+
 ## 2026-11-07 (evening): Agent D built and run (F20); second labeller; outdated-answer test
 - **Built:** Agent D (D28): answers from both indexes, one judge call per
   answer (switched from one per question after discussing order bias and

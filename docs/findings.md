@@ -825,52 +825,51 @@ chart, and whether it supports or contradicts what we expected.
 - **Verdict:** Supports D27's detection step. Usefulness is not yet shown:
   Agent D must show that flagged articles give changed answers.
 
-## F19. Hand labels: the relevance judge matches a person on "answers or not" 14 times in 15, and is never more lenient
-- **Date:** 2026-11-07
-- **Setup:** the author labelled a blind sample of 50 items without seeing
-  the LLM verdicts (`scripts/label_sheet.py make`, seed from config):
+## F19. Hand labels: the relevance judge matches an independent person on "answers or not" 14 times in 15, closer than the two people match each other
+- **Date:** 2026-11-07 (revised the same day: first-pass numbers lead)
+- **Setup:** two people labelled the same blind sample of 50 items without
+  seeing the LLM verdicts (`scripts/label_sheet.py make`, seed from config):
   15 relevance pairs (5 per judge grade), 15 questions (10 the reviewer
-  kept, 5 it rejected) and 20 changed facts flagged by the D27 check. After
-  a first pass, the author re-checked 5 items against the written rules and
-  corrected them (first pass: relevance 11/15 on answers or not, facts
-  16/20, questions 10/15).
-- **Result:**
+  kept, 5 it rejected) and 20 changed facts flagged by the D27 check.
+  - **The author** labelled first, then re-checked 5 items against the
+    written rules after an assistant flagged possible rule slips (without
+    the LLM verdicts). That assistant is the same model as the judge, so
+    the re-check is not independent of it: **the first pass is the
+    headline**, the re-checked numbers are shown for completeness.
+  - **A second labeller**, with no project context, used only
+    `docs/labelling-guide.md`, with no calibration round and no review.
+- **Result** (the first three columns are independent of the judge):
 
-  | Part | Agreement with the LLM | Notes |
-  |---|---|---|
-  | Relevance (Opus judge, Agent C) | 11/15 exact grade; **14/15 on "answers" (grade 2) vs not**, kappa 0.6 on the 0/1/2 grade | In all 4 disagreements the judge gave the *lower* grade |
-  | Questions (Opus reviewer) | 11/15: all 10 kept questions are fair; the author would have kept 4 of the 5 rejected | Rejections came from the reviewer's stricter rules (could be answered without the article, clunky wording, no time anchor) |
-  | Changed facts (D27 check, no LLM) | **precision 17/20 (85%)** | Misses: two reworded sentences ("late 15th century" vs "late 1400s"), one changed maths example |
+  | Part | Second labeller vs LLM | Author (first pass) vs LLM | Person vs person | Author after re-check vs LLM |
+  |---|---|---|---|---|
+  | Relevance, "answers" (grade 2) or not | **14/15** (judge never more lenient) | 11/15 (judge stricter 3, more lenient 1) | 12/15 | 14/15 |
+  | Relevance, exact 0/1/2 grade | 12/15 (kappa 0.70) | 9/15 (kappa 0.40) | 12/15 (kappa 0.67) | 11/15 (kappa 0.60) |
+  | Questions (Opus reviewer) | 10/15 | 10/15 | 13/15 | 11/15 |
+  | Changed facts (D27 check, no LLM): precision | **17/20 (85%)** | 16/20 (80%) | 17/20 | 17/20 |
 
 - **What it means:**
-  - The cut F15 depends on (answers or not) is reliable, and the judge is
-    strict, never generous: if anything, the stale index's 0–1% answered
-    rate is not inflated by a lenient judge.
-  - The kept question set is clean (10/10). The reviewer throws away some
-    good questions; that costs coverage, not correctness.
-  - The changed-facts check is useful but not exact; its flags are
-    evidence to check, which is how Agent E will present them.
-- **Second labeller (2026-11-07):** a second person, with no project
-  context, labelled the same blank sheet using only
-  `docs/labelling-guide.md` (no calibration round).
-
-  | Part | Person vs person | Second labeller vs LLM |
-  |---|---|---|
-  | Relevance, "answers or not" | **15/15** | 14/15 (judge never more lenient) |
-  | Relevance, exact grade | 14/15 (kappa 0.89) | 12/15 (kappa 0.70) |
-  | Questions | 14/15 | 10/15 (the reviewer's stricter rules, as above) |
-  | Changed facts | 18/20 | 17/20 (precision 85%, same as the author's) |
-
-  Read against the person-vs-person baseline: on the cut the results use,
-  the judge is one item short of human agreement; both people put the
-  changed-facts check at 85% precision; the question reviewer is stricter
-  than either person, consistently.
+  - **The cut F15 depends on (answers or not) is reliable:** the judge
+    agrees with an independent person at least as often as the two people
+    agree with each other (14/15 vs 12/15). Where it disagrees it is
+    almost always the stricter one (4 of 5 disagreements on this cut,
+    8 of 9 on the exact grade, across both people), so the stale index's
+    0-1% answered rate is not inflated by a lenient judge.
+  - **The question reviewer is stricter than both people, consistently:**
+    the kept questions are fair (10/10 for the author, 9/10 for the second
+    labeller); the reviewer throws away
+    some good questions (could be answered without the article, clunky
+    wording, no time anchor). That costs coverage, not correctness.
+  - **The changed-facts check is useful but not exact (80-85%):** misses
+    are reworded sentences ("late 15th century" vs "late 1400s") and a
+    changed maths example. Its flags are evidence to check, which is how
+    Agent E will present them.
 - **Limits:** small samples (a single item moves a part by 5-7 points);
   two labellers.
-- **Reproduce:** `python scripts/label_sheet.py score`
-  (`runs/labels/agreement.csv`; first pass in `agreement_first_pass.csv`).
+- **Reproduce:** `python scripts/label_sheet.py score` and `compare`
+  (`runs/labels/agreement_first_pass.csv`, `agreement_sheet_regine.csv`,
+  `agreement_people.csv`; after re-check `agreement.csv`).
 - **Expectation:** agreement high on the answers cut (yes); facts precision
-  about 90% by my reading (lower: 85%).
+  about 90% by my reading (lower: 80-85%).
 - **Verdict:** Supports using the Opus judge for F15 and the D27 check as a
   flagging step.
 
@@ -903,13 +902,13 @@ chart, and whether it supports or contradicts what we expected.
     retrieval misses, not answer-step errors.
 - **Hand check of the answer judge** (blind sheet of 15: 6 judged correct,
   5 declines, and all 4 unusual answers, i.e. partly right or not grounded):
-  the author agrees with the judge on **15/15** (kappa 1.0). First pass
-  11/15; the author then re-checked 4 items against the written rules,
-  still without seeing the judge's grades. All 4 were the judge's "1"
-  cases: an answer that joined two articles, a date worked out from the
-  calendar, a cautious decline that named the right number, and a true but
-  incomplete cause. These are the judgement calls; on clear correct
-  answers and declines there was no disagreement on either pass.
+  the author's blind first pass agrees with the judge on **11/15**. All 11
+  clear cases (correct answers and declines) match; all 4 disagreements
+  are borderline partial answers: an answer that joined two articles, a
+  date worked out from the calendar, a cautious decline that named the
+  right number, and a true but incomplete cause. After re-reading the
+  written rules (prompted by the same assistant as in F19, so not
+  independent of the judge) the author agrees on 15/15. One labeller only.
   Reproduce: `python scripts/label_sheet.py score --dir runs/labels/answers`.
 - **Which drift matters:** of the 19 segments with at least 8 questions
   (outside the baseline), every one has a material loss: 7 are flagged by

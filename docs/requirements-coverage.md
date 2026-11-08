@@ -107,7 +107,9 @@ named directly (checked against the assignment PDF, 2026-11-06):
 
 ## Extensions, only if ahead of schedule
 
-Not required by the brief; listed so they are not forgotten.
+Not required by the brief; listed so they are not forgotten. **To revisit
+together once the whole deliverable works end to end (pipeline and
+dashboard), as agreed with the author on 2026-11-08.**
 
 | Extension | Why | Source |
 |---|---|---|
@@ -116,6 +118,15 @@ Not required by the brief; listed so they are not forgotten.
 | Fine-tuning experiment for the "recommend retraining" action | Evidence that retraining would help, with train and test from different periods | D7 |
 | Baseline-candidates chart | Visual for the baseline decision | F2 |
 | Newer-wording questions about older topics (e.g. "COVID" asked of an article that says "coronavirus") | Tests the one case where a change in wording itself could hurt search; F15 found drift level did not predict harm, and this would check that claim where it is most likely to fail. Needs a few extra LLM questions | F15 (author, 2026-11-06: do if time allows) |
+| Larger Wikipedia sample (165 articles now, from about 1,000 vital articles) | Tightens the per-article rates (changed facts, chunking comparison); hours of fetching and re-running | Author, 2026-11-08 |
+| Bonus: targeted re-index of the 90 articles with changed facts, then re-run the outdated-answer questions | The brief's "apply one fix and re-check"; Agent E already recommends it | Asked of Ani (email, 2026-11-07) |
+| Second embedding model and the model-evaluation loop from E back to C | Designed (D7); not built because no section stays poor after re-indexing (D29). Could be shown by forcing it on one section | D7, D29 |
+| More test questions per section | 43 period x section groups had too few questions (under 8) to classify | F20 |
+| Test 128-token chunks for retrieval | They tracked edits best (0.89 vs 0.87); Agent E suggests testing them | F16, F22 |
+| Changed-facts check for names (e.g. a new office holder), not only numbers and dates | A stated limitation of D27 | D27 |
+| Larger hand-label samples; a second labeller for the answer sheet | Samples are 15-20 items per part; the answer sheet has one labeller | F19, F20 |
+| The open "revisit" points in D17 (is the unanswerable set useful; do keep rates differ by section; did common knowledge make retrieval easier) and D2 (weight of known-item metrics) | Written down when the results did not exist yet | D17, D2, F11 |
+| Let the LLM propose what to investigate (for example which terms to test), code tests it | More visibly agentic without the LLM deciding | D7 (not adopted yet) |
 
 ## Success criteria
 

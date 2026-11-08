@@ -9,6 +9,10 @@
     python scripts/label_sheet.py compare runs/labels/sheet.csv runs/labels/sheet_<name>.csv
         agreement between people: the human baseline for the LLM's numbers
 
+    python scripts/label_sheet.py make-answers --run runs/<run_id>
+        a separate sheet for Agent D's answer judge, in runs/labels/answers/;
+        score and compare it with --dir runs/labels/answers
+
 Other labellers get a blank copy of the sheet plus docs/labelling-guide.md,
 never the key or anyone else's labels.
 
@@ -20,6 +24,7 @@ precision). Agent D's answers are added when D exists.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -30,6 +35,7 @@ if __package__ in (None, ""):
 
 from driftmon import labels  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
+from driftmon.evaluation.answers import article_listing  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -44,12 +50,18 @@ def main(argv: list[str] | None = None) -> int:
     make.add_argument("--rejected", type=int, default=5)
     make.add_argument("--per-grade", type=int, default=5)
     make.add_argument("--facts", type=int, default=20, help="changed facts from runs/longform (D27); 0 to skip")
+    ma = sub.add_parser("make-answers")
+    ma.add_argument("--run", required=True, help="pipeline run folder with impact_answers.csv")
+    ma.add_argument("--correct", type=int, default=6)
+    ma.add_argument("--declined", type=int, default=5)
     sc = sub.add_parser("score")
     sc.add_argument("--sheet", help="a labelled copy of the sheet (default runs/labels/sheet.csv)")
     cmp = sub.add_parser("compare")
     cmp.add_argument("sheets", nargs="+", help="two or more labelled copies of the sheet, one per person")
+    for s in (sc, cmp):
+        s.add_argument("--dir", help="folder with sheet.csv and key.csv (default runs/labels)")
     args = parser.parse_args(argv)
-    out = resolve_path(cfg["paths"]["runs"]) / "labels"
+    out = Path(args.dir) if getattr(args, "dir", None) else resolve_path(cfg["paths"]["runs"]) / "labels"
     seed = int(cfg["seed"])
 
     if args.cmd == "make":
@@ -70,6 +82,27 @@ def main(argv: list[str] | None = None) -> int:
         key.to_csv(out / "key.csv", index=False)
         print(f"{len(sheet)} items: {sheet['part'].value_counts().to_dict()}\nFill in {out / 'sheet.csv'}; "
               f"do not open {out / 'key.csv'} until you are done.")
+        return 0
+
+    if args.cmd == "make-answers":
+        out = out / "answers"
+        if (out / "sheet.csv").exists():
+            raise SystemExit(f"{out / 'sheet.csv'} exists; move it away first (it may hold labels).")
+        run = Path(args.run)
+        name = cfg["evaluation"].get("question_set", "full")
+        table = pd.read_parquet(resolve_path(cfg["paths"]["data_processed"]) / f"questions_{name}.parquet")
+        docs = pd.read_parquet(resolve_path(cfg["paths"]["data_processed"]) / "documents.parquet")
+        runs = pd.read_csv(run / "retrieval_runs.csv")
+        k = int(cfg["impact"]["answer_k"])
+        articles = {(q, i): article_listing(re.findall(r"'([^']+)'", ids)[:k], docs)
+                    for q, i, ids in zip(runs["question_id"], runs["index"], runs["doc_ids"])}
+        part = labels.sample_answers(pd.read_csv(run / "impact_answers.csv"), table, articles,
+                                     args.correct, args.declined, seed)
+        sheet, key = labels.build_sheet([part], seed)
+        out.mkdir(parents=True, exist_ok=True)
+        sheet.to_csv(out / "sheet.csv", index=False, encoding="utf-8-sig")
+        key.to_csv(out / "key.csv", index=False)
+        print(f"{len(sheet)} answer items in {out / 'sheet.csv'}; do not open key.csv until done.")
         return 0
 
     def read(path: Path) -> pd.DataFrame:

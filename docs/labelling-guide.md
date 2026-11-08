@@ -88,3 +88,29 @@ Made-up examples:
 - "The town has 8,000 people." → "About 8,000 people live in the town.": **0**
 - "The film won 3 awards." → "The film won 3 awards, including Best Actor.": **0**
 - "The mayor is Ana Silva (since 2015)." → "The mayor is Ben Okafor (since 2020).": **1**
+
+## Part 4: `answers` (0, 1 or 2), a separate sheet
+
+**The question:** did the assistant answer correctly, using only the
+articles it was given?
+
+The `text` column shows the **ARTICLES** the assistant read, then its
+**ANSWER**. The `reference_answer` shows the expected answer.
+
+| Label | Meaning |
+|---|---|
+| **2** | The answer gives the fact asked for correctly, and everything it says is in the ARTICLES. |
+| **1** | Partly right (part of the fact missing or slightly off), or it adds something the ARTICLES don't say. |
+| **0** | Wrong, or no answer (for example "the archive does not say"), even if declining was the sensible thing to do. |
+
+- "Correct" means it matches the reference answer, or the ARTICLES show it
+  is an equally correct answer to the question.
+- Check every claim in the answer against the ARTICLES. Something true in
+  real life but not in the ARTICLES makes it a **1**.
+
+Made-up example. Question: *"How long is the bridge?"*, reference answer
+*"120 metres"*, and the ARTICLES say *"The 120-metre bridge opened in 1932."*
+- "It is 120 metres long.": **2**
+- "It is 120 metres long and was designed by Ana Silva.": **1** (the designer is not in the ARTICLES)
+- "It is 150 metres long.": **0**
+- "The articles do not say.": **0**

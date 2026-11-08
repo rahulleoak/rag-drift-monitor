@@ -1001,7 +1001,7 @@ date and reason, and add a new entry that supersedes it.
 
 ## D27. Address the changed-numbers blind spot: detect, measure harm, act
 - **Date:** 2026-11-06
-- **Status:** Accepted (approved by the author). Detection built (F18: first rules failed the hand check and were tightened); harm (Agent D) and action (Agent E) to follow.
+- **Status:** Accepted (approved by the author). Detection built (F18; precision 85% by two labellers, F19); harm measured: flagged edits change the answer 50% of the time vs 2% for edits that kept their numbers (F21); action (Agent E) to follow.
 - **Context:** F17 measured a blind spot of embedding-based drift: when an
   updated document changes only a number, its chunk vector barely moves
   (median change 0.0008 against 0.0127 for other edits, about 16 times
@@ -1045,3 +1045,53 @@ date and reason, and add a new entry that supersedes it.
   time-sensitive questions in Agent D cover the same risk. Changed names
   (e.g. a new office holder) are not caught by a number check; left out
   unless time allows.
+
+## D28. Agent D: answer quality, stale vs refreshed, and the outdated-answer test
+- **Date:** 2026-11-07
+- **Status:** Accepted (approved by the author). Spend: a 20-question pilot
+  first; the full run after the credit top-up, with approval.
+- **Context:** Agent C measures whether the right article is *found*. The
+  brief asks whether drift hurts *answers* (correctness, groundedness,
+  relevance), how drift scores relate to quality, and which drift matters.
+  Three things only answers can show: whether the system invents an answer
+  when nothing useful is found; whether a found article becomes a correct
+  answer; and, for edited documents, whether the stale index's *old version
+  of the right article* gives an outdated answer (D27's harm step), which
+  relevance grading cannot see.
+- **Choices:**
+  1. **HuffPost answers.** For every test question (423 answerable, 15
+     unanswerable), Sonnet answers from the top 5 of the stale and of the
+     refreshed index (Agent C's saved retrieval), only from those articles.
+  2. **Opus judges each answer in its own call** (Q10 rubric): correct
+     against the reference answer (0/1/2), grounded in the retrieved
+     articles, and whether it declined. It is not told which index the
+     answer came from. Whether a decline was *right* is decided in code from
+     Agent C's relevance grades (did the top 5 contain an answer?).
+  3. **Material harm** (fixed before any results): the share of correct
+     answers drops by at least 10 percentage points from refreshed to
+     stale, and the bootstrap interval excludes zero. Each segment
+     (period x section) with enough questions is classed as drift that
+     hurts / drift that does not / harm without drift / healthy, with a
+     likely cause (D13). Drift scores vs quality loss: rank correlation
+     across segments.
+  4. **Wikipedia outdated-answer test.** 60 flagged changed facts and 60
+     edited passages without one: Sonnet writes a question from the new
+     version; answers come from the old and the new version's chunk indexes
+     (local retrieval); Opus judges whether the two answers state a
+     different fact. The check is useful only if flagged passages change
+     answers much more often.
+  5. **Loop back to Agent C:** a borderline segment (drop at least the
+     threshold but the interval includes zero) goes back to C once to grade
+     ranks 6-10; D re-answers those questions from the top 10. Either the
+     answer was just outside the top 5 (evidence for "update retrieval
+     configuration") or the case goes to a human.
+  6. **Judge check:** 15 answer items added to the blind hand-label sheet.
+- **Options considered for the judge:** one call grading both answers of a
+  question (as Agent C's relevance judge does) vs one call per answer. One
+  call saves only about 15-20% (each answer brings its own five articles),
+  while it invites comparing the two answers instead of grading each,
+  adds order bias, weakens blindness (article dates reveal the newer index)
+  and differs from how the hand labels grade. Separate calls; identical
+  answers (both indexes found the same articles) reuse one cached grade.
+- **Cost:** about $6-9 at batch prices (estimate; the last estimate was
+  about twice the real cost).

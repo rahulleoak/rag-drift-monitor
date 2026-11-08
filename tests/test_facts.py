@@ -41,3 +41,12 @@ def test_image_captions_are_not_facts():
     old = [("Lead", "right|thumb|150px|Bust of Socrates in the Vatican Museum in Rome, Italy.")]
     new = [("Lead", "right|thumb|upright=0.7|Bust of Socrates in the Vatican Museum in Rome, Italy.")]
     assert facts.fact_changes(old, new) == []
+
+
+def test_wording_edits_are_the_comparison_group():
+    old = [("Lead", "The bridge, built in 1932, is 120 metres long and crosses the river. It is painted red.")]
+    new = [("Lead", "The bridge, completed in 1932, is 120 metres long and spans the river. It is painted red.")]
+    got = facts.wording_edits(old, new)
+    assert len(got) == 1 and "completed" in got[0][2] and facts.fact_changes(old, new) == []
+    changed = [("Lead", "The bridge, built in 1932, is 125 metres long and crosses the river. It is painted red.")]
+    assert facts.wording_edits(old, changed) == [] and len(facts.fact_changes(old, changed)) == 1

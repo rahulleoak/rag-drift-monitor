@@ -7,14 +7,15 @@ measures how often they agree. Two parts now, a third with Agent D:
       the reviewer rejected, so both kinds of mistake can show.
     - relevance: does this article answer the question (0 / 1 / 2)? Drawn
       evenly across the judge's grades, so agreement is measured on each.
-    - answers (Agent D): is the answer correct and supported?
+    - answers (Agent D): is the answer correct and supported by the
+      retrieved articles (0 / 1 / 2)? A separate sheet (``make-answers``).
 
 The sheet the author fills in never holds the LLM verdicts; those are in a
 separate key file. Pure functions; no LLM calls.
 """
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -27,6 +28,8 @@ INSTRUCTIONS = {
     "questions": "1 = a fair question a journalist could ask, answered by the article, and the reference "
                  "answer is right; 0 = otherwise",
     "relevance": "2 = the article answers the question; 1 = same topic or event but no answer; 0 = not relevant",
+    "answers": "2 = gives the fact asked for correctly, and everything it says is in the ARTICLES; "
+               "1 = partly right, or adds something the ARTICLES do not say; 0 = wrong, or no answer",
     "facts": "1 = the AFTER sentence states a different fact from BEFORE (a new count, date, amount or ranking); "
              "0 = only wording, rounding, units, formatting or an example changed",
 }
@@ -72,6 +75,40 @@ def sample_facts(changes: pd.DataFrame, n: int, seed: int) -> pd.DataFrame:
                          "text": [f"BEFORE: {b}\nAFTER: {a}" for b, a in zip(pick["before"], pick["after"])],
                          "source_id": [f"{i}|{p}" for i, p in zip(pick["page_id"], pick["period"])],
                          "verdict": 1})
+
+
+def answer_verdict(correctness: float, grounded: float) -> int:
+    """The judge's grades on the sheet's 0/1/2 scale: 2 only if correct and
+    grounded; an ungrounded correct answer counts as 1."""
+    if correctness == 2:
+        return 2 if grounded == 1 else 1
+    return int(correctness)
+
+
+def sample_answers(answers: pd.DataFrame, questions: pd.DataFrame, articles: Mapping[tuple[str, str], str],
+                   n_correct: int, n_declined: int, seed: int) -> pd.DataFrame:
+    """Answers to label: ``n_correct`` the judge called correct, ``n_declined``
+    declines, and every unusual one (partly right, or not grounded), since
+    those are where a judge is most likely wrong.
+
+    ``articles`` maps (question_id, index) -> the lettered article listing
+    the answer was written from.
+    """
+    rng = np.random.default_rng(seed)
+    a = answers.dropna(subset=["correctness", "answer"])
+    a = a[a.apply(lambda r: (r["question_id"], r["index"]) in articles, axis=1)]
+    unusual = a[(a["correctness"] == 1) | (a["grounded"] == 0)]
+    rest = a.drop(unusual.index)
+    correct = rest[rest["correctness"] == 2]
+    declined = rest[rest["declined"] == 1]
+    pick = pd.concat([correct.iloc[rng.permutation(len(correct))[:n_correct]],
+                      declined.iloc[rng.permutation(len(declined))[:n_declined]], unusual])
+    out = pick.merge(questions[["question_id", "question", "reference_answer"]], on="question_id")
+    return pd.DataFrame({"part": "answers", "question": out["question"], "reference_answer": out["reference_answer"],
+                         "text": [f"ARTICLES:\n{articles[(q, i)]}\n\nANSWER: {ans}"
+                                  for q, i, ans in zip(out["question_id"], out["index"], out["answer"])],
+                         "source_id": out["question_id"] + "|" + out["index"],
+                         "verdict": [answer_verdict(c, g) for c, g in zip(out["correctness"], out["grounded"])]})
 
 
 def build_sheet(parts: Sequence[pd.DataFrame], seed: int) -> tuple[pd.DataFrame, pd.DataFrame]:

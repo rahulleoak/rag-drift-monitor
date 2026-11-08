@@ -825,39 +825,155 @@ chart, and whether it supports or contradicts what we expected.
 - **Verdict:** Supports D27's detection step. Usefulness is not yet shown:
   Agent D must show that flagged articles give changed answers.
 
-## F19. Hand labels: the relevance judge matches a person on "answers or not" 14 times in 15, and is never more lenient
-- **Date:** 2026-11-07
-- **Setup:** the author labelled a blind sample of 50 items without seeing
-  the LLM verdicts (`scripts/label_sheet.py make`, seed from config):
+## F19. Hand labels: the relevance judge matches an independent person on "answers or not" 14 times in 15, closer than the two people match each other
+- **Date:** 2026-11-07 (revised the same day: first-pass numbers lead)
+- **Setup:** two people labelled the same blind sample of 50 items without
+  seeing the LLM verdicts (`scripts/label_sheet.py make`, seed from config):
   15 relevance pairs (5 per judge grade), 15 questions (10 the reviewer
-  kept, 5 it rejected) and 20 changed facts flagged by the D27 check. After
-  a first pass, the author re-checked 5 items against the written rules and
-  corrected them (first pass: relevance 11/15 on answers or not, facts
-  16/20, questions 10/15).
-- **Result:**
+  kept, 5 it rejected) and 20 changed facts flagged by the D27 check.
+  - **The author** labelled first, then re-checked 5 items against the
+    written rules after an assistant flagged possible rule slips (without
+    the LLM verdicts). That assistant is the same model as the judge, so
+    the re-check is not independent of it: **the first pass is the
+    headline**, the re-checked numbers are shown for completeness.
+  - **A second labeller**, with no project context, used only
+    `docs/labelling-guide.md`, with no calibration round and no review.
+- **Result** (the first three columns are independent of the judge):
 
-  | Part | Agreement with the LLM | Notes |
-  |---|---|---|
-  | Relevance (Opus judge, Agent C) | 11/15 exact grade; **14/15 on "answers" (grade 2) vs not**, kappa 0.6 on the 0/1/2 grade | In all 4 disagreements the judge gave the *lower* grade |
-  | Questions (Opus reviewer) | 11/15: all 10 kept questions are fair; the author would have kept 4 of the 5 rejected | Rejections came from the reviewer's stricter rules (could be answered without the article, clunky wording, no time anchor) |
-  | Changed facts (D27 check, no LLM) | **precision 17/20 (85%)** | Misses: two reworded sentences ("late 15th century" vs "late 1400s"), one changed maths example |
+  | Part | Second labeller vs LLM | Author (first pass) vs LLM | Person vs person | Author after re-check vs LLM |
+  |---|---|---|---|---|
+  | Relevance, "answers" (grade 2) or not | **14/15** (judge never more lenient) | 11/15 (judge stricter 3, more lenient 1) | 12/15 | 14/15 |
+  | Relevance, exact 0/1/2 grade | 12/15 (kappa 0.70) | 9/15 (kappa 0.40) | 12/15 (kappa 0.67) | 11/15 (kappa 0.60) |
+  | Questions (Opus reviewer) | 10/15 | 10/15 | 13/15 | 11/15 |
+  | Changed facts (D27 check, no LLM): precision | **17/20 (85%)** | 16/20 (80%) | 17/20 | 17/20 |
 
 - **What it means:**
-  - The cut F15 depends on (answers or not) is reliable, and the judge is
-    strict, never generous: if anything, the stale index's 0–1% answered
-    rate is not inflated by a lenient judge.
-  - The kept question set is clean (10/10). The reviewer throws away some
-    good questions; that costs coverage, not correctness.
-  - The changed-facts check is useful but not exact; its flags are
-    evidence to check, which is how Agent E will present them.
-- **Limits:** one labeller and small samples (a single item moves a part by
-  5–7 points). A second labeller is invited with a blank sheet and
-  `docs/labelling-guide.md`; `scripts/label_sheet.py compare` then gives
-  the agreement between people, the baseline the LLM numbers are read
-  against.
-- **Reproduce:** `python scripts/label_sheet.py score`
-  (`runs/labels/agreement.csv`; first pass in `agreement_first_pass.csv`).
+  - **The cut F15 depends on (answers or not) is reliable:** the judge
+    agrees with an independent person at least as often as the two people
+    agree with each other (14/15 vs 12/15). Where it disagrees it is
+    almost always the stricter one (4 of 5 disagreements on this cut,
+    8 of 9 on the exact grade, across both people), so the stale index's
+    0-1% answered rate is not inflated by a lenient judge.
+  - **The question reviewer is stricter than both people, consistently:**
+    the kept questions are fair (10/10 for the author, 9/10 for the second
+    labeller); the reviewer throws away
+    some good questions (could be answered without the article, clunky
+    wording, no time anchor). That costs coverage, not correctness.
+  - **The changed-facts check is useful but not exact (80-85%):** misses
+    are reworded sentences ("late 15th century" vs "late 1400s") and a
+    changed maths example. Its flags are evidence to check, which is how
+    Agent E will present them.
+- **Limits:** small samples (a single item moves a part by 5-7 points);
+  two labellers.
+- **Reproduce:** `python scripts/label_sheet.py score` and `compare`
+  (`runs/labels/agreement_first_pass.csv`, `agreement_sheet_regine.csv`,
+  `agreement_people.csv`; after re-check `agreement.csv`).
 - **Expectation:** agreement high on the answers cut (yes); facts precision
-  about 90% by my reading (lower: 85%).
+  about 90% by my reading (lower: 80-85%).
 - **Verdict:** Supports using the Opus judge for F15 and the D27 check as a
   flagging step.
+
+## F20. Answers, stale vs refreshed: not re-indexing loses almost every new answer, the system stays silent rather than wrong, and drift scores do not predict where
+- **Date:** 2026-11-07
+- **Setup:** Agent D (D28). All 438 test questions (423 answerable, 15
+  unanswerable) answered by Sonnet from the top 5 of the stale and the
+  refreshed index; each answer graded alone by Opus (correct 0/1/2,
+  grounded, declined), not told which index. 876 answers, 875 judged (one
+  answer failed and is left out). Cost $3.61 (batch) plus the $0.34 pilot.
+- **Result:**
+
+  | Questions | n | Correct, stale | Correct, refreshed | Loss (95% interval) |
+  |---|---|---|---|---|
+  | Baseline 2016-17 (historical control) | 49 | 100% | 100% | 0 |
+  | 2018 | 99 | 1% | 100% | 0.99 (0.97-1.00) |
+  | 2019 | 70 | 0% | 100% | 1.00 |
+  | 2020 | 83 | 0% | 96% | 0.96 (0.92-1.00) |
+  | 2021 | 69 | 0% | 99% | 0.99 (0.96-1.00) |
+  | 2022 | 53 | 0% | 98% | 0.98 (0.94-1.00) |
+
+  - **Silent, not wrong:** on the stale index the assistant declined 98-100%
+    of the time when the top 5 held no answer. Answers with a claim not in
+    the articles: 1 of 438 on the stale index (a decline that named an extra
+    shooting from memory), 2 on the refreshed index (small added details).
+  - **Unanswerable questions:** declined 15/15 on the stale index and 14/15
+    on the refreshed one; the one answer came correctly from a different
+    article (the question was unanswerable only from its own source).
+  - **Refreshed misses** (5): all declines where the top 5 held no answer:
+    retrieval misses, not answer-step errors.
+- **Hand check of the answer judge** (blind sheet of 15: 6 judged correct,
+  5 declines, and all 4 unusual answers, i.e. partly right or not grounded):
+  the author's blind first pass agrees with the judge on **11/15**. All 11
+  clear cases (correct answers and declines) match; all 4 disagreements
+  are borderline partial answers: an answer that joined two articles, a
+  date worked out from the calendar, a cautious decline that named the
+  right number, and a true but incomplete cause. After re-reading the
+  written rules (prompted by the same assistant as in F19, so not
+  independent of the judge) the author agrees on 15/15. One labeller only.
+  Reproduce: `python scripts/label_sheet.py score --dir runs/labels/answers`.
+- **Which drift matters:** of the 19 segments with at least 8 questions
+  (outside the baseline), every one has a material loss: 7 are flagged by
+  Agent B ("drift that hurts") and 12 are not ("harm without drift": e.g.
+  politics 2018-2020, U.S. news 2019-2020, world news 2018). Across
+  segments, no drift measure predicts the size of the loss (Spearman 0.18
+  to 0.40, all p > 0.1, 15 segments with drift scores). No segment was
+  borderline, so the evidence loop back to C did not trigger.
+- **What it means:** on a news archive, the harm comes from new events
+  missing from the index, whatever the section's distribution shift.
+  Drift scores tell *what* changed (useful for explaining and for
+  re-tuning), not *whether* to re-index: re-index on a schedule. Same
+  conclusion as F15, now at the answer level.
+- **Reproduce:** `python scripts/run_pipeline.py` (`runs/<run>/impact.json`,
+  `impact_answers.csv`, `impact_segments.csv`, `impact_correlations.csv`);
+  run `20261107-143926`.
+- **Expectation:** answers would follow retrieval (yes); some invented
+  answers on the stale index (no: almost none); drifted segments would
+  lose more (no).
+- **Verdict:** Supports "re-index on a schedule"; contradicts "re-index
+  where drift is high" as the main trigger.
+
+## F21. The outdated-answer test: a flagged changed fact changes the answer half the time, an edit that kept its numbers almost never
+- **Date:** 2026-11-07
+- **Setup:** D27's harm step (D28). 60 changed facts flagged by the check
+  and 60 edited sentences whose numbers did not change (the comparison
+  group: same kind of sentence, a close earlier version, only the wording
+  moved), drawn at random from 505 and 6,856. Sonnet wrote one question
+  from each new sentence, blind to the group. Each question was answered
+  from the top 3 passages of the previous and the new year's chunk index
+  (all 165 articles of that year; local retrieval). Opus judged whether the
+  two answers state the same fact, in shuffled order, not told which
+  version is which. Thresholds fixed before results: at least 20 points
+  more often, Fisher's exact test p < 0.05. Cost about $0.77 (batch).
+- **Result:**
+
+  | | Flagged changed facts | Comparison (numbers unchanged) |
+  |---|---|---|
+  | Answers state a different fact | **50%** (30/60; interval 37-63%) | **2%** (1/60) |
+  | Old version cannot answer, new one can | 22% (13/60) | 5% (3/60) |
+  | Same answer | 27% (16/60) | 88% (53/60) |
+  | Edited sentence among the retrieved passages (old / new) | 92% / 98% | 88% / 88% |
+
+  Difference 48 points, Fisher p = 1.5e-10: **the check is useful** by the
+  rule set in advance. Counting "the old version cannot answer" as well,
+  72% of flagged edits change what a user gets, against 7%.
+- **Examples:** German tourism's contribution to GDP "over EUR43.2
+  billion" → "over €105.3 billion"; Delhi's warm season "9 April to 8
+  July" → "21 March to 15 June"; the Stele of the Vultures "c. 2525 BC" →
+  "c. 2450 BC"; the 2019 malaria figure (old version: only the 2018 one,
+  so it declined).
+- **Why some flagged edits give the same answer (27%):** the question was
+  about another fact in the sentence (the Great Depression's start, 1929,
+  when the end date changed), or the edit was a false alarm (the 15% the
+  hand labels found, F19).
+- **What it means:** the embeddings barely move on these edits (F17), yet
+  half of them change the answer; retrieval finds the edited passage
+  either way (92-98%), so the stale index serves the *old* fact with full
+  confidence. This is the drift that matters most for answers on edited
+  documents, and the cheap text check catches it. Agent E's rule: changed
+  facts in an indexed document → re-index that document, citing the
+  sentences.
+- **Reproduce:** `python scripts/outdated_answers.py`
+  (`runs/longform/outdated_items.csv`, `outdated_summary.csv`,
+  `outdated_verdict.json`).
+- **Expectation:** flagged edits would change answers clearly more often
+  (yes, by 48 points).
+- **Verdict:** Supports D27: detection (F18), harm (this), action (E).

@@ -28,6 +28,12 @@ Version history:
                  retrieve (F11). Verbatim copying is caught in code. Writer unchanged.
     rel-v1       retrieval relevance judge (Agent C): grades 0/1/2 for the pooled
                  top-k of both indexes, in shuffled order, index not shown (D25)
+    ans-v1       RAG answers from the retrieved top-k only (Agent D, D28)
+    aj-v1        answer judge: correctness 0/1/2, grounded, declined; one call per
+                 answer, index not shown (D28)
+    fq-v1 / wans-v1 / ac-v1  outdated-answer test on edited Wikipedia passages:
+                 a question from the new sentence, answers from each version's
+                 passages, and whether the two answers differ (D27, D28)
 """
 from __future__ import annotations
 
@@ -204,3 +210,144 @@ class RelevanceJudgement(BaseModel):
     """Grades for every pooled article of one question; code computes the metrics."""
 
     grades: list[ArticleGrade]
+
+
+# ---------- RAG answers (Sonnet, Agent D) ----------
+
+ANSWER_VERSION = "ans-v1"
+
+ANSWER_SYSTEM = """You are a newsroom archive assistant. Journalists and editors ask you questions; \
+you answer only from the archive articles provided with each question (each article is a headline \
+plus a short description, with its publication date).
+
+Rules:
+- Use only what the articles say. Do not add facts from your own knowledge, even if you know them.
+- If the articles do not contain the answer, say so plainly and set "found" to false. Do not guess.
+- If a question asks about a specific event, person, place or time, answer only from articles about \
+that same one.
+- Keep the answer short and direct: one to three sentences.
+- List the letters of the articles your answer relies on."""
+
+ANSWER_TEMPLATE = """Question: {question}
+
+Archive articles (most relevant first):
+{articles}"""
+
+
+class RagAnswer(BaseModel):
+    """The assistant's answer, from the retrieved articles only."""
+
+    found: bool = Field(description="True if the articles contain the answer")
+    answer: str = Field(description="One to three sentences; if not found, say the archive does not say")
+    sources: list[str] = Field(description="Letters of the articles the answer relies on")
+
+
+# ---------- answer quality (Opus, Agent D) ----------
+
+ANSWER_JUDGE_VERSION = "aj-v1"
+
+ANSWER_JUDGE_SYSTEM = """You check answers from a newsroom archive assistant. It answers questions \
+using only the archive articles it retrieved (each a headline plus a short description, with its \
+publication date).
+
+You will see a question, a reference answer written from one article, the articles the assistant \
+retrieved, and the assistant's answer. Judge the answer on three points:
+- correctness: 2 if it gives the fact asked for, matching the reference answer or an answer the \
+retrieved articles show is equally correct for the question as asked; 1 if partly right (a key part \
+missing or slightly off); 0 if wrong, or if it gives no answer.
+- grounded: true if every factual claim in the answer is stated in the retrieved articles; false if \
+any claim is not (invented, or from outside knowledge). An answer that only says the articles do \
+not contain the answer is grounded.
+- declined: true if the answer says the articles do not contain the answer instead of answering.
+
+Judge from the texts shown only; do not use outside knowledge to decide what is true."""
+
+ANSWER_JUDGE_TEMPLATE = """Question: {question}
+Reference answer: {reference_answer}
+
+Retrieved articles:
+{articles}
+
+Assistant's answer: {answer}"""
+
+
+class AnswerJudgement(BaseModel):
+    """Grades for one answer; code turns them into metrics and decisions."""
+
+    reason: str = Field(description="At most 30 words")
+    correctness: Literal[0, 1, 2]
+    grounded: bool
+    declined: bool
+
+
+# ---------- outdated-answer test on edited documents (Agent D, D27 / D28) ----------
+
+FACT_QUESTION_VERSION = "fq-v1"
+
+FACT_QUESTION_SYSTEM = """You help build a test set for an assistant that answers questions from \
+an encyclopedia. You will see one sentence from an encyclopedia article, with the article's title \
+and section.
+
+Write one question that a reader could ask, whose answer is a specific fact stated in the sentence: \
+a number, amount, date, count, ranking or name. Rules:
+- The question must make sense on its own: name the subject (do not say "the article" or "this \
+sentence").
+- Ask for one fact only, and do not put the answer in the question.
+- Give the answer as stated in the sentence, in a few words."""
+
+FACT_QUESTION_TEMPLATE = """Article: {title}
+Section: {section}
+Sentence: {sentence}"""
+
+
+class FactQuestion(BaseModel):
+    """One question about a fact stated in a sentence."""
+
+    question: str
+    answer: str = Field(description="A few words, as stated in the sentence")
+
+
+WIKI_ANSWER_VERSION = "wans-v1"
+
+WIKI_ANSWER_SYSTEM = """You are a reference assistant. You answer questions only from the \
+encyclopedia passages provided with each question.
+
+Rules:
+- Use only what the passages say. Do not add facts from your own knowledge, even if you know them, \
+and even if you believe a passage is out of date.
+- If the passages do not contain the answer, say so plainly and set "found" to false. Do not guess.
+- Keep the answer short and direct: one or two sentences, giving the specific fact asked for.
+- List the letters of the passages your answer relies on."""
+
+WIKI_ANSWER_TEMPLATE = """Question: {question}
+
+Passages (most relevant first):
+{passages}"""
+
+
+ANSWER_CHANGE_VERSION = "ac-v1"
+
+ANSWER_CHANGE_SYSTEM = """You compare two answers to the same question, given by an assistant \
+working from two different versions of a reference archive. Decide whether they state the same fact.
+
+- same: both give the same fact (wording, rounding or format may differ, e.g. "2,217" and "2217", \
+"about 8,000" and "8,000").
+- different: both give an answer, and the facts differ (a different number, date, amount, ranking \
+or name), even slightly.
+- one_declined: one answer gives the fact and the other says the information is not available.
+- both_declined: neither gives the fact.
+
+Judge only whether the two answers agree; do not decide which one is true."""
+
+ANSWER_CHANGE_TEMPLATE = """Question: {question}
+
+Answer 1: {answer_1}
+
+Answer 2: {answer_2}"""
+
+
+class AnswerChange(BaseModel):
+    """Whether two answers to one question state the same fact."""
+
+    reason: str = Field(description="At most 25 words")
+    verdict: Literal["same", "different", "one_declined", "both_declined"]

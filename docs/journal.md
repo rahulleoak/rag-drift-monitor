@@ -16,6 +16,40 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-07 (late): answer hand labels; first-pass numbers lead
+- **Built:** scored the author's blind labels of 15 judged answers: 11/15
+  with the Opus answer judge on the first pass, 15/15 after re-reading the
+  rules (F20).
+- **Course correction:** both re-checks (this one and F19's) were
+  prompted by a reviewer from the same model family as the judge, and
+  every changed label moved toward the judge's grade. So the headline
+  numbers are now the independent ones: the first pass and the second
+  labeller (F19 relevance "answers or not": 14/15 and 11/15 vs 12/15
+  between the two people). The conclusions stand; the claims are weaker
+  and harder to attack.
+
+## 2026-11-07 (evening): Agent D built and run (F20); second labeller; outdated-answer test
+- **Built:** Agent D (D28): answers from both indexes, one judge call per
+  answer (switched from one per question after discussing order bias and
+  blindness with the author), segment classes and causes, the drift vs
+  loss correlation, the loop back to C for borderline segments (grades
+  ranks 6-10), and the Wikipedia outdated-answer test with a comparison
+  group of edits whose numbers did not change. An answer hand-label sheet
+  (15 items) and Part 4 of the labelling guide. 123 tests pass.
+- **Results:** F20: the stale index answers 0-1% of new-event questions
+  vs 96-100% refreshed; it declines instead of inventing (1 of 438 with an
+  outside detail); every segment with enough questions loses, flagged or
+  not, and drift scores do not predict the loss. A second labeller agrees
+  with the author 15/15 on "answers or not" (F19).
+- **Surprises:** Sonnet declined even when it clearly knew the answer
+  (the "Mean" Gene nickname), so the stale index fails silently rather
+  than wrongly. The loop never triggered: no segment was borderline.
+- **Interruptions:** the editor and browser closed mid-run; both batches
+  had been saved on submission, so the rerun collected them without
+  paying twice.
+- **Next:** F21 (the outdated-answer verdict), the answer hand labels,
+  then Agent E after the author approves its design.
+
 ## 2026-11-07: hand labels scored (F19); labelling guide for a second person
 - **Built:** scored the author's 50 blind labels (F19): relevance judge
   14/15 on "answers or not", never more lenient; all 10 kept questions

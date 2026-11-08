@@ -4,13 +4,16 @@ How the system is put together: the agents, what each one consumes and
 produces, and how data flows between them. Keep this file and its Mermaid
 diagram up to date whenever the agent design or data flow changes.
 
-**Status (2026-11-06):** Agents A, B and C run in LangGraph (A → B → route → C),
-with typed reports, tests and the Streamlit dashboard. Built: data cleaning,
-cached embeddings, stale and refreshed FAISS indexes saved to disk (D22),
-document and query drift (D11, D12, D24), the LLM layer (D15), the question
-set (D23) and retrieval evaluation (D25). Not built: Agents D and E, the
-alternative-model index, and the Wikipedia long-form set with chunking
-(D26, requested by the stakeholder). Items marked *(proposal Pn)* come from
+**Status (2026-11-07):** Agents A, B, C and D run in LangGraph
+(A → B → route → C → D, with the loop from D back to C), with typed
+reports, tests and the Streamlit dashboard. Built: data cleaning, cached
+embeddings, stale and refreshed FAISS indexes saved to disk (D22), document
+and query drift (D11, D12, D24), the LLM layer (D15), the question set
+(D23), retrieval evaluation (D25), answer quality and the segment classes
+(D28), the Wikipedia long-form set with chunking (D26), the changed-facts
+check (D27) and the outdated-answer test (D28; run as scripts on the
+Wikipedia set, not yet as graph nodes). Not built: Agent E and the
+alternative-model index. Items marked *(proposal Pn)* come from
 `docs/questions.md` Part 4 (D5); items marked *(D7)* were added after
 checking the design against every requirement (`docs/requirements-coverage.md`).
 
@@ -53,8 +56,9 @@ flowchart TD
         WK[("Wikipedia long-form articles at year-end snapshots")]
         WK --> CH["Section-aware chunking"]
         HP --> QGEN["LLM question writer + reviewer: question set (historical + recent)"]
-        CH --> QGEN
     end
+    CH --> FACTS["Changed-facts check (D27)"]
+    FACTS --> OAT["Outdated-answer test: old vs new version answers (D28)"]
 
     HP --> EMB["Embeddings, bge-small (disk cache)"]
     CH --> EMB
@@ -74,18 +78,17 @@ flowchart TD
     STALE --> C
     FRESH --> C
     ALT --> C
-    C -->|"RetrievalReport"| G2{"Full impact run?"}
-    G2 -->|"yes"| D["D. RAG Impact Assessment"]
-    G2 -->|"regression check only"| E["E. Recommendation"]
+    C -->|"RetrievalReport"| D["D. RAG Impact Assessment"]
     B -->|"drift scores"| D
-    D -->|"borderline: more questions (max 1 loop)"| C
-    D -->|"ImpactReport"| E
+    OAT -->|"does a changed fact change the answer?"| D
+    D -->|"borderline: grade ranks 6-10, answer from the top 10 (max 1 loop)"| C
+    D -->|"ImpactReport"| E["E. Recommendation"]
     E -->|"re-index or model evaluation, then re-check (max 1 loop)"| C
     E -->|"recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
     OUT --> UI["Streamlit dashboard"]
 
     classDef planned stroke-dasharray: 6 4
-    class ALT,G2,D,E planned
+    class ALT,E planned
 ```
 
 Solid boxes are built and tested; dashed boxes are designed, not built yet.
@@ -97,7 +100,7 @@ Solid boxes are built and tested; dashed boxes are designed, not built yet.
 | **A. Data Monitoring** | Period document batches, query stream | Fixes the baseline snapshot. Tracks volume, text length, category mix (chi-square), new-term rate, empty descriptions. Merges renamed sections (`categories.normalise`) and reports sections new since the baseline (e.g. U.S. NEWS) as a structural change, not drift (D6). Marks period × category segments with enough data. Summarises the query stream the same way (volume, new-term rate) *(D7)*. | `MonitoringReport` (B) |
 | **B. Semantic Drift Detection** | `MonitoringReport`, embeddings | Technique 1: MMD + permutation test, per-document novelty, centroid shift, dispersion *(P3)*. Technique 2: Jensen–Shannon divergence and log-odds emerging terms. Each period is compared with the baseline and with the previous period *(P1)*, both as a whole and within each category, so a change in topic mix is not mistaken for a change in meaning (F2, D6). Benjamini–Hochberg correction; severity bands calibrated on within-baseline drift *(P7)*; lexical × semantic drift type *(P2)*. Also: the same techniques on the **query stream** (query drift) *(D7)*; **term-context shift** for key terms (how far the meaning of articles containing a term moves, and its neighbouring words before and after) *(D7)*; **emerging topics** by clustering each period's most novel articles, labelled with their top terms *(D7)*. LLM explains flagged segments from the numbers and examples. | `DriftReport`: per-segment scores, p-values, severity, examples, drifted + control segments (C, D, E) |
 | **C. Retrieval Evaluation** | `DriftReport`, golden eval set, both indexes | Saves each FAISS index to disk with a manifest and reloads it when the embeddings are unchanged (D22). Selects questions from drifted and control segments. Known-item MRR and Recall@K; LLM-judged Precision@K and nDCG@K over pooled results of both indexes. Per-segment deltas with bootstrap CIs; worst queries with what was retrieved. **Ranking change** between stale and refreshed for baseline questions: top-K overlap, share of newer articles, and whether the source article was displaced *(D7, D25)*. The judge grades the pooled top 5 of both indexes in one blind, shuffled call per question *(D25)*. Runs historical and recent questions separately *(D7)*. When E triggers model evaluation, re-runs the affected segments with the alternative embedding model *(D7)*. | `RetrievalReport` (D) |
-| **D. RAG Impact Assessment** | `RetrievalReport`, `DriftReport` | Generates answers from both indexes; LLM judges correctness, groundedness, relevance. Quality deltas with CIs. Relates each drift signal to quality loss across segments. Classifies each segment: drift that hurts / drift that does not / quality loss without drift / healthy. Compares historical vs recent questions: historical questions are the control and should score about the same on both indexes *(D7)*. | `ImpactReport` (E); may send C back for more queries once |
+| **D. RAG Impact Assessment** | `RetrievalReport` (top 5 per index, relevance grades), `DriftReport` | Sonnet answers every question from the stale and the refreshed top 5, only from those articles; Opus grades each answer on its own (correct 0/1/2, grounded, declined), not told the index *(D28)*. Code: loss in correct answers per segment with a bootstrap interval; material if at least 10 points and the interval excludes zero (fixed before results); the four classes and a likely cause (D13); Spearman of each drift measure vs the loss; whether declines were right (from C's grades); unanswerable questions. Historical questions are the control *(D7)*. A borderline segment goes back to C once: C grades ranks 6-10, D answers from the top 10 and concludes (confirmed / answers just outside the top 5 / escalate). On Wikipedia, the outdated-answer test checks whether flagged changed facts change answers, against edits whose numbers did not change *(D27, D28)*. | `ImpactReport` (E) |
 | **E. Recommendation** | `ImpactReport` + B and C evidence | `policy.py` rules map evidence patterns to actions, one rule per action in the brief (see D7 for the triggers); LLM writes the explanation; a check rejects any recommendation without cited evidence. **Trigger model evaluation** is carried out, not just recommended: it sends C back to test the alternative model, and the result becomes evidence *(D7)*. | List of `Recommendation` (dashboard) |
 
 **Why these dependencies are real:** C cannot choose what to test without B's

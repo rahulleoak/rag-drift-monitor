@@ -153,9 +153,9 @@ a measurement, not an opinion.
 - **The LLM never makes the final decision.** It writes questions, answers,
   judgements and explanations; statistics and decisions live in tested
   Python. Auditable and repeatable, which is what an enterprise needs.
-- ❓ Whether this matches the reviewers' idea of "agentic" is stakeholder
-  question 2. A possible extension: the LLM *proposes* what to investigate,
-  code *tests* it.
+- ✅ Confirmed by the stakeholder (Ani, 2026-11-06): this split "fits ...
+  the right split". A possible extension: the LLM *proposes* what to
+  investigate, code *tests* it (parked).
 
 ## 7. Detecting drift: two complementary techniques (🔨)
 

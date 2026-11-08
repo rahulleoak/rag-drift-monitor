@@ -132,7 +132,7 @@ dashboard), as agreed with the author on 2026-11-08.**
 
 | Criterion | How it is met | Status |
 |---|---|---|
-| Working agentic system, not independent prompts | Agents depend on each other's reports; routing decided in code; two loops back to C (borderline impact, model evaluation) | Designed. Open: stakeholder question 2 on what counts as "agentic" |
+| Working agentic system, not independent prompts | Agents depend on each other's reports; routing decided in code; two loops back to C (borderline impact, model evaluation) | Built: A -> B -> C -> D (loop to C) -> E. The split (decisions in code, LLM for generation, judging and explanation) confirmed by the stakeholder, 2026-11-06 |
 | Meaningful collaboration between agents | Each agent's input is the previous agent's report (architecture §3) | Designed |
 | Quantifiable and explainable drift detection | Numbers, significance tests and examples for every claim | Designed |
 | Measurable retrieval and answer quality | Retrieval metrics and judged answer quality, with confidence intervals | Designed |

@@ -329,9 +329,10 @@ date and reason, and add a new entry that supersedes it.
   and 4.
 - **Not adopted yet:** letting the LLM propose what to investigate (for
   example, which terms to test) while code tests it. This would make the
-  agents more visibly "agentic" without letting the LLM decide. It waits
-  for the stakeholder answer on what counts as agentic (questions.md,
-  stakeholder question 2).
+  agents more visibly "agentic" without letting the LLM decide. The
+  stakeholder has since confirmed the current split fits (2026-11-06,
+  questions.md), so this stays an optional extension (parked list in
+  `docs/requirements-coverage.md`).
 - **Correction:** questions.md Part 3, item 6 had paraphrased the requirement
   as "trigger model retraining", which dropped "evaluation"; it is now
   marked Revised.

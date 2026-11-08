@@ -4,16 +4,17 @@ How the system is put together: the agents, what each one consumes and
 produces, and how data flows between them. Keep this file and its Mermaid
 diagram up to date whenever the agent design or data flow changes.
 
-**Status (2026-11-07):** Agents A, B, C and D run in LangGraph
-(A → B → route → C → D, with the loop from D back to C), with typed
+**Status (2026-11-07, late):** all five agents run in LangGraph
+(A → B → route → C → D → E, with the loop from D back to C), with typed
 reports, tests and the Streamlit dashboard. Built: data cleaning, cached
 embeddings, stale and refreshed FAISS indexes saved to disk (D22), document
 and query drift (D11, D12, D24), the LLM layer (D15), the question set
 (D23), retrieval evaluation (D25), answer quality and the segment classes
 (D28), the Wikipedia long-form set with chunking (D26), the changed-facts
 check (D27) and the outdated-answer test (D28; run as scripts on the
-Wikipedia set, not yet as graph nodes). Not built: Agent E and the
-alternative-model index. Items marked *(proposal Pn)* come from
+Wikipedia set, not yet as graph nodes; Agent E reads their results) and
+Agent E's rules (D29). Not built: the alternative-model index (no section
+needs it, D29). Items marked *(proposal Pn)* come from
 `docs/questions.md` Part 4 (D5); items marked *(D7)* were added after
 checking the design against every requirement (`docs/requirements-coverage.md`).
 
@@ -59,6 +60,7 @@ flowchart TD
     end
     CH --> FACTS["Changed-facts check (D27)"]
     FACTS --> OAT["Outdated-answer test: old vs new version answers (D28)"]
+    LABELS[("Blind hand labels (F19, F20)")]
 
     HP --> EMB["Embeddings, bge-small (disk cache)"]
     CH --> EMB
@@ -82,13 +84,18 @@ flowchart TD
     B -->|"drift scores"| D
     OAT -->|"does a changed fact change the answer?"| D
     D -->|"borderline: grade ranks 6-10, answer from the top 10 (max 1 loop)"| C
-    D -->|"ImpactReport"| E["E. Recommendation"]
-    E -->|"re-index or model evaluation, then re-check (max 1 loop)"| C
+    D -->|"ImpactReport"| E["E. Recommendation: rules decide, LLM explains (number-checked)"]
+    B -->|"drift scores"| E
+    C -->|"retrieval evidence"| E
+    OAT -->|"changed facts change answers"| E
+    CH -->|"chunking experiment"| E
+    LABELS -->|"judge agreement"| E
+    E -.->|"model evaluation: only if a section stays poor after re-indexing (not needed so far)"| C
     E -->|"recommendations + evidence"| OUT[("runs/run_id: reports and charts")]
     OUT --> UI["Streamlit dashboard"]
 
     classDef planned stroke-dasharray: 6 4
-    class ALT,E planned
+    class ALT planned
 ```
 
 Solid boxes are built and tested; dashed boxes are designed, not built yet.
@@ -101,7 +108,7 @@ Solid boxes are built and tested; dashed boxes are designed, not built yet.
 | **B. Semantic Drift Detection** | `MonitoringReport`, embeddings | Technique 1: MMD + permutation test, per-document novelty, centroid shift, dispersion *(P3)*. Technique 2: Jensen–Shannon divergence and log-odds emerging terms. Each period is compared with the baseline and with the previous period *(P1)*, both as a whole and within each category, so a change in topic mix is not mistaken for a change in meaning (F2, D6). Benjamini–Hochberg correction; severity bands calibrated on within-baseline drift *(P7)*; lexical × semantic drift type *(P2)*. Also: the same techniques on the **query stream** (query drift) *(D7)*; **term-context shift** for key terms (how far the meaning of articles containing a term moves, and its neighbouring words before and after) *(D7)*; **emerging topics** by clustering each period's most novel articles, labelled with their top terms *(D7)*. LLM explains flagged segments from the numbers and examples. | `DriftReport`: per-segment scores, p-values, severity, examples, drifted + control segments (C, D, E) |
 | **C. Retrieval Evaluation** | `DriftReport`, golden eval set, both indexes | Saves each FAISS index to disk with a manifest and reloads it when the embeddings are unchanged (D22). Selects questions from drifted and control segments. Known-item MRR and Recall@K; LLM-judged Precision@K and nDCG@K over pooled results of both indexes. Per-segment deltas with bootstrap CIs; worst queries with what was retrieved. **Ranking change** between stale and refreshed for baseline questions: top-K overlap, share of newer articles, and whether the source article was displaced *(D7, D25)*. The judge grades the pooled top 5 of both indexes in one blind, shuffled call per question *(D25)*. Runs historical and recent questions separately *(D7)*. When E triggers model evaluation, re-runs the affected segments with the alternative embedding model *(D7)*. | `RetrievalReport` (D) |
 | **D. RAG Impact Assessment** | `RetrievalReport` (top 5 per index, relevance grades), `DriftReport` | Sonnet answers every question from the stale and the refreshed top 5, only from those articles; Opus grades each answer on its own (correct 0/1/2, grounded, declined), not told the index *(D28)*. Code: loss in correct answers per segment with a bootstrap interval; material if at least 10 points and the interval excludes zero (fixed before results); the four classes and a likely cause (D13); Spearman of each drift measure vs the loss; whether declines were right (from C's grades); unanswerable questions. Historical questions are the control *(D7)*. A borderline segment goes back to C once: C grades ranks 6-10, D answers from the top 10 and concludes (confirmed / answers just outside the top 5 / escalate). On Wikipedia, the outdated-answer test checks whether flagged changed facts change answers, against edits whose numbers did not change *(D27, D28)*. | `ImpactReport` (E) |
-| **E. Recommendation** | `ImpactReport` + B and C evidence | `policy.py` rules map evidence patterns to actions, one rule per action in the brief (see D7 for the triggers); LLM writes the explanation; a check rejects any recommendation without cited evidence. **Trigger model evaluation** is carried out, not just recommended: it sends C back to test the alternative model, and the result becomes evidence *(D7)*. | List of `Recommendation` (dashboard) |
+| **E. Recommendation** | `ImpactReport`, `RetrievalReport`, `DriftReport`, `MonitoringReport`; long-form results (changed facts, outdated-answer test, chunking) and hand-label checks (`driftmon/evidence.py`) | `policy.py`: one rule per action in the brief (re-index; re-index specific documents; chunking; retrieval settings; prompts; model evaluation; retraining; escalate; continue monitoring). Every rule reports: recommended with evidence, not needed with the number that ruled it out, or not checked if an input is missing. A recommendation without evidence with numbers is rejected. Sonnet explains each recommended action from its evidence only; code rejects any number not in the evidence, retries once, else keeps the rule's text *(D29)*. Model evaluation would send C back to test a second embedding model *(D7)*; not built, because no section stays poor after re-indexing. | `RecommendationReport` → `recommendations.json`, `recommendations.md` (dashboard) |
 
 **Why these dependencies are real:** C cannot choose what to test without B's
 ranked segments; D reuses C's retrieved contexts and needs B's scores to relate
@@ -110,13 +117,15 @@ agent breaks the next one.
 
 **Conditional edges** (decided in Python, in `graph.py`):
 - After B: if no segment drifted significantly, C runs only a small regression
-  check and the flow skips D. The check still catches quality loss that
-  happens without measurable drift.
+  check (a small question set); D and E still run on it. The check still
+  catches quality loss that happens without measurable drift.
 - After D: if a segment's impact estimate is borderline (its confidence
   interval straddles the threshold), go back to C once for more questions.
-- After E: if quality is still poor on the refreshed index (re-indexing does
-  not fix it), go back to C once to evaluate the alternative embedding model on
-  the affected segments, then re-run E with that evidence *(D7)*.
+- After E (designed, not built, D29): if quality is still poor on the
+  refreshed index (re-indexing does not fix it), go back to C once to evaluate
+  the alternative embedding model on the affected segments, then re-run E
+  with that evidence *(D7)*. E's model-evaluation rule reports "not needed"
+  on our data, with the number.
 
 ## 4. Data flow and storage
 

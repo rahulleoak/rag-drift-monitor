@@ -163,6 +163,7 @@ llm:
     fact_questions:  {effort: low, max_tokens: 2000, expected_output: 300}
     wiki_answers:    {effort: low, max_tokens: 2000, expected_output: 400}
     answer_change:   {effort: low, max_tokens: 2000, expected_output: 300}
+    explanations:    {effort: low, max_tokens: 2000, expected_output: 300}
 
 # D26: long-form documents where chunking applies (stakeholder request, 2026-11-06).
 # Wikipedia articles captured at the last revision before the end of each period
@@ -241,3 +242,17 @@ impact:
   retrieval_ok: 0.6              # top k holds an answer for at least this share -> retrieval is not the problem
   bootstrap_resamples: 2000
   max_evidence_loops: 1          # how many times Impact may ask Retrieval Eval for more queries
+
+# D29: Agent E. One rule per action in the brief; the LLM only explains.
+recommendation:
+  explain: true                  # Sonnet writes a short explanation per recommended action (number-checked)
+  min_text_beyond_model: 0.5     # chunking matters when at least half of a typical document is past the model's limit
+  min_chunking_gain: 0.1         # chunks must follow real edits this much better (Spearman) than the first 512 tokens
+  max_hallucinated: 0.05         # answers with claims not in the articles: above this share, revise the prompt
+  min_judge_agreement: 0.7       # judge vs blind hand labels below this -> a human checks the judge (two people agreed 0.8, F19)
+  longform_dir: runs/longform    # changed facts, outdated-answer test, chunking experiment (scripts/longform_drift.py, outdated_answers.py)
+  # Blind hand labels vs the LLM (F19, F20). First passes only: they are independent of the judge.
+  label_checks:
+    - {file: runs/labels/agreement_first_pass.csv, who: "author (first pass)"}
+    - {file: runs/labels/agreement_second.csv, who: "second labeller"}
+    - {file: runs/labels/answers/agreement_sheet_first_pass.csv, who: "author (first pass)"}

@@ -5,8 +5,8 @@ agents read it. Keeping them here makes the dependencies between agents
 explicit and testable. Tables are stored as lists of plain records so every
 report can be saved as JSON.
 
-Built so far: MonitoringReport (A), SegmentDrift and DriftReport (B),
-RetrievalReport (C), ImpactReport (D). Planned: Recommendation (E).
+MonitoringReport (A), SegmentDrift and DriftReport (B), RetrievalReport (C),
+ImpactReport (D), Recommendation and RecommendationReport (E).
 """
 from __future__ import annotations
 
@@ -120,6 +120,43 @@ class ImpactReport(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+Status = Literal["recommended", "not needed", "not checked", "rejected"]
+
+
+class EvidenceItem(BaseModel):
+    """One piece of evidence: where it comes from, and what it shows (with numbers)."""
+
+    source: str        # the agent report or finding, e.g. "Agent D: answers by period"
+    claim: str         # one sentence with the numbers
+
+
+class Recommendation(BaseModel):
+    """Agent E: one action from the brief, decided by a rule (D29)."""
+
+    action: str                                  # the brief's wording
+    key: str                                     # stable id, e.g. "reindex"
+    status: Status
+    rule: str                                    # when the rule fires, in words
+    finding: str                                 # what the rule concluded, written by code
+    scope: list[str] = Field(default_factory=list)       # sections or documents it applies to
+    priority: int = 0                            # 1 = first; 0 = not recommended
+    evidence: list[EvidenceItem] = Field(default_factory=list)
+    explanation: str = ""                        # LLM-written (number-checked), or the finding
+    explanation_check: str = ""                  # how the explanation was produced and checked
+
+
+class RecommendationReport(BaseModel):
+    """Agent E: every action considered, recommended ones first."""
+
+    recommendations: list[Recommendation]
+    summary: dict[str, int] = Field(default_factory=dict)   # count per status
+    explanations: dict[str, Any] = Field(default_factory=dict)   # requests, rejected drafts, cost
+    notes: list[str] = Field(default_factory=list)
+
+    def recommended(self) -> list[Recommendation]:
+        return [r for r in self.recommendations if r.status == "recommended"]
+
+
 class PipelineState(TypedDict, total=False):
     """The LangGraph state. Inputs first, then one report per agent."""
 
@@ -142,3 +179,6 @@ class PipelineState(TypedDict, total=False):
     impact_sample: int | None         # pilot: answer only this many questions (None = all)
     deepen: list[str]                 # segments D sent back to C for more evidence (the loop)
     evidence_loops: int               # how many times D has asked C for more evidence
+    longform: dict[str, Any]          # long-form evidence for E: changed facts, outdated test, chunking
+    label_checks: Any                 # pandas DataFrame: blind hand labels vs the LLM (F19, F20), or None
+    recommendations: RecommendationReport

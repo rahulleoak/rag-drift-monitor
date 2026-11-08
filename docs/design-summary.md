@@ -31,7 +31,7 @@ explanations, but never makes the decision.
 | *Route* | If nothing drifted, C runs a small regression check only | Built |
 | **C. Retrieval Evaluation** | The key experiment: a **stale index** (baseline only) vs a **refreshed index** (with new data), on the same questions. LLM-judged precision@5, nDCG@5 and "answer in the top 5", plus MRR and Recall@10, with bootstrap confidence intervals. Results split by drifted vs control sections, and by whether old questions get pushed out by newer articles | Built and run |
 | **D. RAG Impact** | Answers every question from both indexes; each answer graded on its own for correctness and groundedness, blind to the index. Loss per section with a confidence interval; labels each section as drift that hurts / drift that doesn't / harm without drift / healthy; relates drift scores to the loss. Borderline sections go back to C once for more evidence. On Wikipedia, tests whether changed facts change the answers | Built and run |
-| **E. Recommendation** | Rules map evidence to the brief's actions (monitor, re-index, re-index specific documents, chunking, retrieval settings, prompts, model evaluation, human review). Every recommendation must cite its evidence or it is rejected | Next |
+| **E. Recommendation** | Rules map evidence to the brief's actions (monitor, re-index, re-index specific documents, chunking, retrieval settings, prompts, model evaluation, human review). Every recommendation must cite its evidence or it is rejected; the LLM explains, and any number not in the evidence is rejected | Built and run |
 
 Dashboard: Streamlit, reading saved runs, so it works without an API key.
 
@@ -75,7 +75,7 @@ flowchart TD
     OUT --> UI["Streamlit dashboard"]
 
     classDef planned stroke-dasharray: 6 4
-    class ALT,E planned
+    class ALT planned
 ```
 
 Solid boxes are built and tested; dashed boxes are designed, not built yet.
@@ -186,8 +186,9 @@ changed facts.
   (92%), so it serves the outdated fact with full confidence, e.g.
   German tourism's GDP contribution "over EUR43.2 billion" vs "over
   €105.3 billion".
-- **Act:** Agent E will recommend re-indexing the documents with changed
-  facts, citing the sentences.
+- **Act:** Agent E recommends re-indexing the 90 articles with changed
+  facts (391 changed numbers or dates since the index was built), citing
+  the sentences and the 50% vs 2% result.
 
 ## 7. Main assumptions and limitations
 

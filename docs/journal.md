@@ -16,6 +16,29 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-07 (night): Agent E built (D29, F22); all five agents in the graph
+- **Built:** `driftmon/policy.py` (one rule per action in the brief; every
+  rule reports recommended / not needed / not checked, with evidence),
+  `driftmon/evidence.py` (long-form results and hand-label checks for E),
+  the Agent E node with Sonnet explanations and a number check (a number not
+  in the evidence is rejected; one retry; then the rule's own text),
+  `recommendations.json` and a readable `recommendations.md`, and
+  `scripts/recommend.py` to re-run E alone on a saved run. Graph: A -> B ->
+  C -> D -> E. 142 tests pass.
+- **Results (F22):** five recommended (scheduled re-index; re-index the 90
+  articles with changed facts; escalate 12 sections; chunking for long
+  documents; keep monitoring old questions), four not needed, each with the
+  number that ruled it out. All five explanations passed the number check
+  first time; $0.02.
+- **Surprise:** 4 of the 12 "harm without drift" sections are U.S. NEWS, a
+  section absent from the baseline, so drift detection never scored it.
+  F20 now says so, and E's escalation gives a separate lesson for it.
+- **Housekeeping:** the second labeller's files renamed so no name appears
+  in the docs; the author's first-pass answer labels saved as their own file
+  (11/15 reproducible).
+- **Next:** the dashboard's Impact and Recommendations tabs, with saved
+  results so it runs without an API key; then the README.
+
 ## 2026-11-07 (late): answer hand labels; first-pass numbers lead
 - **Built:** scored the author's blind labels of 15 judged answers: 11/15
   with the Opus answer judge on the first pass, 15/15 after re-reading the

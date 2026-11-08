@@ -39,7 +39,17 @@ minimum, added before stopping. Plain language.
 - **Agreed with the author:** the set-aside items are listed in one place
   (`docs/requirements-coverage.md`, "Extensions") to revisit together once
   the pipeline and dashboard both work, which they now do.
-- **Next:** the README, then the parked list with the author.
+- **README:** written as the front door: the short version with the
+  headline numbers, a quick start that needs no key or data (the demo run
+  and the tests), how the agents and the judges work, key results with
+  finding numbers, a step-by-step from-scratch reproduction with costs, the
+  layout, configuration, technology choices, limitations, a documentation
+  map and a glossary. Rendered and checked; every link resolves.
+- **Inconsistency found:** the design summary and presentation quote 2020 as
+  "5.7x an ordinary year" (F4's 2017-vs-2016 yardstick), while the pipeline
+  and dashboard report 2.5x (Agent B's within-baseline yardstick, D11). Same
+  pattern, different scale; the README uses the pipeline's numbers.
+- **Next:** the fresh-clone check, then the parked list with the author.
 
 ## 2026-11-07 (night): Agent E built (D29, F22); all five agents in the graph
 - **Built:** `driftmon/policy.py` (one rule per action in the brief; every

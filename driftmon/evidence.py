@@ -67,3 +67,23 @@ def load_label_checks(cfg: Mapping[str, Any]) -> pd.DataFrame | None:
         if path.exists():
             rows.append(pd.read_csv(path).assign(who=item["who"], file=item["file"]))
     return pd.concat(rows, ignore_index=True) if rows else None
+
+
+SNAPSHOT_FILES = ("outdated_summary.csv", "outdated_items.csv", "outdated_verdict.json", "chunking_eval.csv",
+                  "summary.csv", "fact_changes_summary.csv")
+
+
+def save_longform_snapshot(cfg: Mapping[str, Any], dest) -> list[str]:
+    """Copy the small long-form result files Agent E used into ``dest`` (a run's
+    ``longform/`` folder), so a saved run is self-contained for the dashboard."""
+    import shutil
+    from pathlib import Path
+    src = resolve_path(cfg["recommendation"]["longform_dir"])
+    dest = Path(dest)
+    copied = []
+    for name in SNAPSHOT_FILES:
+        if (src / name).exists():
+            dest.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src / name, dest / name)
+            copied.append(name)
+    return copied

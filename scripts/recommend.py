@@ -5,6 +5,7 @@ impact.json), the long-form evidence and the hand-label checks, runs Agent E
 and writes, into the same run folder:
     recommendations.json   the RecommendationReport
     recommendations.md     a readable version
+    longform/              a copy of the long-form results it read (for the dashboard)
 
 The full pipeline (``scripts/run_pipeline.py``) runs Agent E too; this script
 re-runs only E, for example after a rule or the long-form evidence changes.
@@ -12,7 +13,7 @@ re-runs only E, for example after a rule or the long-form evidence changes.
 Usage (from the repository root):
     python scripts/recommend.py                       # the latest run, with LLM explanations
     python scripts/recommend.py --run runs/20261107-143926
-    python scripts/recommend.py --no-llm              # rule text only, no LLM calls
+    python scripts/recommend.py --no-llm              # rule text only, no LLM calls; prints, saves nothing
 """
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ if __package__ in (None, ""):  # allow `python scripts/recommend.py` without ins
 
 from driftmon.agents.recommendation import recommendation, to_markdown  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.evidence import load_label_checks, load_longform  # noqa: E402
+from driftmon.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
 from driftmon.llm import LLMClient  # noqa: E402
 from driftmon.schemas import DriftReport, ImpactReport, MonitoringReport, RetrievalReport  # noqa: E402
 
@@ -60,7 +61,8 @@ def main(argv: list[str] | None = None) -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--run", type=Path, help="run folder (default: the latest with impact.json)")
-    parser.add_argument("--no-llm", action="store_true", help="no explanations from the LLM")
+    parser.add_argument("--no-llm", action="store_true",
+                        help="no explanations from the LLM; print only (keeps the saved report)")
     args = parser.parse_args(argv)
     config = load_config()
     run = resolve_path(args.run) if args.run else latest_run(resolve_path(config["paths"]["runs"]))
@@ -70,9 +72,13 @@ def main(argv: list[str] | None = None) -> int:
                                  ledger=resolve_path(config["paths"]["runs"]) / "llm_costs.csv",
                                  log=lambda m: print(m, flush=True))
     report = recommendation(state)["recommendations"]
-    save(report, run)
     print(to_markdown(report))
     print(f"Explanations: {report.explanations}")
+    if args.no_llm:
+        print("Rule text only: nothing saved (the run's saved report is unchanged).")
+        return 0
+    save(report, run)
+    save_longform_snapshot(config, run / "longform")
     print(f"Saved recommendations.json and recommendations.md in {run}")
     return 0
 

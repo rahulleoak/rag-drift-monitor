@@ -12,6 +12,7 @@ paths:
   data_sample: data/sample
   cache: cache          # embeddings and LLM responses
   runs: runs            # one folder per pipeline run: reports and charts
+  demo_runs: demo/runs  # a committed copy of one run, so the dashboard works without a key (scripts/export_demo.py)
   indexes: indexes      # FAISS indexes with a manifest, saved by Agent C (D22)
 
 # Candidate datasets. Both are explored before one is chosen (Q1).

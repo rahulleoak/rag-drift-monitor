@@ -16,6 +16,31 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-08: dashboard complete; works without a key
+- **Built:** the Impact tab (answers stale vs refreshed by year; each section's
+  drift score against its drop in correct answers; the Wikipedia
+  outdated-answer bars with intervals; examples) and the Recommendations tab
+  (each action's explanation, scope and evidence; the actions ruled out with
+  their reason). Overview shows the answer headline and the top
+  recommendation. Each run now saves the long-form evidence E read
+  (`runs/<run>/longform/`); `scripts/export_demo.py` copies one run (about
+  1 MB) to the committed `demo/runs/`, which the dashboard uses when there
+  are no local runs. 145 tests pass, including the demo rendering on every
+  tab.
+- **Checked by eye:** every tab screenshotted in headless Edge. Fixed: the
+  stale-vs-refreshed chart dropped every other year label (too short); the
+  Wikipedia bars overlapped; cost tiles said $0.00 without saying that
+  cached replies are free; a 0.3% rate showed as 0%; the "not recommended"
+  table cut off its reasons (now a list).
+- **Fixed on the way:** `.gitignore`'s `runs/` also ignored `demo/runs/`
+  (now `/runs/`); `recommend.py --no-llm` had overwritten a run's LLM
+  explanations (restored from the cache at no cost; `--no-llm` now prints
+  only).
+- **Agreed with the author:** the set-aside items are listed in one place
+  (`docs/requirements-coverage.md`, "Extensions") to revisit together once
+  the pipeline and dashboard both work, which they now do.
+- **Next:** the README, then the parked list with the author.
+
 ## 2026-11-07 (night): Agent E built (D29, F22); all five agents in the graph
 - **Built:** `driftmon/policy.py` (one rule per action in the brief; every
   rule reports recommended / not needed / not checked, with evidence),

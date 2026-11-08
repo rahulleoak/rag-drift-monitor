@@ -2,16 +2,20 @@
 
 The dashboard only reads what ``scripts/run_pipeline.py`` and
 ``scripts/make_charts.py`` saved under ``runs/<run_id>/``, so a demo cannot
-fail on a live model call (Q16).
+fail on a live model call (Q16). A copy of one run is committed under
+``demo/runs/`` (``scripts/export_demo.py``), so the dashboard works straight
+after cloning, without an API key or a rerun.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
-from driftmon.schemas import DriftReport, MonitoringReport, RetrievalReport
+from driftmon.schemas import DriftReport, ImpactReport, MonitoringReport, RecommendationReport, RetrievalReport
 
 RUN_PATTERN = "[0-9]*-[0-9]*"
 
@@ -38,6 +42,9 @@ class Run:
     correlations: pd.DataFrame
     charts: dict[str, Path] = field(default_factory=dict)
     retrieval: RetrievalReport | None = None   # Agent C, if the run included it
+    impact: ImpactReport | None = None         # Agent D
+    recommendations: RecommendationReport | None = None  # Agent E
+    longform: dict[str, Any] = field(default_factory=dict)  # the long-form evidence E used (run/longform/)
 
     @property
     def baseline(self) -> str:
@@ -71,7 +78,10 @@ def load_run(runs_dir: Path, run_id: str) -> Run:
     if (path / "charts").exists():
         charts = {p.relative_to(path / "charts").with_suffix("").as_posix(): p
                   for p in sorted((path / "charts").rglob("*.png"))}
-    return Run(run_id=run_id, path=path, monitoring=mon, drift=drift,
+    impact = _model(path / "impact.json", ImpactReport)
+    recs = _model(path / "recommendations.json", RecommendationReport)
+    return Run(run_id=run_id, path=path, monitoring=mon, drift=drift, impact=impact, recommendations=recs,
+               longform=load_longform_snapshot(path / "longform"),
                next_step=route.read_text(encoding="utf-8").strip() if route.exists() else "unknown",
                whole=whole, segments=segs, topics=pd.DataFrame(drift.topics),
                term_shifts=pd.DataFrame(drift.term_shifts),
@@ -79,18 +89,69 @@ def load_run(runs_dir: Path, run_id: str) -> Run:
                charts=charts, retrieval=retrieval)
 
 
+def _model(path: Path, model):
+    return model.model_validate_json(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+LONGFORM_FILES = {"outdated_summary": "outdated_summary.csv", "outdated_items": "outdated_items.csv",
+                  "chunking_eval": "chunking_eval.csv", "longform_summary": "summary.csv",
+                  "fact_summary": "fact_changes_summary.csv"}
+
+
+def load_longform_snapshot(folder: Path) -> dict[str, Any]:
+    """The long-form evidence saved with a run (empty if the run has none)."""
+    out: dict[str, Any] = {}
+    for key, name in LONGFORM_FILES.items():
+        if (folder / name).exists():
+            out[key] = pd.read_csv(folder / name)
+    if (folder / "outdated_verdict.json").exists():
+        out["outdated_verdict"] = json.loads((folder / "outdated_verdict.json").read_text(encoding="utf-8"))
+    return out
+
+
+STALE, REFRESHED = "Stale index (2016-17 only)", "Refreshed index"
+
+
+def _long(rows: list[dict[str, Any]], stale: str, refreshed: str, delta: str | None,
+          low: str | None = None, high: str | None = None) -> pd.DataFrame:
+    out = []
+    for r in rows:
+        for side, label in ((stale, STALE), (refreshed, REFRESHED)):
+            row = {"period": str(r["period"]), "index": label, "value": r[side], "questions": r["questions"]}
+            if delta:
+                row.update(delta=r[delta], delta_low=r[low or f"{delta}_low"], delta_high=r[high or f"{delta}_high"])
+            out.append(row)
+    return pd.DataFrame(out)
+
+
 def stale_vs_refreshed(run: Run, measure: str = "answer") -> pd.DataFrame:
-    """Long table for the stale-vs-refreshed chart: one row per period and index."""
+    """Long table for the retrieval stale-vs-refreshed chart: one row per period and index."""
     if run.retrieval is None or not run.retrieval.judged_by_period:
         return pd.DataFrame(columns=["period", "index", "value", "questions"])
-    t = pd.DataFrame(run.retrieval.judged_by_period)
-    rows = []
-    for r in t.to_dict("records"):
-        for side, label in (("stale", "Stale index (2016-17 only)"), ("refreshed", "Refreshed index")):
-            rows.append({"period": str(r["period"]), "index": label, "value": r[f"{side}_{measure}"],
-                         "questions": r["questions"], "delta": r[f"delta_{measure}"],
-                         "delta_low": r[f"delta_{measure}_low"], "delta_high": r[f"delta_{measure}_high"]})
-    return pd.DataFrame(rows)
+    return _long(run.retrieval.judged_by_period, f"stale_{measure}", f"refreshed_{measure}", f"delta_{measure}")
+
+
+def answers_stale_vs_refreshed(run: Run) -> pd.DataFrame:
+    """Long table for the answer chart: share answered correctly, per period and index.
+    The delta is refreshed minus stale (Agent D reports the loss, the same number)."""
+    if run.impact is None or not run.impact.by_period:
+        return pd.DataFrame(columns=["period", "index", "value", "questions"])
+    return _long(run.impact.by_period, "stale_correct", "refreshed_correct", "loss_correct", "loss_low",
+                 "loss_high")
+
+
+def harm_vs_drift(run: Run) -> pd.DataFrame:
+    """Classified sections with their drift score: does more drift mean more harm?
+    Sections drift detection could not score (e.g. new since the baseline) have no score."""
+    if run.impact is None or not run.impact.segments:
+        return pd.DataFrame()
+    seg = pd.DataFrame(run.impact.segments)
+    seg = seg[~seg["class"].isin(["too few questions", "historical control"])].copy()
+    scores = run.segments.set_index("segment_id") if len(run.segments) else pd.DataFrame()
+    for col in ("times_ordinary_embedding", "times_ordinary_lexical", "severity"):
+        seg[col] = seg["segment_id"].map(scores[col]) if col in scores else None
+    seg["section"] = seg["period"].astype(str) + " " + seg["category"]
+    return seg.sort_values(["class", "period", "category"])
 
 
 def severity_grid(run: Run) -> pd.DataFrame:

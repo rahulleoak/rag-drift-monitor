@@ -1,0 +1,1385 @@
+{
+  "baseline": "2016-17",
+  "periods": [
+    "2018",
+    "2019",
+    "2020",
+    "2021",
+    "2022"
+  ],
+  "period_summary": [
+    {
+      "period": "2016-17",
+      "documents": 60591,
+      "median_words": 24.0,
+      "mean_words": 24.10123615718506,
+      "categories": 28,
+      "new_sections": "",
+      "new_section_share": 0.0,
+      "mix_chi2": null,
+      "mix_p_value": null,
+      "mix_dof": null,
+      "mix_cramers_v": null,
+      "new_term_rate": null
+    },
+    {
+      "period": "2018",
+      "documents": 9728,
+      "median_words": 25.0,
+      "mean_words": 25.017578125,
+      "categories": 30,
+      "new_sections": "U.S. NEWS, MONEY, HOME & LIVING, WEDDINGS",
+      "new_section_share": 0.01860608552631579,
+      "mix_chi2": 3165.290016744809,
+      "mix_p_value": 0.0,
+      "mix_dof": 31.0,
+      "mix_cramers_v": 0.21216337286796727,
+      "new_term_rate": 0.030685465460963426
+    },
+    {
+      "period": "2019",
+      "documents": 2004,
+      "median_words": 29.0,
+      "mean_words": 28.77045908183633,
+      "categories": 28,
+      "new_sections": "U.S. NEWS, HOME & LIVING, MONEY, WEDDINGS",
+      "new_section_share": 0.25798403193612773,
+      "mix_chi2": 16393.24978441754,
+      "mix_p_value": 0.0,
+      "mix_dof": 31.0,
+      "mix_cramers_v": 0.51175572082355,
+      "new_term_rate": 0.036283656944327704
+    },
+    {
+      "period": "2020",
+      "documents": 2053,
+      "median_words": 30.0,
+      "mean_words": 29.55041402825134,
+      "categories": 25,
+      "new_sections": "U.S. NEWS, HOME & LIVING, MONEY",
+      "new_section_share": 0.13297613248904042,
+      "mix_chi2": 8730.274984037238,
+      "mix_p_value": 0.0,
+      "mix_dof": 30.0,
+      "mix_cramers_v": 0.37331395190374456,
+      "new_term_rate": 0.05579528900860292
+    },
+    {
+      "period": "2021",
+      "documents": 2066,
+      "median_words": 30.0,
+      "mean_words": 30.031461761858665,
+      "categories": 27,
+      "new_sections": "U.S. NEWS, HOME & LIVING, MONEY",
+      "new_section_share": 0.16311713455953533,
+      "mix_chi2": 10494.047402567732,
+      "mix_p_value": 0.0,
+      "mix_dof": 30.0,
+      "mix_cramers_v": 0.40924813809751237,
+      "new_term_rate": 0.05048389235052366
+    },
+    {
+      "period": "2022",
+      "documents": 1398,
+      "median_words": 31.0,
+      "mean_words": 30.78612303290415,
+      "categories": 24,
+      "new_sections": "U.S. NEWS, HOME & LIVING",
+      "new_section_share": 0.17525035765379113,
+      "mix_chi2": 11074.864494773034,
+      "mix_p_value": 0.0,
+      "mix_dof": 29.0,
+      "mix_cramers_v": 0.42268019136639384,
+      "new_term_rate": 0.048428369552763244
+    }
+  ],
+  "data_quality": [
+    {
+      "period": "2016-17",
+      "raw": 61987,
+      "empty_description": 1034,
+      "too_short": 44,
+      "too_long": 34,
+      "near_duplicate": 284,
+      "kept": 60591,
+      "kept_pct": 97.7,
+      "in_drift_sample": 1398
+    },
+    {
+      "period": "2018",
+      "raw": 9734,
+      "empty_description": 0,
+      "too_short": 2,
+      "too_long": 0,
+      "near_duplicate": 4,
+      "kept": 9728,
+      "kept_pct": 99.9,
+      "in_drift_sample": 1398
+    },
+    {
+      "period": "2019",
+      "raw": 2005,
+      "empty_description": 0,
+      "too_short": 0,
+      "too_long": 0,
+      "near_duplicate": 1,
+      "kept": 2004,
+      "kept_pct": 100.0,
+      "in_drift_sample": 1398
+    },
+    {
+      "period": "2020",
+      "raw": 2054,
+      "empty_description": 0,
+      "too_short": 0,
+      "too_long": 0,
+      "near_duplicate": 1,
+      "kept": 2053,
+      "kept_pct": 100.0,
+      "in_drift_sample": 1398
+    },
+    {
+      "period": "2021",
+      "raw": 2066,
+      "empty_description": 0,
+      "too_short": 0,
+      "too_long": 0,
+      "near_duplicate": 0,
+      "kept": 2066,
+      "kept_pct": 100.0,
+      "in_drift_sample": 1398
+    },
+    {
+      "period": "2022",
+      "raw": 1398,
+      "empty_description": 0,
+      "too_short": 0,
+      "too_long": 0,
+      "near_duplicate": 0,
+      "kept": 1398,
+      "kept_pct": 100.0,
+      "in_drift_sample": 1398
+    },
+    {
+      "period": "total",
+      "raw": 79244,
+      "empty_description": 1034,
+      "too_short": 46,
+      "too_long": 34,
+      "near_duplicate": 290,
+      "kept": 77840,
+      "kept_pct": 98.2,
+      "in_drift_sample": 8388
+    }
+  ],
+  "renamed_sections": [
+    {
+      "category_raw": "ARTS",
+      "category": "CULTURE & ARTS",
+      "period": "2016-17",
+      "documents": 36
+    },
+    {
+      "category_raw": "ARTS & CULTURE",
+      "category": "CULTURE & ARTS",
+      "period": "2016-17",
+      "documents": 1117
+    },
+    {
+      "category_raw": "ARTS & CULTURE",
+      "category": "CULTURE & ARTS",
+      "period": "2018",
+      "documents": 13
+    },
+    {
+      "category_raw": "GREEN",
+      "category": "ENVIRONMENT",
+      "period": "2016-17",
+      "documents": 1025
+    },
+    {
+      "category_raw": "GREEN",
+      "category": "ENVIRONMENT",
+      "period": "2018",
+      "documents": 29
+    },
+    {
+      "category_raw": "HEALTHY LIVING",
+      "category": "WELLNESS",
+      "period": "2016-17",
+      "documents": 2652
+    },
+    {
+      "category_raw": "HEALTHY LIVING",
+      "category": "WELLNESS",
+      "period": "2018",
+      "documents": 15
+    },
+    {
+      "category_raw": "PARENTS",
+      "category": "PARENTING",
+      "period": "2016-17",
+      "documents": 1949
+    },
+    {
+      "category_raw": "PARENTS",
+      "category": "PARENTING",
+      "period": "2018",
+      "documents": 36
+    },
+    {
+      "category_raw": "STYLE",
+      "category": "STYLE & BEAUTY",
+      "period": "2016-17",
+      "documents": 994
+    },
+    {
+      "category_raw": "STYLE",
+      "category": "STYLE & BEAUTY",
+      "period": "2018",
+      "documents": 34
+    },
+    {
+      "category_raw": "TASTE",
+      "category": "FOOD & DRINK",
+      "period": "2016-17",
+      "documents": 910
+    },
+    {
+      "category_raw": "TASTE",
+      "category": "FOOD & DRINK",
+      "period": "2018",
+      "documents": 9
+    },
+    {
+      "category_raw": "THE WORLDPOST",
+      "category": "WORLD NEWS",
+      "period": "2016-17",
+      "documents": 3152
+    },
+    {
+      "category_raw": "WORLDPOST",
+      "category": "WORLD NEWS",
+      "period": "2016-17",
+      "documents": 98
+    }
+  ],
+  "segments": [
+    {
+      "period": "2018",
+      "category": "BLACK VOICES",
+      "n_period": 418,
+      "n_baseline": 2095,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "BUSINESS",
+      "n_period": 92,
+      "n_baseline": 1215,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "COLLEGE",
+      "n_period": 1,
+      "n_baseline": 235,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "COMEDY",
+      "n_period": 513,
+      "n_baseline": 2073,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "CRIME",
+      "n_period": 199,
+      "n_baseline": 1244,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "CULTURE & ARTS",
+      "n_period": 15,
+      "n_baseline": 1153,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "EDUCATION",
+      "n_period": 32,
+      "n_baseline": 291,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "ENTERTAINMENT",
+      "n_period": 1861,
+      "n_baseline": 6592,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "ENVIRONMENT",
+      "n_period": 49,
+      "n_baseline": 1025,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "FOOD & DRINK",
+      "n_period": 10,
+      "n_baseline": 910,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "HOME & LIVING",
+      "n_period": 4,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2018",
+      "category": "IMPACT",
+      "n_period": 82,
+      "n_baseline": 718,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "LATINO VOICES",
+      "n_period": 83,
+      "n_baseline": 650,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "MEDIA",
+      "n_period": 323,
+      "n_baseline": 1152,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "MONEY",
+      "n_period": 7,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2018",
+      "category": "PARENTING",
+      "n_period": 39,
+      "n_baseline": 1949,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "POLITICS",
+      "n_period": 3397,
+      "n_baseline": 20253,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "QUEER VOICES",
+      "n_period": 465,
+      "n_baseline": 2584,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "RELIGION",
+      "n_period": 74,
+      "n_baseline": 719,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "SCIENCE",
+      "n_period": 47,
+      "n_baseline": 467,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "SPORTS",
+      "n_period": 384,
+      "n_baseline": 1711,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "STYLE & BEAUTY",
+      "n_period": 43,
+      "n_baseline": 994,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "TECH",
+      "n_period": 57,
+      "n_baseline": 701,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "TRAVEL",
+      "n_period": 72,
+      "n_baseline": 621,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "U.S. NEWS",
+      "n_period": 169,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2018",
+      "category": "WEDDINGS",
+      "n_period": 1,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2018",
+      "category": "WEIRD NEWS",
+      "n_period": 225,
+      "n_baseline": 1347,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "WELLNESS",
+      "n_period": 18,
+      "n_baseline": 2652,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2018",
+      "category": "WOMEN",
+      "n_period": 257,
+      "n_baseline": 1629,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2018",
+      "category": "WORLD NEWS",
+      "n_period": 791,
+      "n_baseline": 4855,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2019",
+      "category": "BLACK VOICES",
+      "n_period": 23,
+      "n_baseline": 2095,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "BUSINESS",
+      "n_period": 7,
+      "n_baseline": 1215,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "COMEDY",
+      "n_period": 105,
+      "n_baseline": 2073,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2019",
+      "category": "CRIME",
+      "n_period": 35,
+      "n_baseline": 1244,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "CULTURE & ARTS",
+      "n_period": 4,
+      "n_baseline": 1153,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "EDUCATION",
+      "n_period": 2,
+      "n_baseline": 291,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "ENTERTAINMENT",
+      "n_period": 191,
+      "n_baseline": 6592,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2019",
+      "category": "ENVIRONMENT",
+      "n_period": 17,
+      "n_baseline": 1025,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "FOOD & DRINK",
+      "n_period": 6,
+      "n_baseline": 910,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "HOME & LIVING",
+      "n_period": 28,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2019",
+      "category": "IMPACT",
+      "n_period": 5,
+      "n_baseline": 718,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "MEDIA",
+      "n_period": 73,
+      "n_baseline": 1152,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2019",
+      "category": "MONEY",
+      "n_period": 21,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2019",
+      "category": "PARENTING",
+      "n_period": 10,
+      "n_baseline": 1949,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "POLITICS",
+      "n_period": 507,
+      "n_baseline": 20253,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2019",
+      "category": "QUEER VOICES",
+      "n_period": 10,
+      "n_baseline": 2584,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "RELIGION",
+      "n_period": 10,
+      "n_baseline": 719,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "SCIENCE",
+      "n_period": 1,
+      "n_baseline": 467,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "SPORTS",
+      "n_period": 24,
+      "n_baseline": 1711,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "STYLE & BEAUTY",
+      "n_period": 34,
+      "n_baseline": 994,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "TECH",
+      "n_period": 9,
+      "n_baseline": 701,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "TRAVEL",
+      "n_period": 4,
+      "n_baseline": 621,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "U.S. NEWS",
+      "n_period": 467,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2019",
+      "category": "WEDDINGS",
+      "n_period": 1,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2019",
+      "category": "WEIRD NEWS",
+      "n_period": 20,
+      "n_baseline": 1347,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "WELLNESS",
+      "n_period": 3,
+      "n_baseline": 2652,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "WOMEN",
+      "n_period": 38,
+      "n_baseline": 1629,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2019",
+      "category": "WORLD NEWS",
+      "n_period": 349,
+      "n_baseline": 4855,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2020",
+      "category": "BLACK VOICES",
+      "n_period": 13,
+      "n_baseline": 2095,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "BUSINESS",
+      "n_period": 18,
+      "n_baseline": 1215,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "COMEDY",
+      "n_period": 13,
+      "n_baseline": 2073,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "CRIME",
+      "n_period": 17,
+      "n_baseline": 1244,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "CULTURE & ARTS",
+      "n_period": 12,
+      "n_baseline": 1153,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "EDUCATION",
+      "n_period": 1,
+      "n_baseline": 291,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "ENTERTAINMENT",
+      "n_period": 395,
+      "n_baseline": 6592,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2020",
+      "category": "ENVIRONMENT",
+      "n_period": 15,
+      "n_baseline": 1025,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "FOOD & DRINK",
+      "n_period": 54,
+      "n_baseline": 910,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2020",
+      "category": "HOME & LIVING",
+      "n_period": 58,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2020",
+      "category": "IMPACT",
+      "n_period": 15,
+      "n_baseline": 718,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "MEDIA",
+      "n_period": 7,
+      "n_baseline": 1152,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "MONEY",
+      "n_period": 18,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2020",
+      "category": "PARENTING",
+      "n_period": 58,
+      "n_baseline": 1949,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2020",
+      "category": "POLITICS",
+      "n_period": 802,
+      "n_baseline": 20253,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2020",
+      "category": "QUEER VOICES",
+      "n_period": 5,
+      "n_baseline": 2584,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "SCIENCE",
+      "n_period": 3,
+      "n_baseline": 467,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "SPORTS",
+      "n_period": 17,
+      "n_baseline": 1711,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "STYLE & BEAUTY",
+      "n_period": 75,
+      "n_baseline": 994,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2020",
+      "category": "TRAVEL",
+      "n_period": 3,
+      "n_baseline": 621,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "U.S. NEWS",
+      "n_period": 197,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2020",
+      "category": "WEIRD NEWS",
+      "n_period": 27,
+      "n_baseline": 1347,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "WELLNESS",
+      "n_period": 67,
+      "n_baseline": 2652,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2020",
+      "category": "WOMEN",
+      "n_period": 17,
+      "n_baseline": 1629,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2020",
+      "category": "WORLD NEWS",
+      "n_period": 146,
+      "n_baseline": 4855,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2021",
+      "category": "BLACK VOICES",
+      "n_period": 5,
+      "n_baseline": 2095,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "BUSINESS",
+      "n_period": 9,
+      "n_baseline": 1215,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "COMEDY",
+      "n_period": 22,
+      "n_baseline": 2073,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "CRIME",
+      "n_period": 41,
+      "n_baseline": 1244,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "CULTURE & ARTS",
+      "n_period": 3,
+      "n_baseline": 1153,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "EDUCATION",
+      "n_period": 4,
+      "n_baseline": 291,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "ENTERTAINMENT",
+      "n_period": 341,
+      "n_baseline": 6592,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2021",
+      "category": "ENVIRONMENT",
+      "n_period": 42,
+      "n_baseline": 1025,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "FOOD & DRINK",
+      "n_period": 36,
+      "n_baseline": 910,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "HOME & LIVING",
+      "n_period": 31,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2021",
+      "category": "LATINO VOICES",
+      "n_period": 1,
+      "n_baseline": 650,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "MEDIA",
+      "n_period": 11,
+      "n_baseline": 1152,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "MONEY",
+      "n_period": 3,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2021",
+      "category": "PARENTING",
+      "n_period": 27,
+      "n_baseline": 1949,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "POLITICS",
+      "n_period": 823,
+      "n_baseline": 20253,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2021",
+      "category": "QUEER VOICES",
+      "n_period": 2,
+      "n_baseline": 2584,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "RELIGION",
+      "n_period": 2,
+      "n_baseline": 719,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "SCIENCE",
+      "n_period": 10,
+      "n_baseline": 467,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "SPORTS",
+      "n_period": 59,
+      "n_baseline": 1711,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2021",
+      "category": "STYLE & BEAUTY",
+      "n_period": 32,
+      "n_baseline": 994,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "TECH",
+      "n_period": 1,
+      "n_baseline": 701,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "TRAVEL",
+      "n_period": 4,
+      "n_baseline": 621,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "U.S. NEWS",
+      "n_period": 303,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2021",
+      "category": "WEIRD NEWS",
+      "n_period": 25,
+      "n_baseline": 1347,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "WELLNESS",
+      "n_period": 21,
+      "n_baseline": 2652,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "WOMEN",
+      "n_period": 10,
+      "n_baseline": 1629,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2021",
+      "category": "WORLD NEWS",
+      "n_period": 198,
+      "n_baseline": 4855,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2022",
+      "category": "BLACK VOICES",
+      "n_period": 4,
+      "n_baseline": 2095,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "BUSINESS",
+      "n_period": 15,
+      "n_baseline": 1215,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "COMEDY",
+      "n_period": 15,
+      "n_baseline": 2073,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "CRIME",
+      "n_period": 38,
+      "n_baseline": 1244,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "CULTURE & ARTS",
+      "n_period": 23,
+      "n_baseline": 1153,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "EDUCATION",
+      "n_period": 3,
+      "n_baseline": 291,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "ENTERTAINMENT",
+      "n_period": 235,
+      "n_baseline": 6592,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2022",
+      "category": "ENVIRONMENT",
+      "n_period": 27,
+      "n_baseline": 1025,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "FOOD & DRINK",
+      "n_period": 17,
+      "n_baseline": 910,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "HOME & LIVING",
+      "n_period": 4,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2022",
+      "category": "MEDIA",
+      "n_period": 8,
+      "n_baseline": 1152,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "PARENTING",
+      "n_period": 16,
+      "n_baseline": 1949,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "POLITICS",
+      "n_period": 399,
+      "n_baseline": 20253,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2022",
+      "category": "QUEER VOICES",
+      "n_period": 2,
+      "n_baseline": 2584,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "SCIENCE",
+      "n_period": 7,
+      "n_baseline": 467,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "SPORTS",
+      "n_period": 73,
+      "n_baseline": 1711,
+      "eligible": true,
+      "reason": ""
+    },
+    {
+      "period": "2022",
+      "category": "STYLE & BEAUTY",
+      "n_period": 15,
+      "n_baseline": 994,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "TECH",
+      "n_period": 9,
+      "n_baseline": 701,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "TRAVEL",
+      "n_period": 2,
+      "n_baseline": 621,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "U.S. NEWS",
+      "n_period": 241,
+      "n_baseline": 0,
+      "eligible": false,
+      "reason": "not in baseline"
+    },
+    {
+      "period": "2022",
+      "category": "WEIRD NEWS",
+      "n_period": 16,
+      "n_baseline": 1347,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "WELLNESS",
+      "n_period": 24,
+      "n_baseline": 2652,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "WOMEN",
+      "n_period": 5,
+      "n_baseline": 1629,
+      "eligible": false,
+      "reason": "too few in period"
+    },
+    {
+      "period": "2022",
+      "category": "WORLD NEWS",
+      "n_period": 200,
+      "n_baseline": 4855,
+      "eligible": true,
+      "reason": ""
+    }
+  ],
+  "query_stream": [
+    {
+      "period": "2016-17",
+      "queries": 52,
+      "unanswerable_share": 0.057692307692307696,
+      "median_words": 17.5,
+      "new_term_rate": 0.01050420168067227
+    },
+    {
+      "period": "2018",
+      "queries": 39,
+      "unanswerable_share": 0.02564102564102564,
+      "median_words": 18.0,
+      "new_term_rate": 0.03170028818443804
+    },
+    {
+      "period": "2019",
+      "queries": 51,
+      "unanswerable_share": 0.0,
+      "median_words": 18.0,
+      "new_term_rate": 0.03389830508474576
+    },
+    {
+      "period": "2020",
+      "queries": 55,
+      "unanswerable_share": 0.01818181818181818,
+      "median_words": 17.0,
+      "new_term_rate": 0.0631163708086785
+    },
+    {
+      "period": "2021",
+      "queries": 55,
+      "unanswerable_share": 0.01818181818181818,
+      "median_words": 18.0,
+      "new_term_rate": 0.06517690875232775
+    },
+    {
+      "period": "2022",
+      "queries": 45,
+      "unanswerable_share": 0.044444444444444446,
+      "median_words": 18.0,
+      "new_term_rate": 0.035545023696682464
+    }
+  ]
+}

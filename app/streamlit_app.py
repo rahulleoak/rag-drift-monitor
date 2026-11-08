@@ -2,12 +2,13 @@
 run the pipeline itself, so the demo cannot fail on a live LLM call (Q16).
 
 Pages (tabs): Overview, Data monitoring (Agent A), Drift (Agent B), Retrieval
-(Agent C), and placeholders for Impact (D) and Recommendations (E), which fill
-in as those agents are built.
+(Agent C), Impact (Agent D) and Recommendations (Agent E).
 
 Run (from the repository root):
     streamlit run app/streamlit_app.py
-Set DRIFTMON_RUNS_DIR to read runs from another folder (used by the tests).
+It reads ``runs/`` if it holds any pipeline runs, and otherwise the run
+committed under ``demo/runs/`` (no API key or rerun needed). Set
+DRIFTMON_RUNS_DIR to read runs from another folder (used by the tests).
 """
 from __future__ import annotations
 
@@ -23,12 +24,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.dashboard_data import list_runs, load_run, severity_grid, stale_vs_refreshed  # noqa: E402
+from driftmon.dashboard_data import (answers_stale_vs_refreshed, harm_vs_drift, list_runs, load_run,  # noqa: E402
+                                     severity_grid, stale_vs_refreshed)
 
 st.set_page_config(page_title="RAG drift monitor", layout="wide")
 config = load_config()
 runs_dir = Path(os.environ.get("DRIFTMON_RUNS_DIR") or resolve_path(config["paths"]["runs"]))
 runs = list_runs(runs_dir)
+demo = False
+if not runs and not os.environ.get("DRIFTMON_RUNS_DIR"):   # fresh clone: the committed demo run
+    runs_dir = resolve_path(config["paths"]["demo_runs"])
+    runs, demo = list_runs(runs_dir), True
 
 st.title("RAG drift monitor")
 st.caption("Newsroom archive assistant · HuffPost 2016–2022 · which drift matters?")
@@ -39,6 +45,9 @@ if not runs:
 run_id = st.sidebar.selectbox("Pipeline run", runs, help="Saved runs, newest first")
 run = load_run(runs_dir, run_id)
 st.sidebar.caption(f"Baseline: {run.baseline}\n\nPeriods: {', '.join(run.monitoring.periods)}")
+if demo:
+    st.sidebar.info("Showing the bundled demo run (`demo/runs/`). Run `python scripts/run_pipeline.py` "
+                    "to see your own.")
 
 ORDINAL = alt.Scale(domain=["low", "medium", "high"], range=list(T.bands.values()))
 
@@ -100,6 +109,20 @@ with tabs[0]:
     c[1].metric("Flagged (vs baseline)", len(flagged))
     c[2].metric("Control segments", len(run.drift.control_segments))
     c[3].metric("Next step", run.next_step.replace("_", " "))
+    if run.impact is not None and run.impact.by_period:
+        new = [r for r in run.impact.by_period if r["period"] != run.baseline]
+        n = sum(r["questions"] for r in new)
+        stale = sum(r["stale_correct"] * r["questions"] for r in new) / n
+        fresh = sum(r["refreshed_correct"] * r["questions"] for r in new) / n
+        c = st.columns(4)
+        c[0].metric("New-event questions", n)
+        c[1].metric("Correct, stale index", f"{stale:.1%}" if 0 < stale < 0.01 else f"{stale:.0%}")
+        c[2].metric("Correct, refreshed index", f"{fresh:.0%}")
+        if run.recommendations is not None:
+            c[3].metric("Recommended actions", len(run.recommendations.recommended()))
+    if run.recommendations is not None and run.recommendations.recommended():
+        top = run.recommendations.recommended()[0]
+        st.markdown(f"**Top recommendation: {top.action}.** {top.finding}")
     left, right = st.columns(2)
     left.altair_chart(themed(drift_line(run.whole, "times_ordinary_embedding", "mmd2", "Embedding drift")),
                       width="stretch")
@@ -152,8 +175,8 @@ with tabs[2]:
                               ("Words that changed meaning", "words_that_changed_meaning", run.term_shifts),
                               ("How the drift measures relate", "measure_correlations", run.correlations)]:
         st.markdown(f"**{title}**")
-        if key in run.charts:
-            st.image(str(run.charts.get(f"dark/{key}", run.charts[key])))
+        if key in run.charts or f"dark/{key}" in run.charts:
+            st.image(str(run.charts.get(f"dark/{key}") or run.charts[key]))
         with st.expander("Table"):
             st.dataframe(table.round(3) if len(table) else table, width="stretch")
     st.markdown("**Query drift** (each period's questions vs the baseline questions)")
@@ -165,14 +188,13 @@ with tabs[2]:
                      width="stretch")
         st.caption("The questions are written from each period's articles, so query drift partly "
                    "mirrors document drift by construction; a real query log can drift on its own.")
-    st.info("Explanations written by the LLM will appear here once the LLM parts are built.")
 
 def dumbbell(long: pd.DataFrame, title: str) -> alt.Chart:
     """Per year: the stale and the refreshed index, joined by a hairline."""
     order = ["Stale index (2016-17 only)", "Refreshed index"]
     colour = alt.Color("index:N", scale=alt.Scale(domain=order, range=[T.series[1], T.series[0]]),
                        legend=alt.Legend(title=None, orient="top"))
-    y = alt.Y("period:N", title=None, sort=sorted(long["period"].unique()))
+    y = alt.Y("period:N", title=None, sort=sorted(long["period"].unique()), axis=alt.Axis(labelOverlap=False))
     x = alt.X("value:Q", title=title, scale=alt.Scale(domain=[0, 1]), axis=alt.Axis(format="%"))
     tip = [alt.Tooltip("period:N", title="Year"), alt.Tooltip("index:N", title="Index"),
            alt.Tooltip("value:Q", title=title, format=".0%"), alt.Tooltip("questions:Q", title="Questions"),
@@ -183,7 +205,7 @@ def dumbbell(long: pd.DataFrame, title: str) -> alt.Chart:
         y=y, x=alt.X("min(value):Q"), x2="max(value):Q")
     dots = alt.Chart(long).mark_circle(size=140, opacity=1, stroke=T.surface, strokeWidth=2).encode(
         y=y, x=x, color=colour, tooltip=tip)
-    return (rule + dots).properties(height=40 * max(long["period"].nunique(), 2))
+    return (rule + dots).properties(height={"step": 36})
 
 
 with tabs[3]:
@@ -196,7 +218,8 @@ with tabs[3]:
         m[0].metric("Questions", rep.questions)
         m[1].metric("Mode", rep.mode.replace("_", " "))
         m[2].metric("Judged questions", rep.judge.get("judged_questions", 0))
-        m[3].metric("Judge cost", f"${rep.judge.get('cost_usd', 0):.2f}")
+        m[3].metric("LLM cost, this run", f"${rep.judge.get('cost_usd', 0):.2f}",
+                    help="Cached replies are free, so a rerun costs little; every call is logged in runs/llm_costs.csv.")
         long = stale_vs_refreshed(run, "answer")
         if len(long):
             st.markdown("**(a) Does the top 5 contain an answer?** Each year's questions on the stale "
@@ -223,9 +246,147 @@ with tabs[3]:
         for note in rep.notes:
             st.caption(note)
 
-for tab, agent, what in [(tabs[4], "D · RAG impact assessment", "answer quality and which drift matters"),
-                         (tabs[5], "E · Recommendations", "actions with their evidence")]:
-    with tab:
-        st.subheader(f"Agent {agent}")
-        st.info(f"Not run yet. This page will show {what}. Next step chosen after Agent B: "
-                f"**{run.next_step.replace('_', ' ')}**.")
+def harm_scatter(seg: pd.DataFrame) -> alt.Chart:
+    """Each classified section: its drift score against its loss in correct answers."""
+    classes = ["drift that hurts", "harm without drift", "drift that does not hurt", "healthy"]
+    colour = alt.Color("class:N", scale=alt.Scale(domain=classes, range=[*T.series, T.muted]),
+                       legend=alt.Legend(title=None, orient="top"))
+    x = alt.X("times_ordinary_embedding:Q", title="Embedding drift (× an ordinary year)")
+    y = alt.Y("loss_correct:Q", title="Drop in correct answers", scale=alt.Scale(domain=[0, 1]),
+              axis=alt.Axis(format="%"))
+    tip = [alt.Tooltip("section:N", title="Section"), alt.Tooltip("class:N", title="Class"),
+           alt.Tooltip("loss_correct:Q", title="Drop", format=".0%"),
+           alt.Tooltip("loss_low:Q", title="95% CI low", format=".0%"),
+           alt.Tooltip("loss_high:Q", title="95% CI high", format=".0%"),
+           alt.Tooltip("times_ordinary_embedding:Q", title="Embedding ×", format=".1f"),
+           alt.Tooltip("severity:N", title="Drift severity"), alt.Tooltip("questions:Q", title="Questions")]
+    base = alt.Chart(seg).encode(x=x)
+    err = base.mark_rule(color=T.axis, strokeWidth=2).encode(y=alt.Y("loss_low:Q"), y2="loss_high:Q")
+    dots = base.mark_circle(size=130, opacity=1, stroke=T.surface, strokeWidth=2).encode(
+        y=y, color=colour, tooltip=tip)
+    return (err + dots).properties(height=300)
+
+
+def outdated_chart(summary: pd.DataFrame) -> alt.Chart:
+    """Wikipedia: how often the answer changed between the old and the new version."""
+    names = {"flagged": "Flagged changed facts", "comparison": "Edits that kept their numbers"}
+    d = summary.assign(group=summary["group"].map(names))
+    y = alt.Y("group:N", title=None, sort=list(names.values()), axis=alt.Axis(labelLimit=260))
+    x = alt.X("answer_changed:Q", title="Questions whose answer changed", scale=alt.Scale(domain=[0, 1]),
+              axis=alt.Axis(format="%"))
+    tip = [alt.Tooltip("group:N", title="Edits"), alt.Tooltip("items:Q", title="Questions"),
+           alt.Tooltip("answer_changed:Q", title="Answer changed", format=".0%"),
+           alt.Tooltip("changed_low:Q", title="95% CI low", format=".0%"),
+           alt.Tooltip("changed_high:Q", title="95% CI high", format=".0%"),
+           alt.Tooltip("edit_retrieved_old:Q", title="Old index found the passage", format=".0%")]
+    bars = alt.Chart(d).mark_bar(cornerRadiusEnd=4, height=22).encode(
+        y=y, x=x, tooltip=tip,
+        color=alt.Color("group:N", scale=alt.Scale(domain=list(names.values()), range=[T.series[0], T.muted]),
+                        legend=None))
+    err = alt.Chart(d).mark_rule(color=T.ink_2, strokeWidth=1.5).encode(y=y, x="changed_low:Q",
+                                                                        x2="changed_high:Q")
+    label = alt.Chart(d).mark_text(align="left", dx=8, color=T.ink, fontSize=12).encode(
+        y=y, x="changed_high:Q", text=alt.Text("answer_changed:Q", format=".0%"))
+    return (bars + err + label).properties(height={"step": 48})
+
+
+with tabs[4]:
+    st.subheader("Agent D · answers, stale vs refreshed, and which drift matters")
+    imp = run.impact
+    if imp is None or not imp.questions:
+        st.info("Not run yet. This page shows answer quality once Agent D has run with an LLM.")
+    else:
+        m = st.columns(4)
+        m[0].metric("Questions answered (both indexes)", imp.questions)
+        m[1].metric("Material loss threshold", f"{imp.threshold:.0%}")
+        un = {r["index"]: r for r in imp.unanswerable}
+        if "stale" in un:
+            m[2].metric("Unanswerable: declined (stale)", f"{un['stale']['declined']:.0%}")
+        m[3].metric("LLM cost, this run", f"${imp.judge.get('cost_usd', 0):.2f}",
+                    help="Cached replies are free, so a rerun costs little; every call is logged in runs/llm_costs.csv.")
+        st.markdown("**Does the assistant answer correctly?** Sonnet answers from each index's top 5; Opus "
+                    "grades each answer alone, not told the index. 2016–17 questions are the historical control.")
+        st.altair_chart(themed(dumbbell(answers_stale_vs_refreshed(run), "Share of questions answered correctly")),
+                        width="stretch")
+        st.caption("2016–17: both indexes answer 100%, so the two dots overlap. On the stale index the "
+                   "assistant fails silently: it says the archive does not have the answer rather than "
+                   "inventing one.")
+        seg = harm_vs_drift(run)
+        if len(seg):
+            st.markdown("**Which drift matters?** Every section with enough questions, by its drift score "
+                        "and its drop in correct answers. More drift does not mean more harm.")
+            scored = seg.dropna(subset=["times_ordinary_embedding"])
+            st.altair_chart(themed(harm_scatter(scored)), width="stretch")
+            unscored = seg[seg["times_ordinary_embedding"].isna()]
+            counts = ", ".join(f"{n} {c}" for c, n in seg["class"].value_counts().items())
+            st.caption(f"{len(seg)} sections: {counts}. "
+                       + (f"Not plotted, because drift detection could not score them (not in the baseline): "
+                          f"{', '.join(unscored['section'])}." if len(unscored) else ""))
+            with st.expander("Table: every section, with its class and likely cause"):
+                st.dataframe(pd.DataFrame(imp.segments).round(3), hide_index=True, width="stretch")
+        if imp.correlations:
+            with st.expander("Drift measures vs the loss (Spearman, across sections)"):
+                st.dataframe(pd.DataFrame(imp.correlations).round(3), hide_index=True, width="stretch")
+        if imp.evidence:
+            st.markdown("**Evidence loop** (borderline sections, answered again from the top 10)")
+            st.dataframe(pd.DataFrame(imp.evidence).round(3), hide_index=True, width="stretch")
+        else:
+            st.caption("No section was borderline, so the loop back to Agent C did not run.")
+        if imp.examples:
+            with st.expander("Examples: questions only the refreshed index answers"):
+                for e in imp.examples:
+                    st.markdown(f"**{e['question']}** ({e['period']}, {e['category']})  \n"
+                                f"*Stale:* {e['stale_answer']}  \n*Refreshed:* {e['refreshed_answer']}")
+        lf = run.longform
+        if "outdated_summary" in lf:
+            st.markdown("**Edited documents (Wikipedia): does a changed fact change the answer?** Questions "
+                        "written from the new version of an edited sentence, answered from the old and the "
+                        "new version of the archive.")
+            st.altair_chart(themed(outdated_chart(lf["outdated_summary"])), width="stretch")
+            v = lf.get("outdated_verdict", {})
+            if v:
+                st.caption(f"Difference {v['difference']:.0%} (needed {v['min_difference']:.0%}), Fisher "
+                           f"p = {v['p_value']:.1e}: the changed-facts check is "
+                           f"{'useful' if v['useful'] else 'not shown to be useful'}.")
+            items = lf.get("outdated_items")
+            if items is not None and len(items):
+                with st.expander("Examples: same question, old and new version"):
+                    hit = items[(items["group"] == "flagged") & (items["verdict"] == "different")].head(6)
+                    for r in hit.to_dict("records"):
+                        st.markdown(f"**{r['title']}** · {r['question']}  \n*Before:* {r['before']}  \n"
+                                    f"*After:* {r['after']}  \n*Old answer:* {r['answer_old']}  \n"
+                                    f"*New answer:* {r['answer_new']}")
+        for note in imp.notes:
+            st.caption(note)
+
+with tabs[5]:
+    st.subheader("Agent E · recommended actions, with their evidence")
+    rec = run.recommendations
+    if rec is None:
+        st.info("Not run yet. This page shows Agent E's recommendations once the full pipeline has run.")
+    else:
+        m = st.columns(4)
+        for i, status in enumerate(["recommended", "not needed", "not checked"]):
+            m[i].metric(status.capitalize(), rec.summary.get(status, 0))
+        m[3].metric("LLM cost, this run", f"${rec.explanations.get('cost_usd', 0):.2f}")
+        st.caption("Rules in code decide (one per action in the brief); an LLM explains each recommended "
+                   "action from its evidence, and any explanation with a number that is not in the evidence "
+                   "is rejected.")
+        for r in rec.recommended():
+            st.markdown(f"#### {r.priority}. {r.action}")
+            st.write(r.explanation)
+            if r.scope:
+                shown = ", ".join(r.scope[:12]) + (f", and {len(r.scope) - 12} more" if len(r.scope) > 12 else "")
+                st.caption(f"Applies to ({len(r.scope)}): {shown}")
+            with st.expander("Evidence"):
+                for e in r.evidence:
+                    st.markdown(f"- **{e.source}:** {e.claim}")
+                st.caption(f"Rule: {r.rule}. Explanation: {r.explanation_check}.")
+        rest = [r for r in rec.recommendations if r.status != "recommended"]
+        if rest:
+            st.markdown("#### Checked, not recommended")
+            for r in rest:
+                st.markdown(f"- **{r.action}** ({r.status}): {r.finding} "
+                            + " ".join(e.claim for e in r.evidence))
+        for note in rec.notes:
+            st.caption(note)

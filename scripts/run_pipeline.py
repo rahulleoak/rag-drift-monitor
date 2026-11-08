@@ -21,6 +21,7 @@ Writes:
     impact_*.csv       Agent D's tables (answers, paired, segments, correlations)
     recommendations.json  Agent E's RecommendationReport
     recommendations.md    the same, readable
+    longform/          a copy of the long-form results Agent E read (for the dashboard)
 
 Usage (from the repository root):
     python scripts/run_pipeline.py --estimate   # everything except the judge; prints its cost
@@ -47,7 +48,7 @@ if __package__ in (None, ""):  # allow `python scripts/run_pipeline.py` without 
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.corpus import load_corpus  # noqa: E402
 from driftmon.embeddings import Embedder  # noqa: E402
-from driftmon.evidence import load_label_checks, load_longform  # noqa: E402
+from driftmon.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
 from driftmon.graph import build_graph  # noqa: E402
 from driftmon.llm import LLMClient, LLMResult  # noqa: E402
 from driftmon.queries import load_questions, query_stream  # noqa: E402
@@ -225,6 +226,7 @@ def _report_recommendations(state, run_dir: Path) -> None:
     from driftmon.agents.recommendation import to_markdown
     (run_dir / "recommendations.json").write_text(rep.model_dump_json(indent=2), encoding="utf-8")
     (run_dir / "recommendations.md").write_text(to_markdown(rep), encoding="utf-8")
+    save_longform_snapshot(state["config"], run_dir / "longform")
     print(f"\n=== Agent E: recommendations ({rep.summary}) ===")
     for r in rep.recommendations:
         mark = f"{r.priority}." if r.priority else "-"

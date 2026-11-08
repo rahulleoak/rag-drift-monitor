@@ -16,6 +16,41 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-08: dashboard complete; works without a key
+- **Built:** the Impact tab (answers stale vs refreshed by year; each section's
+  drift score against its drop in correct answers; the Wikipedia
+  outdated-answer bars with intervals; examples) and the Recommendations tab
+  (each action's explanation, scope and evidence; the actions ruled out with
+  their reason). Overview shows the answer headline and the top
+  recommendation. Each run now saves the long-form evidence E read
+  (`runs/<run>/longform/`); `scripts/export_demo.py` copies one run (about
+  1 MB) to the committed `demo/runs/`, which the dashboard uses when there
+  are no local runs. 145 tests pass, including the demo rendering on every
+  tab.
+- **Checked by eye:** every tab screenshotted in headless Edge. Fixed: the
+  stale-vs-refreshed chart dropped every other year label (too short); the
+  Wikipedia bars overlapped; cost tiles said $0.00 without saying that
+  cached replies are free; a 0.3% rate showed as 0%; the "not recommended"
+  table cut off its reasons (now a list).
+- **Fixed on the way:** `.gitignore`'s `runs/` also ignored `demo/runs/`
+  (now `/runs/`); `recommend.py --no-llm` had overwritten a run's LLM
+  explanations (restored from the cache at no cost; `--no-llm` now prints
+  only).
+- **Agreed with the author:** the set-aside items are listed in one place
+  (`docs/requirements-coverage.md`, "Extensions") to revisit together once
+  the pipeline and dashboard both work, which they now do.
+- **README:** written as the front door: the short version with the
+  headline numbers, a quick start that needs no key or data (the demo run
+  and the tests), how the agents and the judges work, key results with
+  finding numbers, a step-by-step from-scratch reproduction with costs, the
+  layout, configuration, technology choices, limitations, a documentation
+  map and a glossary. Rendered and checked; every link resolves.
+- **Inconsistency found:** the design summary and presentation quote 2020 as
+  "5.7x an ordinary year" (F4's 2017-vs-2016 yardstick), while the pipeline
+  and dashboard report 2.5x (Agent B's within-baseline yardstick, D11). Same
+  pattern, different scale; the README uses the pipeline's numbers.
+- **Next:** the fresh-clone check, then the parked list with the author.
+
 ## 2026-11-07 (night): Agent E built (D29, F22); all five agents in the graph
 - **Built:** `driftmon/policy.py` (one rule per action in the brief; every
   rule reports recommended / not needed / not checked, with evidence),

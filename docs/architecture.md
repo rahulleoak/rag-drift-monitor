@@ -139,6 +139,8 @@ agent breaks the next one.
 | FAISS indexes (stale, refreshed per year) with manifests, from Agent C (D22) | `indexes/` | No |
 | LLM cost ledger (every billed request) | `runs/llm_costs.csv` | No |
 | Run outputs (reports, charts) | `runs/<run_id>/` | No |
+| Long-form evidence Agent E read, saved with each run | `runs/<run_id>/longform/` | No |
+| Demo run for the dashboard (reports, dark charts, long-form snapshot; about 1 MB), from `scripts/export_demo.py` | `demo/runs/<run_id>/` | Yes |
 | Exploration tables | `runs/explore/<dataset>/` (CSV) | No |
 | Charts for a run | `runs/<run_id>/charts/` (PNG) | No |
 | Charts for the docs and slides | `docs/figures/` (light) and `docs/figures/dark/` (PNG, copies of the latest run) | Yes |
@@ -146,6 +148,14 @@ agent breaks the next one.
 
 Every dataset is mapped onto one record shape (`doc_id, date, category,
 title, text`) in `driftmon/data.py`, so switching datasets is a config change.
+
+**Dashboard (Q16).** `app/streamlit_app.py` only reads saved runs, so a
+demo cannot fail on a live LLM call. Tabs: Overview, Data monitoring (A),
+Drift (B), Retrieval (C), Impact (D: answers stale vs refreshed, drift score
+vs loss per section, the Wikipedia outdated-answer test) and Recommendations
+(E: each action with its explanation and evidence, and the actions ruled
+out). It reads `runs/` and falls back to the committed `demo/runs/`, so it
+works straight after cloning, without an API key, a GPU or a rerun.
 
 **Storage (no database server).** Vector search uses FAISS exact
 inner-product indexes held in memory and rebuilt from cached embeddings at

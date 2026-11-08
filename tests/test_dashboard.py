@@ -83,7 +83,7 @@ def test_dashboard_renders_every_tab(run_dir, monkeypatch):
                                           "Impact", "Recommendations"]
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Flagged (vs baseline)"] == "2"
-    assert metrics["Judged questions"] == "20" and metrics["Judge cost"] == "$0.12"
+    assert metrics["Judged questions"] == "20" and metrics["LLM cost, this run"] == "$0.12"
     assert metrics["Next step"] == "full evaluation"
     segment = next(s for s in at.selectbox if s.label == "Segment")
     segment.select("2020|POLITICS|vs 2016-17").run()
@@ -98,3 +98,42 @@ def test_dashboard_without_runs(tmp_path, monkeypatch):
     assert not at.exception
     assert any("No pipeline runs" in w.value for w in at.warning)
     os.environ.pop("DRIFTMON_RUNS_DIR", None)
+
+
+DEMO = Path(__file__).resolve().parents[1] / "demo" / "runs"
+
+
+def test_the_bundled_demo_run_loads_with_every_agent():
+    from driftmon.dashboard_data import answers_stale_vs_refreshed, harm_vs_drift
+    runs = list_runs(DEMO)
+    assert len(runs) == 1, "demo/runs should hold exactly one run (scripts/export_demo.py)"
+    run = load_run(DEMO, runs[0])
+    assert run.impact is not None and run.recommendations is not None and run.retrieval is not None
+    assert "outdated_summary" in run.longform and "outdated_verdict" in run.longform
+    long = answers_stale_vs_refreshed(run)
+    assert set(long["index"]) == {"Stale index (2016-17 only)", "Refreshed index"}
+    seg = harm_vs_drift(run)
+    assert len(seg) and not seg["class"].isin(["too few questions", "historical control"]).any()
+
+
+def test_dashboard_renders_the_demo_run_on_every_tab(monkeypatch):
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(DEMO))
+    at = AppTest.from_file(str(APP), default_timeout=120)
+    at.run()
+    assert not at.exception
+    labels = {m.label for m in at.metric}
+    assert {"Correct, stale index", "Recommended actions", "Questions answered (both indexes)",
+            "Recommended", "Not needed"} <= labels
+    text = " ".join(m.value for m in at.markdown)
+    assert "Checked, not recommended" in text and "Top recommendation" in text
+
+
+def test_export_demo_copies_only_what_the_dashboard_reads(tmp_path):
+    from scripts.export_demo import export
+    src = DEMO / list_runs(DEMO)[0]
+    copied = export(src, tmp_path / "demo")
+    out = tmp_path / "demo" / src.name
+    assert (out / "impact.json").exists() and (out / "recommendations.json").exists()
+    assert "longform/outdated_verdict.json" in copied
+    assert list_runs(tmp_path / "demo") == [src.name]

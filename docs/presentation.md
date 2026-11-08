@@ -153,9 +153,9 @@ a measurement, not an opinion.
 - **The LLM never makes the final decision.** It writes questions, answers,
   judgements and explanations; statistics and decisions live in tested
   Python. Auditable and repeatable, which is what an enterprise needs.
-- ❓ Whether this matches the reviewers' idea of "agentic" is stakeholder
-  question 2. A possible extension: the LLM *proposes* what to investigate,
-  code *tests* it.
+- ✅ Confirmed by the stakeholder (Ani, 2026-11-06): this split "fits ...
+  the right split". A possible extension: the LLM *proposes* what to
+  investigate, code *tests* it (parked).
 
 ## 7. Detecting drift: two complementary techniques (🔨)
 
@@ -180,6 +180,18 @@ a measurement, not an opinion.
   variation, not invented constants (P7).
 
 ### 7b. First drift results (F4) ✅
+
+> **⚠ Inconsistent drift figures, resolve before presenting.** The numbers
+> below (5.7×, 4.2×, 1.2×, 4.7×) come from F4, an early script that measured
+> "ordinary" as one year of change, 2017 vs 2016. The pipeline, the dashboard
+> and the README measure "ordinary" against month-to-month variation inside
+> the baseline (Agent B, D11), which gives smaller multiples for the same
+> data: 2020 vs baseline **2.5×** (high), 2022 vs 2021 **0.5×**, 2022 vs
+> baseline **2.1×** (run `20261107-202242`). The pattern is identical (2020
+> largest; year-on-year hides gradual drift); only the scale differs. Use the
+> pipeline's numbers in the walkthrough, since they are what the dashboard
+> shows, and mention the yardstick if asked. The design summary sent to Ani
+> also quotes 5.7× and 1.2× / 4.7×.
 
 - **COVID is the biggest shift:** 2020 drifts **5.7× more than an ordinary
   year** (2017 vs 2016) from the baseline, and has the biggest single-year

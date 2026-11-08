@@ -1,0 +1,9 @@
+{
+  "useful": true,
+  "flagged_changed": 0.5,
+  "comparison_changed": 0.016666666666666666,
+  "difference": 0.48333333333333334,
+  "p_value": 1.4631067434938775e-10,
+  "min_difference": 0.2,
+  "alpha": 0.05
+}

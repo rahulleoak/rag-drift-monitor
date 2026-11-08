@@ -1,7 +1,9 @@
 """Run the LangGraph pipeline and save every agent's report to ``runs/<run_id>/``.
 
-Built so far: Agent A (Data Monitoring) -> Agent B (Drift Detection) -> the
-routing decision -> Agent C (Retrieval Evaluation) -> Agent D (RAG Impact).
+Agent A (Data Monitoring) -> Agent B (Drift Detection) -> the routing
+decision -> Agent C (Retrieval Evaluation) -> Agent D (RAG Impact) -> Agent E
+(Recommendation). Agent E also reads the long-form evidence and the hand-label
+checks saved outside the graph (``driftmon.evidence``).
 
 Writes:
     monitoring.json    Agent A's MonitoringReport
@@ -17,6 +19,8 @@ Writes:
     retrieval_*.csv    Agent C's per-question tables (judged, known item, ranking change, runs)
     impact.json        Agent D's ImpactReport
     impact_*.csv       Agent D's tables (answers, paired, segments, correlations)
+    recommendations.json  Agent E's RecommendationReport
+    recommendations.md    the same, readable
 
 Usage (from the repository root):
     python scripts/run_pipeline.py --estimate   # everything except the judge; prints its cost
@@ -43,6 +47,7 @@ if __package__ in (None, ""):  # allow `python scripts/run_pipeline.py` without 
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.corpus import load_corpus  # noqa: E402
 from driftmon.embeddings import Embedder  # noqa: E402
+from driftmon.evidence import load_label_checks, load_longform  # noqa: E402
 from driftmon.graph import build_graph  # noqa: E402
 from driftmon.llm import LLMClient, LLMResult  # noqa: E402
 from driftmon.queries import load_questions, query_stream  # noqa: E402
@@ -83,7 +88,8 @@ def main(argv: list[str] | None = None) -> int:
     state = build_graph().invoke({"config": config, "docs": docs, "vectors": vectors,
                                   "queries": queries, "query_vectors": query_vectors,
                                   "questions": questions, "question_vectors": question_vectors, "llm": llm,
-                                  "impact_sample": args.pilot})
+                                  "impact_sample": args.pilot, "longform": load_longform(config),
+                                  "label_checks": load_label_checks(config)})
 
     mon, drift = state["monitoring"], state["drift"]
     (run_dir / "monitoring.json").write_text(mon.model_dump_json(indent=2), encoding="utf-8")
@@ -131,6 +137,7 @@ def main(argv: list[str] | None = None) -> int:
     print(corr.set_index("measure").round(2).to_string())
     _report_retrieval(state, run_dir)
     _report_impact(state, run_dir)
+    _report_recommendations(state, run_dir)
     if args.estimate and llm is not None:
         print(f"\nEstimate only: the uncached LLM calls would cost about ${llm.estimate:.2f} "
               f"({llm.uncached} uncached requests, batch price); spent so far ${llm.spent():.2f}")
@@ -208,6 +215,21 @@ def _report_impact(state, run_dir: Path) -> None:
     print(f"    judge: {rep.judge}")
     for note in rep.notes:
         print(f"Note: {note}")
+
+
+def _report_recommendations(state, run_dir: Path) -> None:
+    """Save Agent E's report (JSON and readable) and print the actions."""
+    rep = state.get("recommendations")
+    if rep is None:
+        return
+    from driftmon.agents.recommendation import to_markdown
+    (run_dir / "recommendations.json").write_text(rep.model_dump_json(indent=2), encoding="utf-8")
+    (run_dir / "recommendations.md").write_text(to_markdown(rep), encoding="utf-8")
+    print(f"\n=== Agent E: recommendations ({rep.summary}) ===")
+    for r in rep.recommendations:
+        mark = f"{r.priority}." if r.priority else "-"
+        print(f"  {mark} {r.action} [{r.status}]: {r.explanation if r.priority else r.finding}")
+    print(f"    explanations: {rep.explanations}")
 
 
 class _NoCalls:

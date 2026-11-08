@@ -862,11 +862,11 @@ chart, and whether it supports or contradicts what we expected.
   - **The changed-facts check is useful but not exact (80-85%):** misses
     are reworded sentences ("late 15th century" vs "late 1400s") and a
     changed maths example. Its flags are evidence to check, which is how
-    Agent E will present them.
+    Agent E presents them (F22).
 - **Limits:** small samples (a single item moves a part by 5-7 points);
   two labellers.
 - **Reproduce:** `python scripts/label_sheet.py score` and `compare`
-  (`runs/labels/agreement_first_pass.csv`, `agreement_sheet_regine.csv`,
+  (`runs/labels/agreement_first_pass.csv`, `agreement_second.csv`,
   `agreement_people.csv`; after re-check `agreement.csv`).
 - **Expectation:** agreement high on the answers cut (yes); facts precision
   about 90% by my reading (lower: 80-85%).
@@ -913,9 +913,13 @@ chart, and whether it supports or contradicts what we expected.
 - **Which drift matters:** of the 19 segments with at least 8 questions
   (outside the baseline), every one has a material loss: 7 are flagged by
   Agent B ("drift that hurts") and 12 are not ("harm without drift": e.g.
-  politics 2018-2020, U.S. news 2019-2020, world news 2018). Across
-  segments, no drift measure predicts the size of the loss (Spearman 0.18
-  to 0.40, all p > 0.1, 15 segments with drift scores). No segment was
+  politics 2018-2020, U.S. news 2019-2020, world news 2018). Of those 12,
+  8 were scored as low-severity drift (embedding 0.4-2.1x an ordinary
+  year); 4 are U.S. NEWS, a section that did not exist in the baseline, so
+  drift detection could not score it (Agent A reports it as a new section;
+  found while building Agent E). Across segments, no drift measure
+  predicts the size of the loss (Spearman -0.19 to 0.40, all p > 0.1, 15
+  segments with drift scores). No segment was
   borderline, so the evidence loop back to C did not trigger.
 - **What it means:** on a news archive, the harm comes from new events
   missing from the index, whatever the section's distribution shift.
@@ -977,3 +981,47 @@ chart, and whether it supports or contradicts what we expected.
 - **Expectation:** flagged edits would change answers clearly more often
   (yes, by 48 points).
 - **Verdict:** Supports D27: detection (F18), harm (this), action (E).
+
+## F22. Agent E: five actions recommended with evidence, four ruled out by a number; every LLM explanation passed the number check
+- **Date:** 2026-11-07
+- **Setup:** Agent E (D29) on the full run: one rule per action in the
+  brief, reading Agents A-D's reports, the long-form results (F16, F18,
+  F21) and the blind hand-label first passes (F19, F20). Sonnet explains
+  each recommended action from its evidence only; code rejects any number
+  not in the evidence.
+- **Result:**
+
+  | # | Action | Status | Deciding evidence |
+  |---|---|---|---|
+  | 1 | Re-index the archive, **on a schedule** | recommended | 19 of 19 sections lose 89-100 points of correct answers, all recovered by the refreshed index (89-100%); 12 of the 19 not flagged by drift; no drift measure predicts the loss |
+  | 2 | Re-index the 90 Wikipedia articles with changed facts | recommended | 391 changed numbers or dates since the index was built; flagged edits change answers 50% vs 2% (p = 1.5e-10); 95% of those articles had a "low" drift score; precision 80% and 85% |
+  | 3 | Escalate 12 sections to a person | recommended | lost answers without a drift flag: 8 scored low (0.4-2.1x an ordinary year), 4 not scorable (U.S. NEWS, new since the baseline) |
+  | 4 | Chunking for long documents | recommended | 92% of an article's text past 512 tokens; following real edits: 0.51 first 512 tokens, 0.78 averaged, 0.87-0.89 chunks; news articles are 30 words (not applicable) |
+  | 5 | Continue monitoring questions about the baseline | recommended | 100% correct before and after re-indexing; 2022 is 0.5x an ordinary year vs 2021 but 2.1x vs the baseline |
+  | - | Update retrieval settings | not needed | refreshed top 5 holds an answer for 96-100% of new questions; no section borderline |
+  | - | Improve prompts | not needed | 96-100% correct on the refreshed index; 3 of 846 answers (0.4%) added a claim |
+  | - | Trigger model evaluation | not needed | every section recovers on the refreshed index (89-100%, threshold 60%) |
+  | - | Recommend retraining | not needed | follows only a failed model evaluation |
+
+- **Explanations:** 5 requests, 0 rejected drafts, 0 fallbacks, under $0.01
+  per run (about $0.02 including development runs).
+- **Run:** `20261107-202242`, the full pipeline A -> E in 6 minutes from
+  the cache. F20's one failed answer succeeded this time (876 of 876
+  judged); the section classes and per-period rates are unchanged.
+- **What it means:** the system's answer to "which drift matters" turns into
+  actions: for news, new content missing from the index, so re-index on a
+  schedule; for edited documents, changed facts, so re-index those
+  documents; drift scores explain and prioritise. The second embedding
+  model was not needed, and the rule shows why.
+- **Surprise:** 4 of the 12 "harm without drift" sections are a section
+  that did not exist in the baseline (U.S. NEWS). Drift detection cannot
+  score it at all, which is a different failure from "scored as ordinary";
+  F20 now says so.
+- **Reproduce:** `python scripts/run_pipeline.py` (`runs/<run>/recommendations.json`,
+  `recommendations.md`), or Agent E alone on a saved run:
+  `python scripts/recommend.py --run runs/<run>`.
+- **Expectation:** re-index, document re-index, chunking and escalation
+  would fire, the rest would not (yes). Escalation reasons were expected to
+  be "scored as ordinary" only (no: a third were unscorable).
+- **Verdict:** Supports D29: rules decide, the LLM explains, the number
+  check holds.

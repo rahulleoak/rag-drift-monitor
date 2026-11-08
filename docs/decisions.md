@@ -1095,3 +1095,54 @@ date and reason, and add a new entry that supersedes it.
   answers (both indexes found the same articles) reuse one cached grade.
 - **Cost:** about $6-9 at batch prices (estimate; the last estimate was
   about twice the real cost).
+
+## D29. Agent E: one rule per action in the brief, evidence attached, explanations number-checked
+- **Date:** 2026-11-07
+- **Status:** Accepted (approved by the author, 2026-11-07).
+- **Context:** the brief asks Agent E to recommend corrective actions
+  ("continue monitoring", "update or re-index", "improve chunking or
+  embedding strategies", "update retrieval configurations", "improve prompts
+  or retrieval strategies", "trigger model evaluation or retraining",
+  "escalate for human review"), each with supporting evidence and an
+  explanation. Agent D found that every news section with enough questions
+  loses answers on the stale index, flagged by drift or not (F20), and the
+  Wikipedia test found that changed facts change answers (F21).
+- **Options considered:**
+  - *An LLM reads all reports and writes recommendations.* Flexible, but
+    the decision would be the LLM's, numbers can be invented, and runs are
+    not repeatable. Contradicts D9 ("LLM writes, code decides").
+  - *Rules only, with fixed text.* Repeatable and testable, but the text
+    cannot explain the specific case well.
+  - *Rules decide, the LLM explains, code checks the explanation*
+    (chosen).
+- **Choices:**
+  1. **One rule per action in the brief** (`driftmon/policy.py`), each a
+     plain function of the reports from Agents B, C and D, plus the
+     long-form evidence (changed facts, outdated-answer test, chunking
+     experiment) and the hand-label checks. Thresholds live in the config.
+  2. **Every rule reports**, fired or not: "recommended" with its evidence;
+     "not needed" with the number that ruled it out; "not checked" if its
+     input is missing. This shows every action in the brief was considered.
+  3. **Every recommendation carries evidence:** items with a source (agent
+     report or finding) and a claim with the numbers. A recommendation
+     without evidence is rejected in code and listed as rejected.
+  4. **Explanations:** Sonnet writes 2-3 sentences for each recommended
+     action from its evidence only. Code rejects an explanation if it has
+     a number that is not in the evidence; it retries once with the
+     offending numbers named, then falls back to the rule's own text. The
+     check result is saved with each recommendation.
+  5. **Order:** by kind of evidence first (measured answer loss, then
+     escalation, then maintenance), then by size within a kind (loss x
+     questions affected for re-indexing).
+  6. **Escalation with a reason:** "harm without drift" segments go to a
+     human with the lesson attached (drift alerts missed them; rely on the
+     schedule), not a bare "please review".
+- **Kept small on purpose:**
+  - *Re-index and re-check (the bonus):* the refreshed index is the
+    re-indexed system, so E cites that comparison rather than re-running it.
+  - *The second embedding model loop (D7):* not built, because no segment
+    is poor on the refreshed index. The rule exists and reports "not
+    needed" with the number. If a later run needs it, it becomes a loop
+    back to Agent C, as D7 describes.
+- **Graph:** A -> B -> C -> D (loop to C) -> E -> end.
+- **Cost:** a few cents (about ten short Sonnet calls, cached).

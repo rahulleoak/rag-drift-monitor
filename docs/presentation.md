@@ -290,23 +290,34 @@ a measurement, not an opinion.
 - **Cost control:** every LLM response cached to disk, a 20-question pilot
   before full runs, Batch API at half price.
 
-## 9. Recommendations with evidence (🔨, D7)
+## 9. Recommendations with evidence (✅, D29, F22)
 
-One rule per action in the brief, each triggered by evidence:
+One rule per action in the brief, in code; every rule reports, fired or not.
+On our data (run `recommendations.md`):
 
-| Action | Evidence that triggers it |
-|---|---|
-| Keep monitoring | Drift, but no quality loss |
-| Re-index | Quality recovers on the refreshed index |
-| Trigger model evaluation | Quality still poor on the refreshed index; **the system runs it** with a second embedding model |
-| Recommend retraining | Neither model copes even with fresh data (recommended, not run) |
-| Change retrieval settings | The right article sits just outside the top K |
-| Improve prompts | Retrieval fine, answers wrong or ungrounded |
-| Escalate to a human | Quality loss without drift, or inconclusive evidence |
-| Improve chunking | Rule exists; not applicable to 1–2 sentence articles |
+| # | Action | Status | The evidence in one line |
+|---|---|---|---|
+| 1 | Re-index the archive **on a schedule** | recommended | 0-1% vs 96-100% correct; 12 of 19 losing sections not flagged by drift; no drift measure predicts the loss |
+| 2 | Re-index the 90 articles with changed facts | recommended | 391 changed numbers or dates; flagged edits change answers 50% vs 2%; 95% had a "low" drift score |
+| 3 | Escalate 12 sections to a person | recommended | lost answers without a drift flag: 8 scored low, 4 are a section new since the baseline |
+| 4 | Chunking for long documents | recommended | 92% of an article past 512 tokens; chunks follow edits 0.87-0.89 vs 0.51 |
+| 5 | Keep monitoring old questions | recommended | 100% vs 100%; compare with the baseline (2022 is 0.5x vs 2021 but 2.1x vs baseline) |
+| - | Retrieval settings, prompts, model evaluation, retraining | not needed | refreshed top 5 holds an answer 96-100%; 0.4% invented claims; every section recovers |
 
-- Talking point: every recommendation carries its numbers; a check rejects
-  any recommendation without cited evidence.
+- **Talking point: rules decide, the LLM explains, code checks.** Sonnet
+  writes each explanation from the evidence only; any number not in the
+  evidence is rejected (one retry, then the rule's own text). All five
+  passed on the first try; cost $0.02.
+- **Talking point: "not needed" is a result.** The model-evaluation rule
+  shows why no second embedding model was tried: every section recovers
+  on the refreshed index. That's evidence, not a skipped step.
+- **Course correction found by E:** 4 of the 12 "harm without drift"
+  sections are U.S. NEWS, which did not exist in the baseline, so drift
+  detection could not score it at all. E's escalation says so, with a
+  different lesson (a new section needs its own baseline).
+- **Likely question: "Why not let the LLM decide?"** Repeatable, testable,
+  and no invented numbers (D9, D29). The LLM's value is the plain-language
+  explanation, and that is checked.
 
 ## 10. Research into practice: the author's paper
 

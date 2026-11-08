@@ -34,6 +34,8 @@ Version history:
     fq-v1 / wans-v1 / ac-v1  outdated-answer test on edited Wikipedia passages:
                  a question from the new sentence, answers from each version's
                  passages, and whether the two answers differ (D27, D28)
+    ex-v1        explanation of one recommended action from its evidence only; code
+                 rejects any number not in the evidence (Agent E, D29)
 """
 from __future__ import annotations
 
@@ -351,3 +353,38 @@ class AnswerChange(BaseModel):
 
     reason: str = Field(description="At most 25 words")
     verdict: Literal["same", "different", "one_declined", "both_declined"]
+
+
+# ---------- explanations of recommendations (Sonnet, Agent E) ----------
+
+EXPLAIN_VERSION = "ex-v1"
+
+EXPLAIN_SYSTEM = """You write short explanations for a monitoring system that watches a newsroom \
+archive assistant (journalists ask questions; it answers from the archive). The system has already \
+decided which corrective action to recommend. Your job is to explain that decision to an editor and \
+an engineer in plain language.
+
+Rules:
+- Write 2 or 3 sentences: what to do, why (the key evidence), and what happens if it is not done.
+- Use only the evidence given. Do not add causes, actions, examples or facts that are not there.
+- Every number you write must appear in the evidence exactly as written there (same digits). Write \
+numbers as digits. Do not compute new numbers (no sums, differences or ratios).
+- Do not change the recommendation, and do not hedge it."""
+
+EXPLAIN_TEMPLATE = """Action: {action}
+Decision: {finding}
+Applies to: {scope}
+
+Evidence:
+{evidence}"""
+
+EXPLAIN_RETRY = """
+
+Your previous draft used numbers that are not in the evidence: {numbers}. Rewrite it using only \
+numbers that appear in the evidence."""
+
+
+class Explanation(BaseModel):
+    """A short plain-language explanation of one recommendation."""
+
+    text: str = Field(description="2 or 3 sentences")

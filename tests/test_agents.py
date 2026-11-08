@@ -116,6 +116,9 @@ def test_graph_flags_the_shifted_period_and_routes_to_full_evaluation():
     assert any(t in WORDS_NEW for t in whole.emerging_terms)
     assert "2020|ALL|vs 2016-17" in drift.drifted_segments
     assert state["next_step"] == FULL_EVALUATION
+    # Agent E runs last and reports on every action, even without answers to judge
+    recs = state["recommendations"].recommendations
+    assert len(recs) == 9 and {r.status for r in recs} <= {"not checked", "not needed", "recommended"}
 
 
 def test_graph_reports_the_query_stream_and_query_drift():

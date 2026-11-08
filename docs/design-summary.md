@@ -136,7 +136,7 @@ and Opus reviews them.
   | Question reviewer | 14/15 | 10–11/15 (stricter than both people) |
   | Changed-facts check | 18/20 | 17/20 (85% precision) |
 
-  A sample of judged answers is being labelled the same way.
+  Answer judge vs a person: 15/15 on a blind sample of 15 answers.
 - **Total LLM spend so far:** about $15.60, using our own key.
 
 ## 6. Chunking strategy and how it affects drift detection

@@ -901,6 +901,16 @@ chart, and whether it supports or contradicts what we expected.
     article (the question was unanswerable only from its own source).
   - **Refreshed misses** (5): all declines where the top 5 held no answer:
     retrieval misses, not answer-step errors.
+- **Hand check of the answer judge** (blind sheet of 15: 6 judged correct,
+  5 declines, and all 4 unusual answers, i.e. partly right or not grounded):
+  the author agrees with the judge on **15/15** (kappa 1.0). First pass
+  11/15; the author then re-checked 4 items against the written rules,
+  still without seeing the judge's grades. All 4 were the judge's "1"
+  cases: an answer that joined two articles, a date worked out from the
+  calendar, a cautious decline that named the right number, and a true but
+  incomplete cause. These are the judgement calls; on clear correct
+  answers and declines there was no disagreement on either pass.
+  Reproduce: `python scripts/label_sheet.py score --dir runs/labels/answers`.
 - **Which drift matters:** of the 19 segments with at least 8 questions
   (outside the baseline), every one has a material loss: 7 are flagged by
   Agent B ("drift that hurts") and 12 are not ("harm without drift": e.g.

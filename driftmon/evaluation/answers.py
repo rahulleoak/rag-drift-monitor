@@ -26,10 +26,10 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from driftmon.embeddings import document_text
+from driftmon.rag.embeddings import document_text
 from driftmon.evaluation.stats import bootstrap_mean_ci
-from driftmon.llm import LLMRequest
-from driftmon.prompts import (ANSWER_JUDGE_SYSTEM, ANSWER_JUDGE_TEMPLATE, ANSWER_JUDGE_VERSION,
+from driftmon.llm.client import LLMRequest
+from driftmon.llm.prompts import (ANSWER_JUDGE_SYSTEM, ANSWER_JUDGE_TEMPLATE, ANSWER_JUDGE_VERSION,
                               ANSWER_SYSTEM, ANSWER_TEMPLATE, ANSWER_VERSION, AnswerJudgement,
                               RagAnswer)
 

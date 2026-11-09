@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from driftmon.dashboard_data import list_runs, load_run, severity_grid, stale_vs_refreshed
+from driftmon.dashboard.runs import list_runs, load_run, severity_grid, stale_vs_refreshed
 from driftmon.schemas import RetrievalReport
 from driftmon.graph import build_graph
 from scripts.make_charts import latest_run, make_all
@@ -104,7 +104,7 @@ DEMO = Path(__file__).resolve().parents[1] / "demo" / "runs"
 
 
 def test_the_bundled_demo_run_loads_with_every_agent():
-    from driftmon.dashboard_data import answers_stale_vs_refreshed, harm_vs_drift
+    from driftmon.dashboard.runs import answers_stale_vs_refreshed, harm_vs_drift
     runs = list_runs(DEMO)
     assert len(runs) == 1, "demo/runs should hold exactly one run (scripts/export_demo.py)"
     run = load_run(DEMO, runs[0])

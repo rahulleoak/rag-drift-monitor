@@ -2,7 +2,7 @@
 import pandas as pd
 import pytest
 
-from driftmon import labels
+from driftmon.evaluation import labels
 
 
 def _table():

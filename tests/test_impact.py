@@ -9,8 +9,8 @@ import pandas as pd
 from driftmon.agents.impact_assessment import impact_assessment, pilot_sample
 from driftmon.evaluation import answers as an
 from driftmon.evaluation import retrieval as rv
-from driftmon.index import load_or_build_study_indexes
-from driftmon.llm import LLMClient
+from driftmon.rag.index import load_or_build_study_indexes
+from driftmon.llm.client import LLMClient
 from tests.test_llm import FakeAPI, _msg
 from tests.test_retrieval import _archive, _config, _judge, _questions
 

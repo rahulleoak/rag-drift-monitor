@@ -20,7 +20,7 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 import pandas as pd
 
-from driftmon.embeddings import document_text
+from driftmon.rag.embeddings import document_text
 
 SHEET_COLUMNS = ["item_id", "part", "instructions", "question", "reference_answer", "text", "your_label",
                  "your_note"]

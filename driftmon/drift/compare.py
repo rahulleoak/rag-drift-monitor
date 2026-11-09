@@ -22,9 +22,9 @@ import pandas as pd
 
 from driftmon.drift import embedding as emb
 from driftmon.drift import lexical as lex
-from driftmon.embeddings import document_text
-from driftmon.index import StudyIndexes, build_study_indexes
-from driftmon.periods import Period, study_periods
+from driftmon.rag.embeddings import document_text
+from driftmon.rag.index import StudyIndexes, build_study_indexes
+from driftmon.data.periods import Period, study_periods
 
 NOVELTY_PERCENTILE = 95  # "novel" = less similar to the archive than 95% of baseline articles are
 

@@ -78,7 +78,7 @@ class DriftReport(BaseModel):
     topics: list[dict[str, Any]] = Field(default_factory=list)        # emerging topics (D12)
     term_shifts: list[dict[str, Any]] = Field(default_factory=list)   # term-context shifts (D12)
     metric_correlations: list[dict[str, Any]] = Field(default_factory=list)  # P6, across segments
-    # each period's queries vs the baseline queries (driftmon.queries); a note if unavailable
+    # each period's queries vs the baseline queries (driftmon.data.queries); a note if unavailable
     query_drift: list[dict[str, Any]] | str = "not available (no question set generated yet)"
 
 

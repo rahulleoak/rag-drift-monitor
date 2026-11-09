@@ -339,33 +339,22 @@ rag-drift-monitor/
     ├── graph.py              LangGraph wiring and the routing decisions
     ├── schemas.py            the typed reports agents pass to each other
     ├── policy.py             Agent E's rules: one per action in the brief
+    ├── config.py             loads config/config.yaml and resolves paths
     │
     ├── drift/                drift statistics: embedding, lexical, severity bands, topics,
     │                         term-context shift, changed facts
     ├── evaluation/           retrieval metrics, answers and judging, the outdated-answer
-    │                         test, bootstrap statistics
+    │                         test, hand-label agreement, bootstrap statistics
     │
-    ├── llm.py                LLM client: disk cache, Batch API, budget check, cost ledger
-    ├── prompts.py            every prompt, versioned
-    ├── embeddings.py         bge-small embeddings with a disk cache
-    ├── index.py              FAISS indexes (stale and refreshed), saved to disk
-    │
-    ├── data.py               dataset loading into one record shape
-    ├── cleaning.py           cleaning rules and near-duplicate removal
-    ├── corpus.py             the prepared archive and its embeddings
-    ├── periods.py            the baseline and later years
-    ├── monitoring.py         Agent A's statistics
-    ├── simulate.py           the simulated question set (writer and reviewer)
-    ├── queries.py            the question set as a query stream
-    │
-    ├── wikipedia.py          fetching and cleaning Wikipedia snapshots
-    ├── chunking.py           section-aware chunking
-    ├── longform.py           the chunking experiment
-    ├── evidence.py           long-form results and hand-label checks for Agent E
-    ├── labels.py             blind hand-label sheets and agreement scores
-    │
-    ├── charts.py             drift charts in the project's palette
-    └── dashboard_data.py     loading saved runs for the dashboard
+    ├── data/                 what comes in: loading and cleaning the archive, periods,
+    │                         the simulated questions, Agent A's statistics
+    ├── rag/                  the pipeline under test: embeddings, stale and refreshed
+    │                         FAISS indexes
+    ├── llm/                  the LLM client (cache, Batch API, budget, cost ledger) and
+    │                         every prompt, versioned
+    ├── longform/             Wikipedia snapshots, chunking, the chunking experiment,
+    │                         the long-form evidence Agent E reads
+    └── dashboard/            charts and loading saved runs for the dashboard
 ```
 
 Ignored by git and created as you run: `data/` (except `data/sample/`),

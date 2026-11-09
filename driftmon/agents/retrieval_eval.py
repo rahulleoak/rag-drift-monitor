@@ -26,8 +26,8 @@ import pandas as pd
 
 from driftmon.config import resolve_path
 from driftmon.evaluation import retrieval as rv
-from driftmon.index import load_or_build_study_indexes
-from driftmon.periods import study_periods
+from driftmon.rag.index import load_or_build_study_indexes
+from driftmon.data.periods import study_periods
 from driftmon.schemas import PipelineState, RetrievalReport
 
 REGRESSION_POOLS = ("random",)

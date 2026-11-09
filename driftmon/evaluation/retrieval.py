@@ -31,12 +31,12 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from driftmon.embeddings import document_text
+from driftmon.rag.embeddings import document_text
 from driftmon.evaluation import retrieval_metrics as rm
 from driftmon.evaluation.stats import bootstrap_mean_ci
-from driftmon.index import StudyIndexes
-from driftmon.llm import LLMClient, LLMRequest
-from driftmon.prompts import (RELEVANCE_SYSTEM, RELEVANCE_TEMPLATE, RELEVANCE_VERSION,
+from driftmon.rag.index import StudyIndexes
+from driftmon.llm.client import LLMClient, LLMRequest
+from driftmon.llm.prompts import (RELEVANCE_SYSTEM, RELEVANCE_TEMPLATE, RELEVANCE_VERSION,
                               RelevanceJudgement)
 
 
@@ -271,7 +271,7 @@ def summarise(per_q: pd.DataFrame, value_cols: Sequence[str], by: str | Sequence
 
 
 def _periods(cfg: Mapping[str, Any]) -> tuple[str, list[str]]:
-    from driftmon.periods import study_periods
+    from driftmon.data.periods import study_periods
     ps = study_periods(cfg)
     return ps[0].name, [p.name for p in ps[1:]]
 

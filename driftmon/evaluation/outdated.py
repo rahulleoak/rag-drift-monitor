@@ -28,8 +28,8 @@ from scipy import stats
 
 from driftmon.drift import facts
 from driftmon.evaluation.stats import bootstrap_mean_ci
-from driftmon.llm import LLMRequest
-from driftmon.prompts import (ANSWER_CHANGE_SYSTEM, ANSWER_CHANGE_TEMPLATE, ANSWER_CHANGE_VERSION,
+from driftmon.llm.client import LLMRequest
+from driftmon.llm.prompts import (ANSWER_CHANGE_SYSTEM, ANSWER_CHANGE_TEMPLATE, ANSWER_CHANGE_VERSION,
                               FACT_QUESTION_SYSTEM, FACT_QUESTION_TEMPLATE, FACT_QUESTION_VERSION,
                               WIKI_ANSWER_SYSTEM, WIKI_ANSWER_TEMPLATE, WIKI_ANSWER_VERSION, AnswerChange,
                               FactQuestion, RagAnswer)

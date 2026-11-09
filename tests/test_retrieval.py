@@ -11,8 +11,8 @@ from driftmon.config import load_config
 from driftmon.evaluation import retrieval as rv
 from driftmon.evaluation import retrieval_metrics as rm
 from driftmon.evaluation.stats import bootstrap_mean_ci
-from driftmon.index import load_or_build_study_indexes
-from driftmon.llm import LLMClient
+from driftmon.rag.index import load_or_build_study_indexes
+from driftmon.llm.client import LLMClient
 from tests.test_llm import FakeAPI, _msg
 
 

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from driftmon.config import resolve_path
-from driftmon.embeddings import Embedder, document_text
+from driftmon.rag.embeddings import Embedder, document_text
 
 
 def load_corpus(config: Mapping[str, Any], embedder: Embedder | None = None

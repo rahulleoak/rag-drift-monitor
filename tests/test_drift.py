@@ -8,7 +8,7 @@ import pytest
 from driftmon.drift import embedding as emb
 from driftmon.drift import lexical as lex
 from driftmon.evaluation.stats import benjamini_hochberg
-from driftmon.index import VectorIndex, build_study_indexes
+from driftmon.rag.index import VectorIndex, build_study_indexes
 
 
 def _normal_rows(rng, n, d, shift=0.0):

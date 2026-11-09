@@ -3,7 +3,7 @@
 Agent A (Data Monitoring) -> Agent B (Drift Detection) -> the routing
 decision -> Agent C (Retrieval Evaluation) -> Agent D (RAG Impact) -> Agent E
 (Recommendation). Agent E also reads the long-form evidence and the hand-label
-checks saved outside the graph (``driftmon.evidence``).
+checks saved outside the graph (``driftmon.longform.evidence``).
 
 Writes:
     monitoring.json    Agent A's MonitoringReport
@@ -46,12 +46,12 @@ if __package__ in (None, ""):  # allow `python scripts/run_pipeline.py` without 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.corpus import load_corpus  # noqa: E402
-from driftmon.embeddings import Embedder  # noqa: E402
-from driftmon.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
+from driftmon.data.corpus import load_corpus  # noqa: E402
+from driftmon.rag.embeddings import Embedder  # noqa: E402
+from driftmon.longform.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
 from driftmon.graph import build_graph  # noqa: E402
-from driftmon.llm import LLMClient, LLMResult  # noqa: E402
-from driftmon.queries import load_questions, query_stream  # noqa: E402
+from driftmon.llm.client import LLMClient, LLMResult  # noqa: E402
+from driftmon.data.queries import load_questions, query_stream  # noqa: E402
 
 SHOW = ["segment_id", "times_ordinary_embedding", "times_ordinary_lexical", "embedding_band",
         "lexical_band", "kind", "flagged", "emerging_terms"]

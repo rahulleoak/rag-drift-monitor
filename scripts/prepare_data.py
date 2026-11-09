@@ -32,11 +32,11 @@ import pandas as pd
 if __package__ in (None, ""):  # allow `python scripts/prepare_data.py` without installing
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon import cleaning  # noqa: E402
+from driftmon.data import cleaning  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.data import iter_records  # noqa: E402
-from driftmon.embeddings import Embedder, document_text  # noqa: E402
-from driftmon.periods import assign_period, study_periods  # noqa: E402
+from driftmon.data.records import iter_records  # noqa: E402
+from driftmon.rag.embeddings import Embedder, document_text  # noqa: E402
+from driftmon.data.periods import assign_period, study_periods  # noqa: E402
 
 RULES = ["empty_description", "too_short", "too_long", "near_duplicate"]
 

@@ -38,8 +38,8 @@ if __package__ in (None, ""):  # allow running the file directly without install
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.data import Record, iter_records  # noqa: E402
-from driftmon.periods import Period  # noqa: E402
+from driftmon.data.records import Record, iter_records  # noqa: E402
+from driftmon.data.periods import Period  # noqa: E402
 
 
 def count_categories(records: Iterable[Record], periods: Iterable[Period],

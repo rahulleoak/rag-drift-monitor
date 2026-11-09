@@ -28,8 +28,8 @@ import pandas as pd
 
 from driftmon.evaluation import answers as an
 from driftmon.evaluation import retrieval as rv
-from driftmon.llm import LLMResult
-from driftmon.periods import study_periods
+from driftmon.llm.client import LLMResult
+from driftmon.data.periods import study_periods
 from driftmon.schemas import ImpactReport, PipelineState
 
 ESTIMATE_ANSWER = ("The archive says the measure passed with broad support after a long debate, "
@@ -182,7 +182,7 @@ def _evidence_round(state: PipelineState) -> dict[str, Any]:
 
 
 def _placeholder(a: LLMResult) -> LLMResult:
-    from driftmon.prompts import RagAnswer
+    from driftmon.llm.prompts import RagAnswer
     return LLMResult(key=a.key, parsed=RagAnswer(found=True, answer=ESTIMATE_ANSWER, sources=["A"]), text="",
                      stop_reason="", model=a.model, input_tokens=0, output_tokens=0, cost_usd=0.0)
 

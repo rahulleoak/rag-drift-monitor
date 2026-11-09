@@ -33,7 +33,7 @@ import pandas as pd
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon import labels  # noqa: E402
+from driftmon.evaluation import labels  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.evaluation.answers import article_listing  # noqa: E402
 

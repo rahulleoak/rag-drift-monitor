@@ -4,7 +4,7 @@ Reads: Agent D's ``ImpactReport`` (sections, causes, the evidence loop),
 Agent C's ``RetrievalReport``, Agent B's ``DriftReport`` and Agent A's
 ``MonitoringReport``, plus evidence produced outside the graph: the
 long-form results (changed facts, the outdated-answer test, chunking) and
-the hand-label checks (``driftmon.evidence``).
+the hand-label checks (``driftmon.longform.evidence``).
 Does: ``driftmon.policy`` runs one rule per action in the brief and decides
 (in code) what to recommend, with the evidence. Sonnet then writes a short
 explanation for each recommended action from that evidence only; code
@@ -20,8 +20,8 @@ from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 from driftmon import policy
-from driftmon.llm import LLMRequest
-from driftmon.prompts import EXPLAIN_RETRY, EXPLAIN_SYSTEM, EXPLAIN_TEMPLATE, EXPLAIN_VERSION, Explanation
+from driftmon.llm.client import LLMRequest
+from driftmon.llm.prompts import EXPLAIN_RETRY, EXPLAIN_SYSTEM, EXPLAIN_TEMPLATE, EXPLAIN_VERSION, Explanation
 from driftmon.schemas import PipelineState, Recommendation, RecommendationReport
 
 NUMBER = re.compile(r"\d+(?:[.,]\d+)*")

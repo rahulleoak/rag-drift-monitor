@@ -16,9 +16,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from driftmon import queries
+from driftmon.data import queries
 from driftmon.drift.report import build_drift_report
-from driftmon.periods import study_periods
+from driftmon.data.periods import study_periods
 from driftmon.schemas import PipelineState
 
 

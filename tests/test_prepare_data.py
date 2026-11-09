@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from driftmon.config import load_config
-from driftmon.embeddings import Embedder
+from driftmon.rag.embeddings import Embedder
 from scripts.prepare_data import check_raw_file, run
 
 

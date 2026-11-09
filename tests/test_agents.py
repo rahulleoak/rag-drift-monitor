@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from driftmon import monitoring
+from driftmon.data import monitoring
 from driftmon.config import load_config
 from driftmon.drift import severity as sev
 from driftmon.drift.compare import eligible_segments

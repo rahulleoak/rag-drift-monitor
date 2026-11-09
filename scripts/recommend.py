@@ -26,8 +26,8 @@ if __package__ in (None, ""):  # allow `python scripts/recommend.py` without ins
 
 from driftmon.agents.recommendation import recommendation, to_markdown  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
-from driftmon.llm import LLMClient  # noqa: E402
+from driftmon.longform.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
+from driftmon.llm.client import LLMClient  # noqa: E402
 from driftmon.schemas import DriftReport, ImpactReport, MonitoringReport, RetrievalReport  # noqa: E402
 
 REPORTS = {"monitoring": ("monitoring.json", MonitoringReport), "drift": ("drift.json", DriftReport),

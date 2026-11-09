@@ -22,9 +22,9 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
+from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.dashboard_data import (answers_stale_vs_refreshed, harm_vs_drift, list_runs, load_run,  # noqa: E402
+from driftmon.dashboard.runs import (answers_stale_vs_refreshed, harm_vs_drift, list_runs, load_run,  # noqa: E402
                                      severity_grid, stale_vs_refreshed)
 
 st.set_page_config(page_title="RAG drift monitor", layout="wide")

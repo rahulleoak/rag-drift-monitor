@@ -69,7 +69,7 @@ class Inputs:
     drift: DriftReport | None = None
     retrieval: RetrievalReport | None = None
     impact: ImpactReport | None = None
-    longform: Mapping[str, Any] = field(default_factory=dict)   # see ``driftmon.evidence``
+    longform: Mapping[str, Any] = field(default_factory=dict)   # see ``driftmon.longform.evidence``
     labels: pd.DataFrame | None = None                          # hand labels vs the LLM, one row per (who, part)
 
     @property

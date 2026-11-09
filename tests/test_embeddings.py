@@ -1,7 +1,7 @@
-"""Tests for the embedding cache (driftmon.embeddings), using a fake model."""
+"""Tests for the embedding cache (driftmon.rag.embeddings), using a fake model."""
 import numpy as np
 
-from driftmon.embeddings import Embedder, document_text
+from driftmon.rag.embeddings import Embedder, document_text
 
 
 class FakeModel:

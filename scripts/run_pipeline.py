@@ -170,8 +170,7 @@ def _save_run_info(run_dir: Path, config: dict, args, llm, spent_before: float, 
         "llm_cost_usd": round(llm.spent() - spent_before, 4) if llm is not None and mode == "full" else None,
         "code_version": _git_commit(),
     }
-    (run_dir / "run_info.json").write_text(json.dumps(info, indent=2) + "
-", encoding="utf-8")
+    (run_dir / "run_info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
 
 
 def _git_commit() -> str | None:

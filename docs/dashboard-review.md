@@ -11,7 +11,7 @@ ticked when done; the file is deleted once the list is finished.
       tested. Today one caption hard-codes a result ("2016–17: both indexes
       answer 100%") and some captions hard-code the baseline years ("2016–17")
       instead of reading them from the run.
-- [ ] **Show the models the run actually used.** Each run saves
+- [x] **Show the models the run actually used.** Each run saves
       `run_info.json` (models per job, date, cost, question set); the dashboard
       reads model names from it (falling back to the config for older runs)
       instead of the hard-coded "Sonnet answers…; Opus grades…". Also gives

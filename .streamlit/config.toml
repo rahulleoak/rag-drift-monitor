@@ -6,3 +6,6 @@ backgroundColor = "#0D1725"         # --rv-bg-1, deep navy
 secondaryBackgroundColor = "#161B24" # --rv-bg-2, cards and sidebar
 textColor = "#F3F1EB"               # --rv-ink, warm off-white
 font = "sans serif"
+
+[client]
+toolbarMode = "minimal"             # no "Deploy" button or developer menu: this is a read-only viewer

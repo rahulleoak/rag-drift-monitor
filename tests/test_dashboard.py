@@ -82,10 +82,10 @@ def test_dashboard_renders_every_tab(run_dir, monkeypatch):
     assert [t.label for t in at.tabs] == ["Overview", "Data monitoring", "Drift", "Retrieval",
                                           "Impact", "Recommendations"]
     metrics = {m.label: m.value for m in at.metric}
-    assert metrics["Flagged (vs baseline)"] == "2"
-    assert metrics["Judged questions"] == "20" and metrics["LLM cost, this run"] == "$0.12"
-    assert metrics["Next step"] == "full evaluation"
-    segment = next(s for s in at.selectbox if s.label == "Segment")
+    assert metrics["Groups flagged for drift"] == "2"
+    assert "Questions tested" in metrics and "Answer found, after re-indexing" in metrics
+    assert any("ran the full answer check" in c.value for c in at.caption)   # the routing decision, in words
+    segment = next(s for s in at.selectbox if s.label == "Group")
     segment.select("2020|POLITICS|vs 2016-17").run()
     assert not at.exception
 
@@ -123,10 +123,12 @@ def test_dashboard_renders_the_demo_run_on_every_tab(monkeypatch):
     at.run()
     assert not at.exception
     labels = {m.label for m in at.metric}
-    assert {"Correct, stale index", "Recommended actions", "Questions answered (both indexes)",
-            "Recommended", "Not needed"} <= labels
+    assert {"Correct without re-indexing", "Correct after re-indexing", "Recommended actions",
+            "Questions answered", "Recommended", "Not needed", "Admits it doesn't know"} <= labels
     text = " ".join(m.value for m in at.markdown)
     assert "Checked, not recommended" in text and "Top recommendation" in text
+    assert "In this run:" in text                       # takeaways built from the run are shown
+    assert "(F11)" not in text and "D27:" not in text   # no internal document codes on screen
 
 
 def test_export_demo_copies_only_what_the_dashboard_reads(tmp_path):

@@ -5,6 +5,15 @@ ticked when done; the file is deleted once the list is finished.
 
 ## Whole dashboard
 
+- [ ] **Requirement: user experience.** The dashboard should look pleasing and
+      be meaningful: every element earns its place by telling the viewer
+      something, in plain words, with a consistent visual style. Applies to
+      every item below.
+- [ ] **Remove the link icon next to every heading.** Streamlit adds an anchor
+      link to headings for sharing a link to that section; in a single page
+      with tabs it does nothing useful (a link to a heading in another tab does
+      not open that tab), so it reads as a broken copy button. Turn anchors
+      off on every heading.
 - [ ] **Rule: no results typed into the dashboard.** "How to read" text is
       fixed (true for any run); "what this run shows" text is built by code from
       the run's numbers, with wording that depends on the result, and is

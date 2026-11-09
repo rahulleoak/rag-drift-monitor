@@ -137,14 +137,19 @@ def load_longform_snapshot(folder: Path) -> dict[str, Any]:
     return out
 
 
-STALE, REFRESHED = "Stale index (2016-17 only)", "Refreshed index"
+REFRESHED = "Refreshed index"
+
+
+def stale_label(baseline: str) -> str:
+    """Legend name of the stale index, e.g. 'Stale index (2016-17 only)'."""
+    return f"Stale index ({baseline} only)"
 
 
 def _long(rows: list[dict[str, Any]], stale: str, refreshed: str, delta: str | None,
-          low: str | None = None, high: str | None = None) -> pd.DataFrame:
+          low: str | None = None, high: str | None = None, baseline: str = "baseline") -> pd.DataFrame:
     out = []
     for r in rows:
-        for side, label in ((stale, STALE), (refreshed, REFRESHED)):
+        for side, label in ((stale, stale_label(baseline)), (refreshed, REFRESHED)):
             row = {"period": str(r["period"]), "index": label, "value": r[side], "questions": r["questions"]}
             if delta:
                 row.update(delta=r[delta], delta_low=r[low or f"{delta}_low"], delta_high=r[high or f"{delta}_high"])
@@ -156,7 +161,8 @@ def stale_vs_refreshed(run: Run, measure: str = "answer") -> pd.DataFrame:
     """Long table for the retrieval stale-vs-refreshed chart: one row per period and index."""
     if run.retrieval is None or not run.retrieval.judged_by_period:
         return pd.DataFrame(columns=["period", "index", "value", "questions"])
-    return _long(run.retrieval.judged_by_period, f"stale_{measure}", f"refreshed_{measure}", f"delta_{measure}")
+    return _long(run.retrieval.judged_by_period, f"stale_{measure}", f"refreshed_{measure}", f"delta_{measure}",
+                 baseline=run.baseline)
 
 
 def answers_stale_vs_refreshed(run: Run) -> pd.DataFrame:
@@ -165,7 +171,7 @@ def answers_stale_vs_refreshed(run: Run) -> pd.DataFrame:
     if run.impact is None or not run.impact.by_period:
         return pd.DataFrame(columns=["period", "index", "value", "questions"])
     return _long(run.impact.by_period, "stale_correct", "refreshed_correct", "loss_correct", "loss_low",
-                 "loss_high")
+                 "loss_high", baseline=run.baseline)
 
 
 def harm_vs_drift(run: Run) -> pd.DataFrame:

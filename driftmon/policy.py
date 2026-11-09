@@ -230,7 +230,7 @@ def reindex_documents(x: Inputs) -> Recommendation:
                                                        "test) found.")
     since = changes[changes["period"] != lf.get("baseline", x.baseline_name())]
     summ = lf.get("outdated_summary")
-    ev = [EvidenceItem(source="F21: outdated-answer test",
+    ev = [EvidenceItem(source="Wikipedia: outdated-answer test",
                        claim=f"Questions on flagged edits got a different answer from the old and the new version "
                              f"{pct(verdict['flagged_changed'])} of the time, vs {pct(verdict['comparison_changed'])} "
                              f"for edits that kept their numbers (Fisher p = {verdict['p_value']:.1e}).")]
@@ -240,28 +240,28 @@ def reindex_documents(x: Inputs) -> Recommendation:
         return _rec(REINDEX_DOCS, "not needed", rule, f"Not needed: {why}.", ev)
     titles = since.groupby("title").size().sort_values(ascending=False)
     n_articles = lf.get("articles")
-    ev.insert(0, EvidenceItem(source="D27: changed-facts check",
+    ev.insert(0, EvidenceItem(source="Wikipedia: changed-facts check",
                               claim=f"{len(since)} changed numbers or dates in {len(titles)}"
                                     f"{f' of {n_articles}' if n_articles else ''} articles since the index was "
                                     f"built ({since['period'].min()} to {since['period'].max()})."))
     low = lf.get("low_band_share")
     if low is not None:
-        ev.append(EvidenceItem(source="D27: changed facts vs drift scores",
+        ev.append(EvidenceItem(source="Wikipedia: changed facts vs drift scores",
                                claim=f"{pct(low)} of articles with a changed fact had a \"low\" drift score, "
                                      f"so drift alerts alone would miss them."))
     if summ is not None and len(summ):
         f = summ.set_index("group").loc["flagged"]
-        ev.append(EvidenceItem(source="F21: outdated-answer test",
+        ev.append(EvidenceItem(source="Wikipedia: outdated-answer test",
                                claim=f"The old index still retrieves the edited passage {pct(f['edit_retrieved_old'])} "
                                      f"of the time, so it serves the outdated fact with confidence."))
     prec = _label_rate(x.labels, "facts", "agreement")
     if prec:
-        ev.append(EvidenceItem(source="F19: hand labels",
+        ev.append(EvidenceItem(source="Hand labels",
                                claim=f"Blind hand labels put the check's precision at "
                                      f"{' and '.join(pct(v) for _, v in prec)} ({', '.join(w for w, _ in prec)})."))
     ex = lf.get("example")
     if ex:
-        ev.append(EvidenceItem(source="F21: example",
+        ev.append(EvidenceItem(source="Wikipedia: example",
                                claim=f"{ex['title']}: \"{_short(ex['before'], 140)}\" became "
                                      f"\"{_short(ex['after'], 140)}\"."))
     finding = (f"Re-index the {len(titles)} articles whose numbers or dates changed, and check the flagged "
@@ -292,10 +292,10 @@ def chunking(x: Inputs) -> Recommendation:
     gain = float(m[best] - m["truncated"])
     beyond = float(last["share_of_text_beyond_512"])
     sizes = ", ".join(f"chunks of {k.split('_')[1]} tokens {num(m[k])}" for k in sorted(chunk_rows))
-    ev = [EvidenceItem(source="F16: long-form documents",
+    ev = [EvidenceItem(source="Wikipedia: long documents",
                        claim=f"{pct(beyond)} of a typical Wikipedia article's text lies past the 512 tokens the "
                              f"embedding model reads (median {int(last['median_tokens'])} tokens, {last['period']})."),
-          EvidenceItem(source="F16: chunking experiment",
+          EvidenceItem(source="Wikipedia: chunking experiment",
                        claim=f"How well each way of reading an article follows its real edits (Spearman): first 512 "
                              f"tokens {num(m['truncated'])}, one averaged vector {num(m['averaged'])}, {sizes}.")]
     news = _news_length(x)
@@ -444,7 +444,7 @@ def escalate(x: Inputs) -> Recommendation:
     for who, part, v in weak:
         scope.append(f"the {part} judge")
         reasons.append(f"the {part} judge agrees with {who} only {pct(v)} of the time")
-        ev.append(EvidenceItem(source="F19/F20: hand labels",
+        ev.append(EvidenceItem(source="Hand labels",
                                claim=f"The {part} judge agrees with {who} on {pct(v)} of blind items "
                                      f"(minimum {pct(x.rc['min_judge_agreement'])})."))
     if not reasons:
@@ -453,7 +453,7 @@ def escalate(x: Inputs) -> Recommendation:
         ev = [EvidenceItem(source="Agent D: sections", claim=f"Every section that lost answers was flagged by drift "
                                                              f"detection ({len(seg)} sections checked).")]
         if checks:
-            ev.append(EvidenceItem(source="F19/F20: hand labels",
+            ev.append(EvidenceItem(source="Hand labels",
                                    claim=f"The judges agree with blind hand labels: {'; '.join(checks)}."))
         return _rec(ESCALATE, "not needed", rule, "Not needed: drift detection found every loss, and the judges "
                                                   "agree with the hand labels.", ev)

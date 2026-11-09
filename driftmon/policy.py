@@ -484,7 +484,7 @@ def _why_missed(x: Inputs, segment_ids: Sequence[str]) -> list[EvidenceItem]:
         sev = sorted({s.severity for s in measured})
         ev.append(EvidenceItem(source="Agent B: drift scores",
                                claim=f"{len(measured)} of them were scored: embedding drift {num(min(t), 1)}-"
-                                     f"{num(max(t), 1)}x an ordinary year, severity {' or '.join(sev)}."))
+                                     f"{num(max(t), 1)}x ordinary change, severity {' or '.join(sev)}."))
     if unscored:
         why = sorted({reasons.get(tuple(s.split("|")[:2]), "") or "not scored" for s in unscored})
         ev.append(EvidenceItem(source="Agent A: data monitoring",
@@ -553,7 +553,7 @@ def _year_on_year(x: Inputs) -> EvidenceItem | None:
         return None
     b, p = mine[base], mine[prev[0]]
     return EvidenceItem(source="Agent B: drift, whole periods",
-                        claim=f"{last} vs {prev[0]} is {num(p.times_ordinary_embedding, 1)}x an ordinary year's "
+                        claim=f"{last} vs {prev[0]} is {num(p.times_ordinary_embedding, 1)}x ordinary change in "
                               f"embedding drift ({p.severity}), but {last} vs {base} is "
                               f"{num(b.times_ordinary_embedding, 1)}x ({b.severity}).")
 

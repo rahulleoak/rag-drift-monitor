@@ -96,13 +96,23 @@ def shows(text: str) -> None:
 
 
 def table(df: pd.DataFrame, columns: dict[str, str], percent: tuple[str, ...] = (),
-          decimals: tuple[str, ...] = ()) -> None:
-    """Show only ``columns`` (old name -> readable name), in that order; shares in ``percent`` as
-    percentages, multiples in ``decimals`` with one decimal."""
+          decimals: dict[str, int] | tuple[str, ...] = ()) -> None:
+    """Show only ``columns`` (old name -> readable name), in that order. Shares in ``percent`` show as
+    percentages with one decimal; columns in ``decimals`` with that many decimals (a tuple means one);
+    whole numbers get thousands separators."""
     keep = [c for c in columns if c in df.columns]
-    view = df[keep].rename(columns=columns)
-    cfg = {columns[c]: PERCENT for c in percent if c in keep}
-    cfg.update({columns[c]: st.column_config.NumberColumn(format="%.1f") for c in decimals if c in keep})
+    view = df[keep].copy()
+    for c in percent:
+        if c in keep:
+            view[c] = pd.to_numeric(view[c], errors="coerce") * 100
+    view = view.rename(columns=columns)
+    digits = decimals if isinstance(decimals, dict) else {c: 1 for c in decimals}
+    cfg = {columns[c]: st.column_config.NumberColumn(format="%.1f%%") for c in percent if c in keep}
+    cfg.update({columns[c]: st.column_config.NumberColumn(format=f"%.{d}f")
+                for c, d in digits.items() if c in keep})
+    for c in keep:
+        if columns[c] not in cfg and pd.api.types.is_integer_dtype(df[c]):
+            cfg[columns[c]] = st.column_config.NumberColumn(format="localized")
     st.dataframe(view, hide_index=True, width="stretch", column_config=cfg)
 
 
@@ -142,8 +152,9 @@ def drift_line(whole: pd.DataFrame, col: str, measure: str, title: str) -> alt.C
                  alt.Tooltip(f"{col}:Q", format=".2f", title="× ordinary change"),
                  alt.Tooltip(f"{band_of}:N", title="Severity")])
     rules = alt.Chart(th).mark_rule(color=T.muted, strokeWidth=1, strokeDash=[4, 3]).encode(y="y:Q")
-    labels = alt.Chart(th).mark_text(align="left", dy=-6, color=T.ink_2, fontSize=11).encode(
-        y="y:Q", x=alt.value(4), text="band")
+    labels = alt.layer(*[alt.Chart(th[th["band"] == b]).mark_text(
+        align="left", dy=dy, color=T.ink_2, fontSize=11).encode(y="y:Q", x=alt.value(4), text="band")
+        for b, dy in (("high", -7), ("medium", 9))])
     return (rules + labels + lines).properties(title=title, height=260)
 
 
@@ -151,7 +162,7 @@ def severity_heatmap(grid: pd.DataFrame) -> alt.Chart:
     """Section × year, coloured by severity; flagged cells say what kind of drift."""
     order = (grid[grid["category"] != "ALL SECTIONS"].groupby("category")["n_period"].sum()
              .sort_values(ascending=False).index.tolist())
-    y = alt.Y("category:N", sort=["ALL SECTIONS"] + order, title=None)
+    y = alt.Y("category:N", sort=["ALL SECTIONS"] + order, title=None, axis=alt.Axis(labelOverlap=False))
     base = alt.Chart(grid).encode(x=alt.X("period:O", title=None, axis=alt.Axis(labelAngle=0, orient="top")),
                                   y=y)
     rect = base.mark_rect(stroke=T.surface, strokeWidth=2).encode(
@@ -168,7 +179,7 @@ def severity_heatmap(grid: pd.DataFrame) -> alt.Chart:
     # independent colour scales: the labels need their own (contrasting) colours, and sharing the
     # scale with the cells hid both the labels and the legend
     return (rect + text).resolve_scale(color="independent").properties(
-        height=24 * grid["category"].nunique() + 20)
+        height=26 * grid["category"].nunique() + 20)
 
 
 def dumbbell(long: pd.DataFrame, title: str) -> alt.Chart:
@@ -284,8 +295,9 @@ with tabs[0]:
     m[1].metric("Groups flagged for drift", len(run.flagged()),
                 help="Year × section groups (and whole years) whose drift is significant and at least medium "
                      "severity, compared with the baseline.")
-    m[2].metric("Unchanged groups, for comparison", len(run.drift.control_segments),
-                help="Groups with low drift, kept as controls: if they lose answers too, drift is not the cause.")
+    m[2].metric("Control groups", len(run.drift.control_segments),
+                help="Groups with low drift, kept for comparison: if they lose answers too, drift is not the "
+                     "cause.")
     if run.recommendations is not None:
         m[3].metric("Recommended actions", len(run.recommendations.recommended()),
                     help="See the Recommendations tab, each with its evidence.")
@@ -331,11 +343,11 @@ with tabs[1]:
         b.altair_chart(themed(year_bars(later, "new_term_rate", "Words never used in the baseline")),
                        width="stretch")
     heading("Each year compared with the baseline")
-    table(summary, {"period": "Year", "documents": "Articles", "median_words": "Median words",
-                    "categories": "Sections", "new_sections": "Sections new since the baseline",
-                    "new_section_share": "Share in new sections", "mix_cramers_v": "Section mix change (0–1)",
-                    "new_term_rate": "New words"}, percent=("new_section_share", "new_term_rate"))
-    read("section mix change is Cramér's V: 0 = every section kept its share, 1 = a completely different mix. "
+    table(summary, {"period": "Year", "documents": "Articles", "median_words": "Words per article",
+                    "new_sections": "New sections", "new_section_share": "In new sections",
+                    "mix_cramers_v": "Mix change (0–1)", "new_term_rate": "New words"},
+          percent=("new_section_share", "new_term_rate"), decimals={"mix_cramers_v": 2, "median_words": 0})
+    read("mix change is Cramér's V: 0 = every section kept its share, 1 = a completely different mix. "
          "Articles are short (a headline and a sentence or two).")
     a, b = st.columns(2)
     with a:
@@ -436,13 +448,14 @@ with tabs[2]:
         st.info("Query drift: " + run.drift.query_drift)
     else:
         qd = pd.DataFrame(run.drift.query_drift)
-        table(qd, {"period": "Year", "compared_with": "Compared with", "n_period": "Questions",
-                   "times_ordinary_embedding": "Meaning × first-year reference",
-                   "times_ordinary_lexical": "Words × first-year reference", "new_term_rate": "New words",
-                   "significant": "Significant", "emerging_terms": "Words that became common"},
+        table(qd.assign(period=qd["period"].str.replace(" (inside baseline)", " (reference)", regex=False)),
+              {"period": "Year", "n_period": "Questions", "times_ordinary_embedding": "Meaning ×",
+               "times_ordinary_lexical": "Words ×", "new_term_rate": "New words", "significant": "Significant",
+               "emerging_terms": "Words that became common"},
               percent=("new_term_rate",), decimals=("times_ordinary_embedding", "times_ordinary_lexical"))
-        read("the same analysis on the test questions instead of the articles. With about 50 questions a year, "
-             "the scale is the change between the two baseline years, a rough reference. The questions were "
+        read("the same analysis on the test questions instead of the articles, each year against the "
+             "baseline questions. With about 50 questions a year, × is measured against the change between the "
+             "two baseline years (the reference row), a rough scale. The questions were "
              "written from each year's articles, so they partly mirror the article drift by construction; a "
              "real query log could drift on its own.")
 
@@ -463,16 +476,17 @@ with tabs[3]:
             base = [r for r in rep.judged_by_period if str(r["period"]) == run.baseline]
             m = st.columns(4)
             m[0].metric("Questions tested", rep.questions)
-            m[1].metric("Answer found, without re-indexing",
+            m[1].metric("Found without re-indexing",
                         pct(sum(r["stale_answer"] * r["questions"] for r in later) /
                             sum(r["questions"] for r in later)),
                         help="Share of questions about later years whose top 5 holds an answer, stale index.")
-            m[2].metric("Answer found, after re-indexing",
+            m[2].metric("Found after re-indexing",
                         pct(sum(r["refreshed_answer"] * r["questions"] for r in later) /
                             sum(r["questions"] for r in later)))
             if base:
-                m[3].metric(f"{run.baseline} questions, after re-indexing", pct(base[0]["refreshed_answer"]),
-                            help="The historical control: adding new articles should not hurt old questions.")
+                m[3].metric("Old questions still found", pct(base[0]["refreshed_answer"]),
+                            help=f"{run.baseline} questions on the refreshed index: adding new articles should "
+                                 "not hurt them (the historical control).")
             heading("Does the top 5 contain an answer?")
             st.altair_chart(themed(dumbbell(long, "Share of questions whose top 5 holds an answer")),
                             width="stretch")
@@ -507,8 +521,9 @@ with tabs[3]:
         if rep.ranking_change:
             heading("Do old questions suffer when new articles are added?")
             shows(story.ranking_takeaway(run))
-            table(pd.DataFrame(rep.ranking_change),
-                  {"index": "Refreshed index", "questions": "Questions", "overlap": "Same top 10 as stale",
+            rc = pd.DataFrame(rep.ranking_change)
+            table(rc.assign(index=rc["index"].str.replace("refreshed_", "", regex=False)),
+                  {"index": "Refreshed up to", "questions": "Questions", "overlap": "Same top 10 as stale",
                    "newer_share": "Newer articles in top 10", "source_displaced": "Source article pushed out"},
                   percent=("overlap", "newer_share", "source_displaced"))
         if rep.known_item:
@@ -516,8 +531,9 @@ with tabs[3]:
                 st.caption("Each question was written from one article, so it shares that article's words and is "
                            "easy to find. A high score here is expected; it checks the search works, not that it "
                            "copes with drift.")
-                table(pd.DataFrame(rep.known_item),
-                      {"index": "Refreshed index", "asked_by": "Questions", "questions": "Count",
+                ki = pd.DataFrame(rep.known_item)
+                table(ki.assign(index=ki["index"].str.replace("refreshed_", "", regex=False)),
+                      {"index": "Refreshed up to", "asked_by": "Questions", "questions": "Count",
                        "reciprocal_rank": "Source article's rank score (1 = first)",
                        "recall": "Source article in top 10"}, percent=("recall",))
 

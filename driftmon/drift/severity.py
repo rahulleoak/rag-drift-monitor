@@ -40,7 +40,7 @@ class NullDistribution:
                 for m in self.values.columns}
 
     def typical(self, measure: str) -> float:
-        """Median ordinary change: the denominator for "× an ordinary year"."""
+        """Median ordinary change: the denominator for "× ordinary change"."""
         return float(np.median(self.values[measure]))
 
 

@@ -83,7 +83,7 @@ def test_dashboard_renders_every_tab(run_dir, monkeypatch):
                                           "Impact", "Recommendations"]
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Groups flagged for drift"] == "2"
-    assert "Questions tested" in metrics and "Answer found, after re-indexing" in metrics
+    assert "Questions tested" in metrics and "Found after re-indexing" in metrics
     assert any("ran the full answer check" in c.value for c in at.caption)   # the routing decision, in words
     segment = next(s for s in at.selectbox if s.label == "Group")
     segment.select("2020|POLITICS|vs 2016-17").run()

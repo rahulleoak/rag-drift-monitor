@@ -25,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.dashboard.runs import (answers_stale_vs_refreshed, harm_vs_drift, list_runs, load_run,  # noqa: E402
-                                     severity_grid, stale_vs_refreshed)
+                                     run_models, severity_grid, stale_vs_refreshed)
 
 st.set_page_config(page_title="RAG drift monitor", layout="wide")
 config = load_config()
@@ -44,7 +44,11 @@ if not runs:
 
 run_id = st.sidebar.selectbox("Pipeline run", runs, help="Saved runs, newest first")
 run = load_run(runs_dir, run_id)
-st.sidebar.caption(f"Baseline: {run.baseline}\n\nPeriods: {', '.join(run.monitoring.periods)}")
+models = run_models(run, config)
+st.sidebar.caption(f"Baseline: {run.baseline}\n\nPeriods: {', '.join(run.monitoring.periods)}\n\n"
+                   f"Writes: {models['writer']}\n\nJudges: {models['judge']}\n\nEmbeddings: {models['embedding']}"
+                   + ("" if models["source"] == "run" else
+                      "\n\n(Models from the current config: this run predates run_info.json.)"))
 if demo:
     st.sidebar.info("Showing the bundled demo run (`demo/runs/`). Run `python scripts/run_pipeline.py` "
                     "to see your own.")
@@ -304,8 +308,9 @@ with tabs[4]:
             m[2].metric("Unanswerable: declined (stale)", f"{un['stale']['declined']:.0%}")
         m[3].metric("LLM cost, this run", f"${imp.judge.get('cost_usd', 0):.2f}",
                     help="Cached replies are free, so a rerun costs little; every call is logged in runs/llm_costs.csv.")
-        st.markdown("**Does the assistant answer correctly?** Sonnet answers from each index's top 5; Opus "
-                    "grades each answer alone, not told the index. 2016–17 questions are the historical control.")
+        st.markdown(f"**Does the assistant answer correctly?** {models['writer']} answers from each index's "
+                    f"top 5; {models['judge']} grades each answer alone, not told the index. {run.baseline} "
+                    "questions are the historical control.")
         st.altair_chart(themed(dumbbell(answers_stale_vs_refreshed(run), "Share of questions answered correctly")),
                         width="stretch")
         st.caption("2016–17: both indexes answer 100%, so the two dots overlap. On the stale index the "

@@ -9,6 +9,7 @@ after cloning, without an API key or a rerun.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,7 @@ class Run:
     impact: ImpactReport | None = None         # Agent D
     recommendations: RecommendationReport | None = None  # Agent E
     longform: dict[str, Any] = field(default_factory=dict)  # the long-form evidence E used (run/longform/)
+    info: dict[str, Any] = field(default_factory=dict)  # run_info.json: models, mode, cost (newer runs)
 
     @property
     def baseline(self) -> str:
@@ -86,7 +88,33 @@ def load_run(runs_dir: Path, run_id: str) -> Run:
                whole=whole, segments=segs, topics=pd.DataFrame(drift.topics),
                term_shifts=pd.DataFrame(drift.term_shifts),
                correlations=corr.set_index("measure") if "measure" in corr else corr,
-               charts=charts, retrieval=retrieval)
+               charts=charts, retrieval=retrieval,
+               info=json.loads((path / "run_info.json").read_text(encoding="utf-8"))
+               if (path / "run_info.json").exists() else {})
+
+
+def model_name(model_id: str | None) -> str:
+    """Readable model name: 'claude-sonnet-5-5' -> 'Claude Sonnet 5.5'; other ids unchanged."""
+    if not model_id:
+        return "unknown"
+    m = re.fullmatch(r"claude-([a-z]+)-(\d+)-(\d+)", model_id)
+    return f"Claude {m.group(1).title()} {m.group(2)}.{m.group(3)}" if m else model_id
+
+
+def run_models(run: Run, config: dict[str, Any]) -> dict[str, str]:
+    """The models behind a run: from its run_info.json, else the current config (older runs).
+
+    Returns readable ``writer``, ``judge`` and ``embedding`` names and ``source``
+    ("run" or "config"), so the dashboard can say where the names came from.
+    """
+    models = run.info.get("models")
+    if run.info:
+        return {"writer": model_name(models["writer"]) if models else "none (no LLM in this run)",
+                "judge": model_name(models["judge"]) if models else "none (no LLM in this run)",
+                "embedding": run.info.get("embedding_model", "unknown"), "source": "run"}
+    return {"writer": model_name(config["llm"]["generator_model"]),
+            "judge": model_name(config["llm"]["judge_model"]),
+            "embedding": config["embeddings"]["model"], "source": "config"}
 
 
 def _model(path: Path, model):

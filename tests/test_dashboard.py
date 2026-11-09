@@ -137,3 +137,33 @@ def test_export_demo_copies_only_what_the_dashboard_reads(tmp_path):
     assert (out / "impact.json").exists() and (out / "recommendations.json").exists()
     assert "longform/outdated_verdict.json" in copied
     assert list_runs(tmp_path / "demo") == [src.name]
+
+
+def test_model_names_are_readable():
+    from driftmon.dashboard.runs import model_name
+    assert model_name("claude-sonnet-5-5") == "Claude Sonnet 5.5"
+    assert model_name("claude-opus-5-5") == "Claude Opus 5.5"
+    assert model_name("some-other-model") == "some-other-model"
+    assert model_name(None) == "unknown"
+
+
+def test_run_models_come_from_the_run_and_fall_back_to_the_config(tmp_path):
+    import json
+    import shutil
+    from driftmon.dashboard.runs import run_models
+    config = {"llm": {"generator_model": "claude-sonnet-5-5", "judge_model": "claude-opus-5-5"},
+              "embeddings": {"model": "BAAI/bge-small-en-v1.5"}}
+    src = DEMO / list_runs(DEMO)[0]
+    run_path = tmp_path / src.name
+    shutil.copytree(src, run_path)
+    (run_path / "run_info.json").unlink(missing_ok=True)          # an older run: no provenance file
+    old = run_models(load_run(tmp_path, src.name), config)
+    assert old == {"writer": "Claude Sonnet 5.5", "judge": "Claude Opus 5.5",
+                   "embedding": "BAAI/bge-small-en-v1.5", "source": "config"}
+    info = {"models": {"writer": "claude-haiku-5-5", "judge": "claude-fable-5-1"}, "embedding_model": "e5-small"}
+    (run_path / "run_info.json").write_text(json.dumps(info), encoding="utf-8")
+    new = run_models(load_run(tmp_path, src.name), config)          # the run's own record wins
+    assert new == {"writer": "Claude Haiku 5.5", "judge": "Claude Fable 5.1", "embedding": "e5-small",
+                   "source": "run"}
+    (run_path / "run_info.json").write_text(json.dumps({"models": None, "embedding_model": "e5"}), "utf-8")
+    assert run_models(load_run(tmp_path, src.name), config)["writer"].startswith("none")

@@ -143,8 +143,8 @@ retrieval:
 # models reject it; reproducibility comes from the disk cache of responses.
 llm:
   provider: anthropic
-  generator_model: claude-sonnet-5-5   # writes test questions, reference answers and RAG answers
-  judge_model: claude-opus-5-5         # judges relevance and answer quality; writes explanations
+  generator_model: claude-sonnet-5-5   # writes test questions, reference answers, RAG answers, explanations
+  judge_model: claude-opus-5-5         # judges relevance and answer quality
   use_batch_api: true                  # bulk jobs run through the Batch API (50% cheaper, not instant)
   budget_usd: 150                      # D15: total spending cap (author, 2026-11-05); enforced before every call
   max_retries: 4                       # SDK retries for rate limits and server errors

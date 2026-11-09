@@ -37,3 +37,6 @@ venv/
 .vscode/
 .idea/
 .DS_Store
+
+# Local assistant instructions: not published
+/CLAUDE.md

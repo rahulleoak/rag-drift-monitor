@@ -1147,3 +1147,26 @@ date and reason, and add a new entry that supersedes it.
     back to Agent C, as D7 describes.
 - **Graph:** A -> B -> C -> D (loop to C) -> E -> end.
 - **Cost:** a few cents (about ten short Sonnet calls, cached).
+
+## D30. Quote the pipeline's drift multiples, not F4's
+- **Date:** 2026-11-08
+- **Status:** Accepted (approved by the author 2026-11-08)
+- **Context:** Two "× ordinary" scales were in circulation for the same raw
+  drift (MMD²). F4, an early script, divided by one comparison, 2017 vs 2016
+  (MMD² 0.0021). The pipeline (Agent B, D11) divides by the median of 12
+  same-month-a-year-apart pairs inside the baseline (MMD² 0.0047). So F4's
+  multiples are about 2.3× the pipeline's: 2020 vs baseline 5.7× vs 2.5×,
+  2022 vs 2021 1.2× vs 0.5×, 2022 vs baseline 4.7× vs 2.1× (run
+  `20261107-202242`). The design summary sent to Ani and the presentation
+  notes used F4's.
+- **Options:** (a) F4's: one easy sentence ("5.7× an ordinary year") but
+  rests on a single comparison, and if that year was quiet every multiple is
+  inflated; (b) the pipeline's: steadier reference, and the same scale that
+  sets the severity bands, the flags, the dashboard and the recommendations.
+- **Choice:** (b) everywhere from now on. F4 stays as the record of the
+  early result, with a note pointing here.
+- **Why:** what is said in the walkthrough must match what the dashboard
+  shows. Rankings and conclusions are identical under both (2020 largest;
+  year-on-year comparison hides gradual drift), so nothing else changes.
+- **If asked about 5.7×:** same measurement, smaller denominator (0.0021
+  vs 0.0047); D11 already rejected the single-pair reference for the bands.

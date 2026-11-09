@@ -181,24 +181,19 @@ a measurement, not an opinion.
 
 ### 7b. First drift results (F4) ✅
 
-> **⚠ Inconsistent drift figures, resolve before presenting.** The numbers
-> below (5.7×, 4.2×, 1.2×, 4.7×) come from F4, an early script that measured
-> "ordinary" as one year of change, 2017 vs 2016. The pipeline, the dashboard
-> and the README measure "ordinary" against month-to-month variation inside
-> the baseline (Agent B, D11), which gives smaller multiples for the same
-> data: 2020 vs baseline **2.5×** (high), 2022 vs 2021 **0.5×**, 2022 vs
-> baseline **2.1×** (run `20261107-202242`). The pattern is identical (2020
-> largest; year-on-year hides gradual drift); only the scale differs. Use the
-> pipeline's numbers in the walkthrough, since they are what the dashboard
-> shows, and mention the yardstick if asked. The design summary sent to Ani
-> also quotes 5.7× and 1.2× / 4.7×.
+> **Resolved (D30, 2026-11-08): quote the pipeline's numbers below.** F4's
+> early figures (5.7×, 4.2×, 1.2×, 4.7×) divided by a single comparison
+> (2017 vs 2016). The pipeline divides by 12 same-month pairs inside the
+> baseline, the same scale the dashboard shows. If a reviewer quotes 5.7×
+> from the design summary: same measurement, smaller denominator (MMD²
+> 0.0021 vs 0.0047); rankings and conclusions are identical.
 
-- **COVID is the biggest shift:** 2020 drifts **5.7× more than an ordinary
-  year** (2017 vs 2016) from the baseline, and has the biggest single-year
-  jump (4.2×). Its articles are also the least spread out: one story
+- **COVID is the biggest shift:** 2020 drifts **2.5× ordinary change** from
+  the baseline (the only "high" year), and has the biggest single-year jump
+  (1.9× from 2019). Its articles are also the least spread out: one story
   dominated the year.
-- **The Boiling Frog, measured:** 2022 vs 2021 looks almost ordinary (1.2×),
-  but 2022 vs the baseline is 4.7×. Year-on-year monitoring alone would miss
+- **The Boiling Frog, measured:** 2022 vs 2021 looks ordinary (0.5×), but
+  2022 vs the baseline is 2.1× (medium, flagged). Year-on-year monitoring alone would miss
   it. (Direct link to the author's paper, P1.)
 - **The two techniques disagree, usefully:** embedding drift peaks in 2020
   and eases; word drift keeps rising. Evidence they are complementary.

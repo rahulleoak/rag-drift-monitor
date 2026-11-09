@@ -33,7 +33,7 @@ question: **which drift matters?** It has three parts:
    period) *(D7)*. Some recent queries are deliberately phrased in newer
    wording about older topics, so query drift is not just a copy of
    document drift *(D7)*.
-2. **RAG pipeline under test** (`embeddings.py`, `index.py`, `rag.py`). Two
+2. **RAG pipeline under test** (`embeddings.py`, `index.py`, `evaluation/answers.py`). Two
    indexes: **stale** (baseline period only) and **refreshed** (baseline plus
    the new period). Comparing them on the same questions isolates the effect of
    new data: the key experiment. A second, ready-made embedding model is kept

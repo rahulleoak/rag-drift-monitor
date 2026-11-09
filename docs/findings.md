@@ -182,6 +182,11 @@ chart, and whether it supports or contradicts what we expected.
 
 ## F4. Whole-period drift: COVID is the biggest shift, but not where expected
 - **Date:** 2026-11-05
+- **Note (2026-11-08, D30):** the "× ordinary year" column here divides by
+  one comparison (2017 vs 2016). The pipeline divides by 12 same-month pairs
+  inside the baseline, giving smaller multiples for the same data (2020:
+  2.5× not 5.7×; 2022 vs 2021: 0.5× not 1.2×; 2022 vs baseline: 2.1× not
+  4.7×). Quote the pipeline's numbers; the conclusions below are unchanged.
 - **Setup:** drift samples of 1,398 articles per period; each later year
   compared with the 2016–17 baseline and with the previous year; 500
   permutations per test; a reference row compares 2017 with 2016 (one

@@ -5,7 +5,11 @@ how its documents and questions drift over time, measures whether that drift
 actually hurts answers, and recommends what to do, with the evidence attached.
 Every part serves one question: **which drift matters?**
 
-![The dashboard's overview: answers from the stale vs the refreshed index, and the top recommendation](docs/figures/dashboard_overview.png)
+![A 24-second walkthrough of the dashboard: the headline numbers, the 2020 drift peak, answers from the stale vs the refreshed index, a section that lost its answers without being flagged, and the evidence behind the top recommendation](docs/figures/dashboard_demo.gif)
+
+*The dashboard, from the committed demo run: headline numbers → answers
+stale vs refreshed → a section that lost every answer yet was never flagged
+→ the evidence behind the top recommendation.*
 
 *Take-home project for Rivvun AI ("Semantic Drift Detection & RAG Quality
 Assurance"), November 2026. Brief: [`docs/project-brief.md`](docs/project-brief.md).*

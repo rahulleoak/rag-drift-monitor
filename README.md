@@ -140,7 +140,7 @@ LLM client, so they need no data, key or network.
 ### 4. Read the results in text form
 
 The demo run's recommendations are readable on their own:
-[`demo/runs/20261107-202242/recommendations.md`](demo/runs/20261107-202242/recommendations.md).
+[`demo/runs/20261109-113214/recommendations.md`](demo/runs/20261109-113214/recommendations.md).
 
 ---
 

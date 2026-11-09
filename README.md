@@ -37,7 +37,7 @@ is the causal cost of not keeping up with drift.
 |---|---|
 | Not re-indexing loses almost every answer about new events | **0.3% correct on the stale index vs 99% refreshed** (374 questions, 2018–22); baseline-year questions 100% on both |
 | It fails silently, not wrongly | The stale index declines to answer; 1 of 374 answers added a claim from outside the articles |
-| **Drift scores do not predict where the harm is** | All 19 sections with enough questions lose answers; 12 were never flagged; drift vs loss Spearman −0.19 to 0.40, all p > 0.1 |
+| **Drift scores do not predict where the harm is** | All 19 sections with enough questions lose answers; 12 were never flagged; drift vs loss Spearman −0.19 to 0.41, all p > 0.1 |
 | Comparing only with last year hides gradual drift | 2022 vs 2021: 0.5× ordinary change; 2022 vs the baseline: 2.1× |
 | Emerging words match real events | coronavirus (2020), vaccine and capitol (2021), Russia and invasion (2022) |
 | Changed facts change answers, but hide from drift scores | Edits that replaced a number or date changed the answer 50% of the time (vs 2%, Fisher p = 1.5e-10); 95% of those articles scored "low" drift |
@@ -46,7 +46,7 @@ is the causal cost of not keeping up with drift.
 re-index on a schedule rather than only on drift alerts; re-index the 90
 Wikipedia articles with changed facts; send 12 unflagged sections to a person;
 chunk long documents; keep monitoring older questions. Full text:
-[`recommendations.md`](demo/runs/20261109-143518/recommendations.md).
+[`recommendations.md`](demo/runs/20261109-144329/recommendations.md).
 
 ---
 

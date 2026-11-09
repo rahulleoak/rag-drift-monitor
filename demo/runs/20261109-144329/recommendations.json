@@ -217,14 +217,14 @@
         },
         {
           "source": "Agent B: drift scores",
-          "claim": "8 of them were scored: embedding drift 0.4-2.1x an ordinary year, severity low."
+          "claim": "8 of them were scored: embedding drift 0.4-2.1x ordinary change, severity low."
         },
         {
           "source": "Agent A: data monitoring",
           "claim": "4 of them could not be scored for drift (not in baseline): 2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS. Agent A reports these as new sections."
         }
       ],
-      "explanation": "Send these 12 sections to a person for review, because correct answers dropped by 89-100 percentage points in each and drift detection did not flag any of them. 8 were scored with severity low (embedding drift 0.4-2.1x an ordinary year), and 4 could not be scored because they are not in the baseline. If this is not done, these answer losses will go unnoticed, since drift alerts miss new events in familiar sections and cannot score sections with no baseline.",
+      "explanation": "Send these 12 sections to a person for review: correct answers dropped by 89-100 percentage points in each, but drift detection did not flag them. 8 were scored with embedding drift of 0.4-2.1x ordinary change and severity low, and 4 (2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS) are not in the baseline and could not be scored. If this is not done, these answer losses will keep going unnoticed because drift alerts do not catch them.",
       "explanation_check": "LLM, numbers checked (attempt 1)"
     },
     {
@@ -275,10 +275,10 @@
         },
         {
           "source": "Agent B: drift, whole periods",
-          "claim": "2022 vs 2021 is 0.5x an ordinary year's embedding drift (low), but 2022 vs 2016-17 is 2.1x (medium)."
+          "claim": "2022 vs 2021 is 0.5x ordinary change in embedding drift (low), but 2022 vs 2016-17 is 2.1x (medium)."
         }
       ],
-      "explanation": "Keep monitoring without intervention for questions about 2016-17, because they were 100% correct before and 100% after re-indexing, even though newer articles make up 14% of their top 10 by 2022. Compare each new batch with the 2016-17 baseline, not only with the previous year: 2022 vs 2021 drift is 0.5x an ordinary year (low), but 2022 vs 2016-17 is 2.1x (medium). If comparison is only year to year, gradual drift can go unnoticed.",
+      "explanation": "Keep monitoring without intervention for questions about 2016-17, because answers there are unaffected: they were 100% correct before and 100% after re-indexing, even though newer articles make up 14% of the top 10 by 2022. Keep comparing each new batch with the baseline, not only with the previous year, since 2022 vs 2021 drift is 0.5x (low) while 2022 vs 2016-17 is 2.1x (medium). If that baseline comparison is skipped, gradual drift goes unnoticed.",
       "explanation_check": "LLM, numbers checked (attempt 1)"
     },
     {
@@ -366,7 +366,7 @@
     "requests": 5,
     "rejected_drafts": 0,
     "fallbacks": 0,
-    "cost_usd": 0.0078
+    "cost_usd": 0.0
   },
   "notes": []
 }

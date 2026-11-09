@@ -41,14 +41,14 @@ Re-index the 90 articles whose numbers or dates changed, and review the flagged 
 
 ## 3. Escalate cases for human review
 
-Send these 12 sections to a person for review, because correct answers dropped by 89-100 percentage points in each and drift detection did not flag any of them. 8 were scored with severity low (embedding drift 0.4-2.1x an ordinary year), and 4 could not be scored because they are not in the baseline. If this is not done, these answer losses will go unnoticed, since drift alerts miss new events in familiar sections and cannot score sections with no baseline.
+Send these 12 sections to a person for review: correct answers dropped by 89-100 percentage points in each, but drift detection did not flag them. 8 were scored with embedding drift of 0.4-2.1x ordinary change and severity low, and 4 (2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS) are not in the baseline and could not be scored. If this is not done, these answer losses will keep going unnoticed because drift alerts do not catch them.
 
 **Applies to (12):** 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS, 2022 POLITICS, 2021 U.S. NEWS, 2018 POLITICS, 2019 POLITICS, 2018 WORLD NEWS, 2022 U.S. NEWS, 2021 WORLD NEWS, and 2 more
 
 **Evidence:**
 
 - *Agent D: harm without drift:* In 12 sections correct answers drop by 89-100 percentage points, but drift detection did not flag them: 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS, 2022 POLITICS, 2021 U.S. NEWS and others.
-- *Agent B: drift scores:* 8 of them were scored: embedding drift 0.4-2.1x an ordinary year, severity low.
+- *Agent B: drift scores:* 8 of them were scored: embedding drift 0.4-2.1x ordinary change, severity low.
 - *Agent A: data monitoring:* 4 of them could not be scored for drift (not in baseline): 2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS. Agent A reports these as new sections.
 
 *Rule:* a section loses answers without a drift flag, the evidence loop is unclear, or the judge disagrees with the hand labels. *Explanation:* LLM, numbers checked (attempt 1).
@@ -69,7 +69,7 @@ For long documents such as the Wikipedia set, keep section-aware chunks of about
 
 ## 5. Continue monitoring without intervention
 
-Keep monitoring without intervention for questions about 2016-17, because they were 100% correct before and 100% after re-indexing, even though newer articles make up 14% of their top 10 by 2022. Compare each new batch with the 2016-17 baseline, not only with the previous year: 2022 vs 2021 drift is 0.5x an ordinary year (low), but 2022 vs 2016-17 is 2.1x (medium). If comparison is only year to year, gradual drift can go unnoticed.
+Keep monitoring without intervention for questions about 2016-17, because answers there are unaffected: they were 100% correct before and 100% after re-indexing, even though newer articles make up 14% of the top 10 by 2022. Keep comparing each new batch with the baseline, not only with the previous year, since 2022 vs 2021 drift is 0.5x (low) while 2022 vs 2016-17 is 2.1x (medium). If that baseline comparison is skipped, gradual drift goes unnoticed.
 
 **Applies to (1):** questions about the baseline (2016-17)
 
@@ -77,7 +77,7 @@ Keep monitoring without intervention for questions about 2016-17, because they w
 
 - *Agent D: historical control:* Questions about 2016-17: 100% correct before and 100% after re-indexing.
 - *Agent C: ranking change:* By 2022, newer articles make up 14% of the top 10 for those questions.
-- *Agent B: drift, whole periods:* 2022 vs 2021 is 0.5x an ordinary year's embedding drift (low), but 2022 vs 2016-17 is 2.1x (medium).
+- *Agent B: drift, whole periods:* 2022 vs 2021 is 0.5x ordinary change in embedding drift (low), but 2022 vs 2016-17 is 2.1x (medium).
 
 *Rule:* drift is detected but answers do not suffer. *Explanation:* LLM, numbers checked (attempt 1).
 

@@ -10,7 +10,8 @@ Every part of it serves one question: **which drift matters?**
 ![The dashboard's overview: answers from the stale vs the refreshed index, and the top recommendation](docs/figures/dashboard_overview.png)
 
 *Take-home project for Rivvun AI ("Semantic Drift Detection & RAG Quality
-Assurance"), November 2026.*
+Assurance"), November 2026. The brief is in
+[`docs/project-brief.md`](docs/project-brief.md).*
 
 ---
 
@@ -221,7 +222,8 @@ were checked against blind hand labels from two people:
 
 Where the judges disagree with a person, they are almost always the stricter
 one, so the headline losses are not inflated by a lenient judge. These are
-the first blind passes; the labelling rules are in
+the first blind passes; how the labels were made is in
+[`docs/findings.md`](docs/findings.md) (F19, F20) and the labelling rules in
 [`docs/labelling-guide.md`](docs/labelling-guide.md).
 
 ### Long documents and chunking
@@ -247,7 +249,7 @@ Embedding only the start of an article misses edits further down; one
 averaged vector dilutes a small change into the rest. Even chunk-level
 drift barely moves when only a number changes, so a **changed-facts check**
 matches each edited sentence to its earlier version and flags replaced
-numbers and dates.
+numbers and dates. Details: [`docs/findings.md`](docs/findings.md) F16–F18.
 
 ---
 
@@ -255,16 +257,20 @@ numbers and dates.
 
 ![Answers from the stale and the refreshed index, per year](docs/figures/dashboard_impact.png)
 
-| Finding | Numbers |
-|---|---|
-| Not re-indexing loses almost every answer about new events | Correct answers, 2018–2022 questions: 0–1% stale vs 96–100% refreshed; baseline questions 100% on both |
-| The stale index fails silently | Declines when nothing relevant is found; 1 of 374 stale answers added a claim from outside the articles |
-| Drift scores do not predict where the harm is | 19 of 19 sections with enough questions lose answers; 12 were not flagged (8 scored as ordinary drift, 4 belong to a section new since the baseline); Spearman of drift vs loss −0.19 to 0.40, all p > 0.1 |
-| Comparing only with last year hides gradual drift | 2022 vs 2021 is 0.5× an ordinary period's embedding drift; 2022 vs the baseline is 2.1× |
-| Emerging terms match real events | coronavirus and covid (2020), vaccine and capitol (2021), Russia and invasion (2022) |
-| Changed facts change answers | Flagged edits: answer changed 50% of the time; edits that kept their numbers: 2% (Fisher p = 1.5e-10) |
-| Changed facts hide from drift scores | 95% of articles with a changed fact had a "low" drift score |
-| Recommendations | 5 recommended, 4 ruled out; all 5 explanations passed the number check |
+| Finding | Numbers | Detail |
+|---|---|---|
+| Not re-indexing loses almost every answer about new events | Correct answers, 2018–2022 questions: 0–1% stale vs 96–100% refreshed; baseline questions 100% on both | F20 |
+| The stale index fails silently | Declines when nothing relevant is found; 1 of 374 stale answers added a claim from outside the articles | F20 |
+| Drift scores do not predict where the harm is | 19 of 19 sections with enough questions lose answers; 12 were not flagged (8 scored as ordinary drift, 4 belong to a section new since the baseline); Spearman of drift vs loss −0.19 to 0.40, all p > 0.1 | F20 |
+| Comparing only with last year hides gradual drift | 2022 vs 2021 is 0.5× an ordinary period's embedding drift; 2022 vs the baseline is 2.1× | F22 |
+| Emerging terms match real events | coronavirus and covid (2020), vaccine and capitol (2021), Russia and invasion (2022) | F4 |
+| Changed facts change answers | Flagged edits: answer changed 50% of the time; edits that kept their numbers: 2% (Fisher p = 1.5e-10) | F21 |
+| Changed facts hide from drift scores | 95% of articles with a changed fact had a "low" drift score | F18, F22 |
+| Recommendations | 5 recommended, 4 ruled out; all 5 explanations passed the number check | F22 |
+
+Each finding in [`docs/findings.md`](docs/findings.md) lists the exact
+numbers, the command that reproduces it, and whether it supported or
+contradicted what was expected.
 
 ---
 
@@ -390,18 +396,19 @@ Everything that could be a magic number lives in
 
 ## Technology choices
 
-| Component | Choice | Why |
-|---|---|---|
-| Orchestration | LangGraph | Typed shared state, conditional edges for routing and the evidence loop |
-| Embeddings | `BAAI/bge-small-en-v1.5` (sentence-transformers) | Small, fast, strong on retrieval; runs locally |
-| Vector store | FAISS, exact search, saved to disk | No server to install; exact results at 78k vectors |
-| LLM | Claude Sonnet 5.5 (writes), Claude Opus 5.5 (judges) | Different models for writing and judging; structured output |
-| Statistics | NumPy, SciPy, scikit-learn | Permutation tests, bootstrap intervals, Spearman, Fisher |
-| Dashboard | Streamlit + Altair | Reads saved runs, so a demo cannot fail on a live call |
-| Data | HuffPost (time-based drift), Wikipedia snapshots (long-form) | Real dated drift with a known event; long, edited documents |
+| Component | Choice | Why | Decision |
+|---|---|---|---|
+| Orchestration | LangGraph | Typed shared state, conditional edges for routing and the evidence loop | Q14, D1 |
+| Embeddings | `BAAI/bge-small-en-v1.5` (sentence-transformers) | Small, fast, strong on retrieval; runs locally | Q12 |
+| Vector store | FAISS, exact search, saved to disk | No server to install; exact results at 78k vectors | D22 |
+| LLM | Claude Sonnet 5.5 (writes), Claude Opus 5.5 (judges) | Different models for writing and judging; structured output | D9, D15 |
+| Statistics | NumPy, SciPy, scikit-learn | Permutation tests, bootstrap intervals, Spearman, Fisher | D10, D11 |
+| Dashboard | Streamlit + Altair | Reads saved runs, so a demo cannot fail on a live call | Q16 |
+| Data | HuffPost (time-based drift), Wikipedia snapshots (long-form) | Real dated drift with a known event; long, edited documents | D3, D26 |
 
-Considered and not adopted: a hosted vector database, a knowledge graph,
-and an LLM supervisor that picks the next agent.
+Considered and not adopted, with reasons: a hosted vector database (D22), a
+knowledge graph (D21), and an LLM supervisor that picks the next agent
+(Q14).
 
 ---
 
@@ -434,9 +441,20 @@ and an LLM supervisor that picks the next agent.
 
 | If you want to know… | Read |
 |---|---|
+| What was asked | [`docs/project-brief.md`](docs/project-brief.md) |
 | How the system fits together, agent by agent | [`docs/architecture.md`](docs/architecture.md) |
+| Why each choice was made, with the options considered | [`docs/decisions.md`](docs/decisions.md) (D1–D29) |
+| Every result, with numbers and how to reproduce it | [`docs/findings.md`](docs/findings.md) (F1–F22) |
+| How each requirement in the brief is covered | [`docs/requirements-coverage.md`](docs/requirements-coverage.md) |
+| The questions asked of the stakeholder, and the answers | [`docs/questions.md`](docs/questions.md) |
+| What happened day by day, including dead ends | [`docs/journal.md`](docs/journal.md) |
+| A two-page summary sent for feedback | [`docs/design-summary.md`](docs/design-summary.md) |
+| Material for the walkthrough | [`docs/presentation.md`](docs/presentation.md) |
 | The rules people used to hand-label the judges | [`docs/labelling-guide.md`](docs/labelling-guide.md) |
-| The charts in this README and the drift charts | [`docs/figures/`](docs/figures/) |
+
+References such as **D22** point to a decision and **F20** to a finding;
+**Q** and **P** numbers are design questions and proposals in
+[`docs/questions.md`](docs/questions.md).
 
 ---
 

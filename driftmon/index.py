@@ -1,6 +1,6 @@
 """Vector indexes for the stale-vs-refreshed experiment.
 
-Builds exact FAISS inner-product indexes (vectors are
+Builds exact FAISS inner-product indexes (docs/questions.md Q13; vectors are
 L2-normalised, so inner product = cosine similarity):
     - stale index: baseline-period documents only (the archive as it was
       when the assistant was built, never updated)

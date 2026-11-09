@@ -1,6 +1,6 @@
 """Dataset loading: turn each candidate dataset into one common record shape.
 
-Both candidate datasets are mapped onto ``Record``
+Both candidate datasets (docs/questions.md Q1) are mapped onto ``Record``
 (doc_id, date, category, title, text), so exploration and the pipeline treat
 them identically and switching datasets is a config change.
 

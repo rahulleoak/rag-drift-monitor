@@ -14,9 +14,9 @@ and query drift (D11, D12, D24), the LLM layer (D15), the question set
 check (D27) and the outdated-answer test (D28; run as scripts on the
 Wikipedia set, not yet as graph nodes; Agent E reads their results) and
 Agent E's rules (D29). Not built: the alternative-model index (no section
-needs it, D29). Labels such as *(D7)*, *(Q5)* and *(proposal Pn)* refer to the project's
-internal decision log and design questions, which are not published; each
-one marks where a choice was made and justified.
+needs it, D29). Items marked *(proposal Pn)* come from
+`docs/questions.md` Part 4 (D5); items marked *(D7)* were added after
+checking the design against every requirement (`docs/requirements-coverage.md`).
 
 ## 1. Overview
 

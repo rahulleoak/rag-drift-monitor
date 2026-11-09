@@ -1,4 +1,4 @@
-"""Drift technique 2: vocabulary.
+"""Drift technique 2: vocabulary (docs/questions.md Q6).
 
     - Jensen-Shannon divergence between term distributions (segment score),
       with a document-level permutation test

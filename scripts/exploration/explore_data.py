@@ -10,7 +10,7 @@ Prints:
        ``exploration.watch_terms`` (a check that known drift is visible at all)
 
 The same tables are written as CSV to ``runs/explore/<dataset>/`` so numbers
-quoted in the write-up can be traced back to a file.
+quoted in docs/findings.md can be traced back to a file.
 
 Usage (from the repository root):
     python scripts/exploration/explore_data.py --dataset huffpost

@@ -2,7 +2,7 @@
 # Code reads values from here; nothing below should be hard-coded elsewhere.
 #
 # Values set to null are decided later, and the comment says where:
-#   - dataset and periods: after data exploration
+#   - dataset and periods: after data exploration (docs/questions.md Q1, Q3)
 #   - thresholds: written down BEFORE looking at experiment results (Q11), so
 #     they cannot be tuned to make results look good.
 

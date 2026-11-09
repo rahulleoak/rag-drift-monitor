@@ -1,5 +1,5 @@
 # Version ranges for now; exact versions get locked with `pip freeze` once the
-# full stack runs end to end.
+# full stack runs end to end (see docs/decisions.md, D4).
 #
 # Setup (tested on Windows 11, Python 3.13, NVIDIA GPU):
 #   py -3.13 -m venv .venv

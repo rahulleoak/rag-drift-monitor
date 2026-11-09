@@ -1,4 +1,4 @@
-"""Drift technique 1: embedding space.
+"""Drift technique 1: embedding space (docs/questions.md Q5).
 
     - MMD with an RBF kernel and a permutation test (distribution-level score
       and p-value)

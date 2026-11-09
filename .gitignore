@@ -38,12 +38,5 @@ venv/
 .idea/
 .DS_Store
 
-# Private working notes: kept locally, not published (2026-11-08)
-/docs/decisions.md
-/docs/findings.md
-/docs/journal.md
-/docs/presentation.md
-/docs/questions.md
-/docs/project-brief.md
-/docs/design-summary.md
-/docs/requirements-coverage.md
+# Local assistant instructions: not published
+/CLAUDE.md

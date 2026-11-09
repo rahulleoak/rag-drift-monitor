@@ -40,7 +40,7 @@ baseline, unaffected).
 - [x] **No internal references.** The Retrieval tab caption cites "(F11)", a
       finding number that means nothing to a viewer.
 - [x] **Hide Streamlit's "Deploy" button** (one setting).
-- [ ] **Re-record the README GIF** once the above is done.
+- [x] **Re-record the README GIF** once the above is done.
 
 ## Overview
 

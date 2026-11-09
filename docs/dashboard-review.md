@@ -123,3 +123,67 @@ ticked when done; the file is deleted once the list is finished.
 - [ ] **Bring the best example forward:** "Questions that lost most" is the
       most convincing part (e.g. the quinoa → fonio question) but is
       collapsed; show one or two examples open.
+
+## Impact (Agent D)
+
+- [ ] **Intro line:** the full assistant runs (writer answers from each index's
+      top 5; judge grades correct / grounded / declined, blind to the index).
+      This is where "which drift matters?" is answered.
+- [ ] **Tiles:** "Material loss threshold 10%" is a setting, not a result
+      (move to a caption: at least 10 points and the 95% interval excludes
+      zero, fixed before results). "Unanswerable: declined (stale) 100%" is
+      expected; show the refreshed figure (93%, 14 of 15, none invented),
+      which is the meaningful one. Say 438 = 423 + 15 unanswerable.
+- [ ] **Dumbbell caption is the hard-coded result** ("both indexes answer
+      100%"): build it from the run. Keep the silent-failure point (declines
+      rather than invents; 1 of 374 added an outside claim).
+- [ ] **Scatter is the key chart; explain it:** if drift predicted harm, dots
+      would rise left to right; instead every section sits at 89–100% loss.
+      Orange = flagged and harmed (7); blue = harmed but never flagged (12: 8
+      scored low, 4 in a section new since the baseline, listed below).
+      Takeaway: drift scores show where content changed, not where answers
+      break → re-index on a schedule.
+- [ ] **Scatter legend shows empty classes** ("drift that does not hurt",
+      "healthy" have no sections); show only classes present, or say "none".
+- [ ] **Scatter x-axis says "× an ordinary year";** use "× ordinary change"
+      (D30 wording).
+- [ ] **Correlation table:** one-line reading (all weak, −0.19 to 0.41, none
+      significant: drift does not predict the size of the loss). Readable
+      measure names.
+- [ ] **README says Spearman up to 0.40; the data says 0.41.** Fix the README.
+- [ ] **Evidence loop caption:** say why "did not run" is good news (every
+      result was clear-cut) and what it would have done (top 10 instead of
+      top 5, answered again).
+- [ ] **Examples box collapsed:** show one example open.
+- [ ] **Wikipedia section:** lead with what it means (a changed number or date
+      changed the answer 50% of the time vs 2% for rewordings), and surface
+      the hidden point now only in a tooltip: the old index still retrieved
+      the edited passage 92% of the time, so it serves the outdated fact
+      confidently, and 95% of those articles had "low" drift scores. Replace
+      the statistics-report caption ("Difference 48% (needed 20%)…").
+- [ ] **Tab order / flow:** the most important tab is fifth of six; consider
+      surfacing its two findings on the Overview (see Overview items).
+
+## Recommendations (Agent E)
+
+- [ ] **Intro: how decisions are made,** in plain words: nine actions from the
+      brief; a rule in code decides each; the LLM only explains, and an
+      explanation with a number not in the evidence is rejected.
+- [ ] **Explain "Not checked"** (actions that could not be evaluated because
+      an input was missing; 0 = every action was tested).
+- [ ] **Explain the order:** measured answer loss first, then cases for a
+      person, then maintenance.
+- [ ] **"Continue monitoring" is confusing:** say plainly that old (baseline)
+      questions are fine (100% on both indexes, though newer articles are 14%
+      of their results), so no action, plus the lesson to compare with the
+      baseline, not only the previous year (0.5× vs 2.1×).
+- [ ] **Evidence labels use internal document numbers** ("D27: changed-facts
+      check", "F19: hand labels", "F16: chunking experiment", "F21: example");
+      use plain source names (e.g. "Wikipedia: changed-facts check", "Hand
+      labels"). Source: `driftmon/policy.py` evidence sources.
+- [ ] **Footer jargon:** "Explanation: LLM, numbers checked (attempt 1)" →
+      e.g. "Explanation written by Claude Sonnet 5.5; every number checked
+      against the evidence (passed first time)". Model name from run_info.
+- [ ] **"Checked, not recommended" reads awkwardly:** "(not needed): Not
+      needed: …" repeats, and evidence sentences run together. One clean
+      sentence each, with the deciding number.

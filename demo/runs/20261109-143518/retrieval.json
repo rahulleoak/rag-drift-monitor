@@ -1363,6 +1363,6 @@
     }
   ],
   "notes": [
-    "Known-item numbers are weighted down: questions are written from their source article, which makes it easy to find (F11)."
+    "Known-item numbers are a sanity check only: each question was written from its source article, so it shares that article's words and is easy to find."
   ]
 }

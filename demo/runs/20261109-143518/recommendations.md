@@ -24,18 +24,18 @@ Re-index the archive on a schedule with every new batch of articles, not only wh
 
 ## 2. Re-index specific documents (changed facts)
 
-Re-index the 90 articles whose numbers or dates changed, and check the flagged sentences. Of the 165 articles checked, 90 contain 391 changed numbers or dates, and questions on flagged edits got a different answer from the old and new versions 50% of the time vs 2% for edits that kept their numbers. If this is not done, the old index keeps retrieving the edited passage 92% of the time and serves outdated facts with confidence, and since 95% of these articles had a "low" drift score, drift alerts will not catch it.
+Re-index the 90 articles whose numbers or dates changed, and review the flagged sentences. The check found 391 changed numbers or dates in 90 of 165 articles, questions on flagged edits got a different answer from the old and new version 50% of the time vs 2% for other edits, and the old index still retrieves the edited passage 92% of the time. If this is not done, the assistant will keep giving outdated facts with confidence, and since 95% of these articles had a "low" drift score, drift alerts will not catch it.
 
 **Applies to (90):** Germany, Israel, Hong Kong, Delhi, Ukraine, Mumbai, Climate change, Jerusalem, Malaria, Virus, and 80 more
 
 **Evidence:**
 
-- *D27: changed-facts check:* 391 changed numbers or dates in 90 of 165 articles since the index was built (2018 to 2022).
-- *F21: outdated-answer test:* Questions on flagged edits got a different answer from the old and the new version 50% of the time, vs 2% for edits that kept their numbers (Fisher p = 1.5e-10).
-- *D27: changed facts vs drift scores:* 95% of articles with a changed fact had a "low" drift score, so drift alerts alone would miss them.
-- *F21: outdated-answer test:* The old index still retrieves the edited passage 92% of the time, so it serves the outdated fact with confidence.
-- *F19: hand labels:* Blind hand labels put the check's precision at 80% and 85% (author (first pass), second labeller).
-- *F21: example:* Sumer: "2525 BC on a stele called the Stele of the Vultures." became "2450 BC on a stele called the Stele of the Vultures.".
+- *Wikipedia: changed-facts check:* 391 changed numbers or dates in 90 of 165 articles since the index was built (2018 to 2022).
+- *Wikipedia: outdated-answer test:* Questions on flagged edits got a different answer from the old and the new version 50% of the time, vs 2% for edits that kept their numbers (Fisher p = 1.5e-10).
+- *Wikipedia: changed facts vs drift scores:* 95% of articles with a changed fact had a "low" drift score, so drift alerts alone would miss them.
+- *Wikipedia: outdated-answer test:* The old index still retrieves the edited passage 92% of the time, so it serves the outdated fact with confidence.
+- *Hand labels:* Blind hand labels put the check's precision at 80% and 85% (author (first pass), second labeller).
+- *Wikipedia: example:* Sumer: "2525 BC on a stele called the Stele of the Vultures." became "2450 BC on a stele called the Stele of the Vultures.".
 
 *Rule:* the changed-facts check flags documents, and the outdated-answer test shows flagged edits change answers. *Explanation:* LLM, numbers checked (attempt 1).
 
@@ -55,14 +55,14 @@ Send these 12 sections to a person for review, because correct answers dropped b
 
 ## 4. Improve document chunking or embedding strategies
 
-For long documents like the Wikipedia set, use section-aware chunks of about 256 tokens and measure drift per chunk and per document against its own earlier version, and test chunks of 128 tokens for retrieval. 92% of a typical article lies past the 512 tokens the model reads, and in the experiment chunks of 128 tokens (0.89) and 256 tokens (0.87) followed real edits better than the first 512 tokens (0.51) or one averaged vector (0.78). If this is not done, most edits to long documents will go unnoticed, though it does not apply to the news archive, where articles are short (median 30 words).
+For long documents such as the Wikipedia set, keep section-aware chunks of about 256 tokens and measure drift per chunk and per document against its own earlier version; chunks of 128 tokens are also worth testing for retrieval. The evidence is that 92% of a typical article's text lies past the 512 tokens the model reads, and in the experiment the first 512 tokens tracked real edits at only 0.51 and one averaged vector at 0.78, versus 0.89 for chunks of 128 tokens and 0.87 for chunks of 256 tokens. If this is not done, most edits to long documents will stay hidden from drift monitoring, and this does not apply to the news archive, where articles are short (median 30 words).
 
 **Applies to (1):** long-form documents (Wikipedia set)
 
 **Evidence:**
 
-- *F16: long-form documents:* 92% of a typical Wikipedia article's text lies past the 512 tokens the embedding model reads (median 8541 tokens, 2022).
-- *F16: chunking experiment:* How well each way of reading an article follows its real edits (Spearman): first 512 tokens 0.51, one averaged vector 0.78, chunks of 128 tokens 0.89, chunks of 256 tokens 0.87.
+- *Wikipedia: long documents:* 92% of a typical Wikipedia article's text lies past the 512 tokens the embedding model reads (median 8541 tokens, 2022).
+- *Wikipedia: chunking experiment:* How well each way of reading an article follows its real edits (Spearman): first 512 tokens 0.51, one averaged vector 0.78, chunks of 128 tokens 0.89, chunks of 256 tokens 0.87.
 - *Agent A: data monitoring:* News articles are short (median 30 words per article), well within the model's limit.
 
 *Rule:* a typical document is far longer than the embedding model reads, and chunks follow real edits clearly better than the first 512 tokens. *Explanation:* LLM, numbers checked (attempt 1).

@@ -14,9 +14,9 @@ and query drift (D11, D12, D24), the LLM layer (D15), the question set
 check (D27) and the outdated-answer test (D28; run as scripts on the
 Wikipedia set, not yet as graph nodes; Agent E reads their results) and
 Agent E's rules (D29). Not built: the alternative-model index (no section
-needs it, D29). Items marked *(proposal Pn)* come from
-`docs/questions.md` Part 4 (D5); items marked *(D7)* were added after
-checking the design against every requirement (`docs/requirements-coverage.md`).
+needs it, D29). Labels such as *(D7)*, *(Q5)* and *(proposal Pn)* refer to the project's
+internal decision log and design questions, which are not published; each
+one marks where a choice was made and justified.
 
 ## 1. Overview
 
@@ -33,7 +33,7 @@ question: **which drift matters?** It has three parts:
    period) *(D7)*. Some recent queries are deliberately phrased in newer
    wording about older topics, so query drift is not just a copy of
    document drift *(D7)*.
-2. **RAG pipeline under test** (`embeddings.py`, `index.py`, `rag.py`). Two
+2. **RAG pipeline under test** (`embeddings.py`, `index.py`, `evaluation/answers.py`). Two
    indexes: **stale** (baseline period only) and **refreshed** (baseline plus
    the new period). Comparing them on the same questions isolates the effect of
    new data: the key experiment. A second, ready-made embedding model is kept

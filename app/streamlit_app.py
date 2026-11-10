@@ -476,7 +476,7 @@ def retrieval() -> None:
                     "stale_precision": f"Precision@{jk}, stale", "refreshed_precision": f"Precision@{jk}, refreshed",
                     "stale_ndcg": f"nDCG@{jk}, stale", "refreshed_ndcg": f"nDCG@{jk}, refreshed"}
             prec_tip = (f"Share of the top {jk} judged relevant. Most questions have only one or two articles "
-                        f"that answer them, so about 40% is the most a good search can reach.")
+                        f"that answer them, so around 40% is typical even for a good search.")
             tips = {"stale_precision": prec_tip, "refreshed_precision": prec_tip,
                     "stale_ndcg": "Ranking quality: 1 = the answering articles are ranked first.",
                     "refreshed_ndcg": "Ranking quality: 1 = the answering articles are ranked first."}

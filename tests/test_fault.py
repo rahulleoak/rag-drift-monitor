@@ -101,3 +101,12 @@ def test_a_borderline_section_is_not_called_harmless():
                        "refreshed_context_has_answer": [1.0] * 3 + [0.0] * (n - 3)})
     seg = an.segments(pq, "2016-17", ["2020|WORLD NEWS|vs 2016-17"], cfg).iloc[0]
     assert seg["borderline"] and seg["class"] == an.BORDERLINE
+
+
+def test_the_picker_opens_on_the_newest_normal_run(tmp_path):
+    from driftmon.dashboard.runs import default_run
+    for rid, fault in (("20261110-100000", FAULT), ("20261109-100000", None)):
+        (tmp_path / rid).mkdir()
+        (tmp_path / rid / "run_info.json").write_text(json.dumps({"fault_injection": fault}), encoding="utf-8")
+    assert default_run(tmp_path, ["20261110-100000", "20261109-100000"]) == "20261109-100000"
+    assert default_run(tmp_path, ["20261110-100000"]) == "20261110-100000"   # only a simulated run: show it

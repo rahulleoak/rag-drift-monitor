@@ -52,6 +52,15 @@ def run_label(runs_dir: Path, run_id: str) -> str:
     return f"{stamp} · {what}" + (f" · {label}" if label else "")
 
 
+def default_run(runs_dir: Path, run_ids: list[str]) -> str:
+    """The run the picker opens on: the newest one that is not a simulated failure (D34)."""
+    for r in run_ids:
+        info = runs_dir / r / "run_info.json"
+        if not (info.exists() and json.loads(info.read_text(encoding="utf-8")).get("fault_injection")):
+            return r
+    return run_ids[0]
+
+
 @dataclass
 class Run:
     """Everything the dashboard shows for one run."""

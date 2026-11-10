@@ -31,9 +31,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.dashboard import live, story  # noqa: E402
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
-from driftmon.dashboard.runs import (ALL_OTHER, answers_stale_vs_refreshed, flagged_share_by_year,  # noqa: E402
-                                     harm_vs_drift, list_runs, load_run, run_label, run_models, section_shares,
-                                     severity_grid, stale_label, stale_vs_refreshed, term_shift, with_settings)
+from driftmon.dashboard.runs import (ALL_OTHER, answers_stale_vs_refreshed, default_run,  # noqa: E402
+                                     flagged_share_by_year, harm_vs_drift, list_runs, load_run, run_label,
+                                     run_models, section_shares, severity_grid, stale_label, stale_vs_refreshed,
+                                     term_shift, with_settings)
 from driftmon.policy import pct  # noqa: E402
 
 st.set_page_config(page_title="RAG Drift Monitor", layout="wide", initial_sidebar_state="expanded")
@@ -73,7 +74,8 @@ head.markdown('<p class="subtitle">Tracks how a document archive drifts over tim
 if not runs:
     st.warning(f"No pipeline runs in {runs_dir}. Run `python scripts/run_pipeline.py` first.")
     st.stop()
-run_id = picker.selectbox("Pipeline run", runs, format_func=lambda r: run_label(runs_dir, r),
+run_id = picker.selectbox("Pipeline run", runs, index=runs.index(default_run(runs_dir, runs)),
+                          format_func=lambda r: run_label(runs_dir, r),
                           help="Saved runs, newest first, with the agents each one holds. Older runs can be kept "
                                "in runs/archive/, which is not listed.")
 run = with_settings(load_run(runs_dir, run_id), config)   # settings: from the run, else the config

@@ -1,6 +1,6 @@
 # Clarifying Questions
 
-**Status:** open. Written 2026-11-04 after reading `CLAUDE.md`,
+**Status:** closed 2026-11-09: every question was answered by the stakeholder or decided, with the outcome in `docs/decisions.md`. Written 2026-11-04 after reading `CLAUDE.md`,
 `docs/project-brief.md` and the original assignment (.docx, same content as the
 brief except the brief adds the Nov 10 deadline). As questions are answered,
 the outcome moves into `docs/decisions.md`.

@@ -1161,3 +1161,40 @@ chart, and whether it supports or contradicts what we expected.
 - **Verdict:** Supports D27/E's re-index-documents action for changed facts;
   contradicts "the targeted fix is enough on its own" by the rule set in
   advance. Agent E should pair it with a scheduled full re-index.
+
+## F25. Article length explains about a tenth of the embedding drift, and no severity band changes
+- **Date:** 2026-11-09
+- **Setup:** D33 (D6 check 5). For each later period, its drift sample
+  (1,398 articles) against 5 random baseline samples and 5 baseline
+  samples matched to its word counts; Agent B's comparison and its
+  ordinary-change yardstick (median MMD² 0.0047 over 12 within-baseline
+  month pairs). Rule fixed before results: length explains a large part if
+  matching lowers embedding drift by a third or more. No LLM.
+- **Result:**
+
+  | Period | Median words (period / random baseline) | Embedding drift, random baseline | Length-matched | Kept |
+  |---|---|---|---|---|
+  | 2018 | 25 / 23 | 0.87× | 0.79× | 90% |
+  | 2019 | 29 / 23 | 1.67× | 1.45× | 87% |
+  | 2020 | 30 / 23 | 2.58× | 2.27× | 88% |
+  | 2021 | 30 / 23 | 2.07× | 1.80× | 87% |
+  | 2022 | 31 / 23 | 2.29× | 2.08× | 91% |
+
+  - Matching lowers embedding drift by **11%** on average (9-13% per
+    year). **Length explains a large part: no** by the fixed rule.
+  - Word drift barely moves (0.3% on average).
+  - **No band changes.** On the multiple scale, "medium" starts at 2.02×
+    and "high" at 2.13×: 2020 stays high (2.27×), 2022 stays medium
+    (2.08×, a thin margin), 2018, 2019 and 2021 stay low. The ranking of
+    years is the same.
+- **What it means:** the drift numbers on the dashboard are a little
+  inflated by length, about a tenth, not enough to change any flag or
+  conclusion. D8's trigger (switch to length-matched samples) does not
+  fire, so the drift samples stay as they are. The main finding, that drift
+  scores do not predict harm, never depended on their size.
+- **Caveat:** 2022's margin over "medium" is small (2.08× vs 2.02×); with
+  length-matched samples, a slightly quieter year could fall to "low".
+- **Reproduce:** `python scripts/length_check.py` (`runs/length_check/draws.csv`,
+  `summary.csv`, `verdict.json`).
+- **Expectation:** a small drop, 10-20% (yes: 11%).
+- **Verdict:** Supports keeping the drift samples as they are (D6, D8).

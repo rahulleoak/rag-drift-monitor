@@ -227,6 +227,11 @@ drift:
   # (Jan 2016 vs Jan 2017, ...), each pair re-sampled null_draws times.
   null_draws: 5
   null_permutations: 50      # only to estimate the shuffled JSD average for "excess"
+  # D33 (D6 check 5): is part of the drift just article length? (scripts/length_check.py)
+  # Rule set on 2026-11-09, before any result.
+  length_check:
+    seeds: 5                 # random and length-matched baseline samples per later period
+    min_drop: 0.33           # length explains a large part if matching lowers embedding drift by a third or more
   # D12: emerging topics = clusters whose share of a period grows vs the baseline
   topics_k: 40               # number of clusters over all drift samples
   topic_min_ratio: 3.0       # period share at least 3x the baseline share

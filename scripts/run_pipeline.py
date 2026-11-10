@@ -48,7 +48,7 @@ import pandas as pd
 if __package__ in (None, ""):  # allow `python scripts/run_pipeline.py` without installing
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon.config import load_config, resolve_path  # noqa: E402
+from driftmon.config import load_config, resolve_path, run_settings  # noqa: E402
 from driftmon.data.corpus import load_corpus  # noqa: E402
 from driftmon.rag.embeddings import Embedder  # noqa: E402
 from driftmon.longform.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
@@ -169,6 +169,7 @@ def _save_run_info(run_dir: Path, config: dict, args, llm, spent_before: float, 
         "embedding_model": config["embeddings"]["model"],
         "llm_cost_usd": round(llm.spent() - spent_before, 4) if llm is not None and mode == "full" else None,
         "code_version": _git_commit(),
+        "settings": run_settings(config),
     }
     (run_dir / "run_info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
 

@@ -70,6 +70,7 @@ class Run:
     recommendations: RecommendationReport | None = None  # Agent E
     longform: dict[str, Any] = field(default_factory=dict)  # the long-form evidence E used (run/longform/)
     info: dict[str, Any] = field(default_factory=dict)  # run_info.json: models, mode, cost (newer runs)
+    settings: dict[str, Any] = field(default_factory=dict)  # top k, thresholds...: see with_settings()
 
     @property
     def baseline(self) -> str:
@@ -114,6 +115,13 @@ def load_run(runs_dir: Path, run_id: str) -> Run:
                charts=charts, retrieval=retrieval,
                info=json.loads((path / "run_info.json").read_text(encoding="utf-8"))
                if (path / "run_info.json").exists() else {})
+
+
+def with_settings(run: Run, config: dict[str, Any]) -> Run:
+    """Attach the settings that produced the run: from its run_info.json, else the current config."""
+    from driftmon.config import run_settings
+    run.settings = {**run_settings(config), **run.info.get("settings", {})}
+    return run
 
 
 def model_name(model_id: str | None) -> str:

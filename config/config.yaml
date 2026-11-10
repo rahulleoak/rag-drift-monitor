@@ -18,6 +18,7 @@ paths:
 # Candidate datasets. Both are explored before one is chosen (Q1).
 datasets:
   huffpost:
+    description: A newsroom archive assistant over HuffPost articles   # dashboard subtitle
     file: data/raw/News_Category_Dataset_v3.json
     source: https://www.kaggle.com/datasets/rmisra/news-category-dataset
     # The full dataset (Kaggle lists this single file), checked 2026-11-04 (F1).

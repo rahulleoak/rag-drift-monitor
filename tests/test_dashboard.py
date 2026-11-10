@@ -182,3 +182,47 @@ def test_run_labels_say_when_and_which_agents(tmp_path):
     assert run_label(tmp_path, full.name) == "9 Nov 2026, 14:43 · all agents"
     assert run_label(tmp_path, partial.name) == "5 Nov 2026, 08:39 · agents A–B"
     assert run_label(tmp_path, "my-run") == "my-run · no reports"
+
+
+def _demo_copy(tmp_path):
+    import shutil
+    src = DEMO / list_runs(DEMO)[0]
+    dst = tmp_path / "runs" / src.name
+    shutil.copytree(src, dst)
+    return dst
+
+
+def test_dashboard_on_a_run_without_the_llm_or_static_charts(tmp_path, monkeypatch):
+    """A `--no-judge` run without make_charts: every tab renders and says why something is missing."""
+    import json
+    import shutil
+    from streamlit.testing.v1 import AppTest
+    run = _demo_copy(tmp_path)
+    (run / "impact.json").unlink()
+    shutil.rmtree(run / "charts")
+    info = json.loads((run / "run_info.json").read_text(encoding="utf-8"))
+    info.update(mode="no_judge", models=None, llm_cost_usd=None)
+    (run / "run_info.json").write_text(json.dumps(info), encoding="utf-8")
+    monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(run.parent))
+    at = AppTest.from_file(str(APP), default_timeout=120)
+    at.run()
+    assert not at.exception
+    assert any("Skipped: this run did not use the LLM" in i.value for i in at.info)
+    assert any("Chart not drawn for this run" in c.value for c in at.caption)
+    assert any("Writes answers:** none" in m.value for m in at.sidebar.markdown)
+
+
+def test_settings_come_from_the_run(tmp_path):
+    import json
+    from driftmon.config import load_config
+    from driftmon.dashboard import story
+    from driftmon.dashboard.runs import with_settings
+    run_dir = _demo_copy(tmp_path)
+    info = json.loads((run_dir / "run_info.json").read_text(encoding="utf-8"))
+    info["settings"] = {**info.get("settings", {}), "judge_k": 3, "description": "A support-desk assistant"}
+    (run_dir / "run_info.json").write_text(json.dumps(info), encoding="utf-8")
+    run = with_settings(load_run(run_dir.parent, run_dir.name), load_config())
+    assert run.settings["judge_k"] == 3 and run.settings["description"] == "A support-desk assistant"
+    assert "an answer is in the top 3" in story.retrieval_takeaway(run)
+    run.settings = {}
+    assert "an answer is in the top results" in story.retrieval_takeaway(run)

@@ -30,7 +30,8 @@ from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.dashboard import story  # noqa: E402
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.dashboard.runs import (answers_stale_vs_refreshed, harm_vs_drift, list_runs, load_run,  # noqa: E402
-                                     run_label, run_models, severity_grid, stale_label, stale_vs_refreshed)
+                                     run_label, run_models, severity_grid, stale_label, stale_vs_refreshed,
+                                     with_settings)
 from driftmon.policy import pct  # noqa: E402
 
 st.set_page_config(page_title="RAG drift monitor", layout="wide")
@@ -50,12 +51,10 @@ if not runs:
 run_id = st.sidebar.selectbox("Pipeline run", runs, format_func=lambda r: run_label(runs_dir, r),
                               help="Saved runs, newest first, with the agents each one holds. Older runs "
                               "can be kept in runs/archive/, which is not listed.")
-run = load_run(runs_dir, run_id)
+run = with_settings(load_run(runs_dir, run_id), config)   # settings: from the run, else the config
 models = run_models(run, config)
-first_year, last_year = run.baseline.split("-")[0], run.monitoring.periods[-1]
-dataset = {"huffpost": "HuffPost"}.get(config.get("active_dataset", ""), config.get("active_dataset", ""))
-st.caption(f"A newsroom archive assistant over {dataset} articles, {first_year}–{last_year}: "
-           "which drift matters?")
+first = run.baseline.split("-")[0] if run.baseline[:4].isdigit() else run.baseline
+st.caption(f"{run.settings['description']}, {first}–{run.monitoring.periods[-1]}: which drift matters?")
 
 # ---- sidebar: what produced this run -----------------------------------------------------------
 about = [f"**Baseline:** {run.baseline}", f"**Later years:** {', '.join(run.monitoring.periods)}",
@@ -74,6 +73,25 @@ if demo:
 
 ORDINAL = alt.Scale(domain=["low", "medium", "high"], range=list(T.bands.values()))
 PERCENT = st.column_config.NumberColumn(format="percent")
+
+
+def top(key: str) -> str:
+    """'top 5' for the run's setting ``key`` (retrieval.judge_k, retrieval.top_k ...), else 'top results'."""
+    k = run.settings.get(key)
+    return f"top {k}" if k else "top results"
+
+
+def at_least(key: str, unit: str) -> str:
+    v = run.settings.get(key)
+    return f"at least {v:g} {unit}" if v else f"enough {unit}"
+
+
+def tilted(n: int) -> int:
+    """Axis label angle: flat for a few periods, tilted when many would collide."""
+    return 0 if n <= 8 else -45
+
+
+N_PERIODS = len(run.monitoring.periods) + 1
 
 
 # ---- small layout helpers ----------------------------------------------------------------------
@@ -145,7 +163,7 @@ def drift_line(whole: pd.DataFrame, col: str, measure: str, title: str) -> alt.C
     color = alt.Color("vs:N", scale=alt.Scale(domain=["vs the baseline", "vs the previous year"],
                                               range=list(T.series[:2])),
                       legend=alt.Legend(title=None, orient="top"))
-    base = alt.Chart(d).encode(x=alt.X("period:O", title=None, axis=alt.Axis(labelAngle=0)),
+    base = alt.Chart(d).encode(x=alt.X("period:O", title=None, axis=alt.Axis(labelAngle=tilted(N_PERIODS))),
                                y=alt.Y(f"{col}:Q", title="× ordinary change"), color=color)
     band_of = "embedding_band" if "embedding" in col else "lexical_band"
     lines = base.mark_line(strokeWidth=2) + base.mark_point(filled=True, size=70, stroke=T.surface,
@@ -165,7 +183,7 @@ def severity_heatmap(grid: pd.DataFrame) -> alt.Chart:
     order = (grid[grid["category"] != "ALL SECTIONS"].groupby("category")["n_period"].sum()
              .sort_values(ascending=False).index.tolist())
     y = alt.Y("category:N", sort=["ALL SECTIONS"] + order, title=None, axis=alt.Axis(labelOverlap=False))
-    base = alt.Chart(grid).encode(x=alt.X("period:O", title=None, axis=alt.Axis(labelAngle=0, orient="top")),
+    base = alt.Chart(grid).encode(x=alt.X("period:O", title=None, axis=alt.Axis(labelAngle=tilted(N_PERIODS), orient="top")),
                                   y=y)
     rect = base.mark_rect(stroke=T.surface, strokeWidth=2).encode(
         color=alt.Color("severity:N", scale=ORDINAL, title="Drift severity",
@@ -253,7 +271,7 @@ def outdated_chart(summary: pd.DataFrame) -> alt.Chart:
 
 def year_bars(df: pd.DataFrame, col: str, title: str) -> alt.Chart:
     """One measure per later year, as labelled bars (a single series: no legend)."""
-    x = alt.X("period:N", title=None, axis=alt.Axis(labelAngle=0))
+    x = alt.X("period:N", title=None, axis=alt.Axis(labelAngle=tilted(len(df))))
     y = alt.Y(f"{col}:Q", title=None, axis=alt.Axis(format="%", tickCount=4))
     bars = alt.Chart(df).mark_bar(cornerRadiusEnd=4, color=T.series[0], width={"band": 0.6}).encode(
         x=x, y=y, tooltip=[alt.Tooltip("period:N", title="Year"), alt.Tooltip(f"{col}:Q", title=title,
@@ -290,8 +308,8 @@ with tabs[0]:
                     help="Answered from the refreshed index, rebuilt with each year's articles.")
         if c:
             m[3].metric("Sections that lost answers", f"{c['harmed']} of {c['judged']}",
-                        help="Year × section groups with enough questions (at least 8) whose correct answers "
-                             "dropped by a material amount.")
+                        help=f"Year × section groups with {at_least('min_segment_questions', 'questions')} "
+                             "whose correct answers dropped by a material amount.")
     m = st.columns(4)
     m[0].metric("Years monitored", len(run.monitoring.periods), help=", ".join(run.monitoring.periods))
     m[1].metric("Groups flagged for drift", len(run.flagged()),
@@ -311,7 +329,9 @@ with tabs[0]:
                                         "Meaning (embedding drift)")), width="stretch")
     right.altair_chart(themed(drift_line(run.whole, "times_ordinary_lexical", "jsd_excess",
                                          "Vocabulary (word drift)")), width="stretch")
-    read(f"1.0 = as much change as is normal inside {run.baseline} (the same month a year apart); 2.5 = two "
+    window = run.drift.reference.get("whole_period_null", {}).get("window", "")
+    read(f"1.0 = as much change as is normal inside {run.baseline}"
+         + (f" (the same {window} a year apart)" if window in ("month", "quarter") else "") + "; 2.5 = two "
          "and a half times that. Orange compares each year with the baseline, blue with the year before. Above the dashed "
          "medium and high lines, change counts as unusual.")
     shows(story.drift_chart_takeaway(run))
@@ -349,8 +369,7 @@ with tabs[1]:
                     "new_sections": "New sections", "new_section_share": "In new sections",
                     "mix_cramers_v": "Mix change (0–1)", "new_term_rate": "New words"},
           percent=("new_section_share", "new_term_rate"), decimals={"mix_cramers_v": 2, "median_words": 0})
-    read("mix change is Cramér's V: 0 = every section kept its share, 1 = a completely different mix. "
-         "Articles are short (a headline and a sentence or two).")
+    read("mix change is Cramér's V: 0 = every section kept its share, 1 = a completely different mix.")
     a, b = st.columns(2)
     with a:
         heading("Data quality (cleaning)")
@@ -424,8 +443,9 @@ with tabs[2]:
     st.caption(f"Compared with {row['compared_with']} · {row['n_period']} vs {row['n_reference']} articles · "
                f"ordinary change measured on {row['null_window']} pairs inside the baseline")
     charts = [("Topics that grew", "emerging_topics", run.topics,
-               "clusters of articles about one subject whose share of a year is at least 3× their share of the "
-               "baseline. Orange = articles that year, blue = in the baseline. Most topics existed before and "
+               "clusters of articles about one subject whose share of a year is "
+               + (f"at least {run.settings['topic_min_ratio']:g}× " if run.settings.get("topic_min_ratio") else
+                  "several times ") + "their share of the baseline. Orange = articles that year, blue = in the baseline. Most topics existed before and "
                "grew; they did not appear from nothing."),
               ("Words that changed meaning", "words_that_changed_meaning", run.term_shifts,
                "the same word used in a different context. The bar is how far the articles using it moved; the "
@@ -435,7 +455,10 @@ with tabs[2]:
         heading(title)
         if key in run.charts or f"dark/{key}" in run.charts:
             st.image(str(run.charts.get(f"dark/{key}") or run.charts[key]))
-        read(how)
+            read(how)
+        else:
+            st.caption(f"Chart not drawn for this run: `python scripts/make_charts.py --run {run.run_id}` draws it. "
+                       "The numbers are below.")
         with st.expander("The numbers"):
             st.dataframe(data.round(3) if len(data) else data, width="stretch", hide_index=True)
     with st.expander("Method check: do the drift measures agree with each other?"):
@@ -455,9 +478,11 @@ with tabs[2]:
                "times_ordinary_lexical": "Words ×", "new_term_rate": "New words", "significant": "Significant",
                "emerging_terms": "Words that became common"},
               percent=("new_term_rate",), decimals=("times_ordinary_embedding", "times_ordinary_lexical"))
+        per_year = qd["n_period"].median() if "n_period" in qd else None
         read("the same analysis on the test questions instead of the articles, each year against the "
-             "baseline questions. With about 50 questions a year, × is measured against the change between the "
-             "two baseline years (the reference row), a rough scale. The questions were "
+             "baseline questions. "
+             + (f"With about {per_year:.0f} questions a year, " if per_year else "")
+             + "× is measured against the change inside the baseline (the reference row), a rough scale. The questions were "
              "written from each year's articles, so they partly mirror the article drift by construction; a "
              "real query log could drift on its own.")
 
@@ -465,8 +490,8 @@ with tabs[2]:
 with tabs[3]:
     st.subheader("Agent C · does search still find the answer?", anchor=False)
     intro("An assistant like this works in two steps: **search** finds a few articles, then the LLM **writes an "
-          "answer** from them. This tab tests search alone: for each question, does the top 5 contain an "
-          f"article that answers it? {models['judge']} reads each article found and decides, without being "
+          f"answer** from them. This tab tests search alone: for each question, is an article that answers it "
+          f"in the {top('judge_k')}? {models['judge']} reads each article found and decides, without being "
           "told which index found it.")
     rep = run.retrieval
     if rep is None:
@@ -481,7 +506,8 @@ with tabs[3]:
             m[1].metric("Found without re-indexing",
                         pct(sum(r["stale_answer"] * r["questions"] for r in later) /
                             sum(r["questions"] for r in later)),
-                        help="Share of questions about later years whose top 5 holds an answer, stale index.")
+                        help=f"Share of questions about later years with an answer in the {top('judge_k')}, "
+                             "stale index.")
             m[2].metric("Found after re-indexing",
                         pct(sum(r["refreshed_answer"] * r["questions"] for r in later) /
                             sum(r["questions"] for r in later)))
@@ -489,8 +515,8 @@ with tabs[3]:
                 m[3].metric("Old questions still found", pct(base[0]["refreshed_answer"]),
                             help=f"{run.baseline} questions on the refreshed index: adding new articles should "
                                  "not hurt them (the historical control).")
-            heading("Does the top 5 contain an answer?")
-            st.altair_chart(themed(dumbbell(long, "Share of questions whose top 5 holds an answer")),
+            heading(f"Is an answer in the {top('judge_k')}?")
+            st.altair_chart(themed(dumbbell(long, f"Share of questions with an answer in the {top('judge_k')}")),
                             width="stretch")
             read("each row is a year of questions. Blue = the stale index (never updated), orange = the "
                  "refreshed one; the line between them is what re-indexing gains. "
@@ -525,8 +551,8 @@ with tabs[3]:
             shows(story.ranking_takeaway(run))
             rc = pd.DataFrame(rep.ranking_change)
             table(rc.assign(index=rc["index"].str.replace("refreshed_", "", regex=False)),
-                  {"index": "Refreshed up to", "questions": "Questions", "overlap": "Same top 10 as stale",
-                   "newer_share": "Newer articles in top 10", "source_displaced": "Source article pushed out"},
+                  {"index": "Refreshed up to", "questions": "Questions", "overlap": f"Same {top('top_k')} as stale",
+                   "newer_share": f"Newer articles in {top('top_k')}", "source_displaced": "Source article pushed out"},
                   percent=("overlap", "newer_share", "source_displaced"))
         if rep.known_item:
             with st.expander("Sanity check: is the article each question came from found?"):
@@ -537,16 +563,19 @@ with tabs[3]:
                 table(ki.assign(index=ki["index"].str.replace("refreshed_", "", regex=False)),
                       {"index": "Refreshed up to", "asked_by": "Questions", "questions": "Count",
                        "reciprocal_rank": "Source article's rank score (1 = first)",
-                       "recall": "Source article in top 10"}, percent=("recall",))
+                       "recall": f"Source article in {top('top_k')}"}, percent=("recall",))
 
 # ---- Impact (Agent D) --------------------------------------------------------------------------
 with tabs[4]:
     st.subheader("Agent D · do the answers suffer, and which drift matters?", anchor=False)
     imp = run.impact
     if imp is None or not imp.questions:
-        st.info("Not run yet. This page shows answer quality once Agent D has run with an LLM.")
+        st.info("Skipped: this run did not use the LLM (`--no-judge`), so no answers were written or graded."
+                if run.info.get("mode") in ("no_judge", "estimate") else
+                "Not run yet. This page shows answer quality once Agent D has run with an LLM.")
     else:
-        intro(f"Now the whole assistant runs: {models['writer']} answers every question from each index's top 5, "
+        intro(f"Now the whole assistant runs: {models['writer']} answers every question from each index's "
+              f"{top('answer_k')}, "
               f"and {models['judge']} grades each answer on its own (correct, grounded in the articles, or "
               "declined), without being told which index it came from. This is where *which drift matters* is "
               "answered.")
@@ -588,7 +617,8 @@ with tabs[4]:
             loss = (f"at least {imp.threshold:.0%} and the 95% interval excludes zero" if imp.threshold else "")
             with st.expander("Every section, with its class"):
                 st.caption(f"A section counts as harmed when its correct answers drop by {loss}; this was fixed "
-                           "before looking at the results. Sections with fewer than 8 questions are not classified."
+                           "before looking at the results. Sections without "
+                           f"{at_least('min_segment_questions', 'questions')} are not classified."
                            if loss else "")
                 table(pd.DataFrame(imp.segments),
                       {"period": "Year", "category": "Section", "questions": "Questions",
@@ -601,11 +631,12 @@ with tabs[4]:
                 table(pd.DataFrame(imp.correlations), {"measure": "Drift measure", "segments": "Sections",
                                                        "spearman": "Rank correlation", "p_value": "p-value"})
         if imp.evidence:
-            heading("Evidence loop: borderline sections, answered again from the top 10")
+            heading(f"Evidence loop: borderline sections, answered again from the {top('top_k')}")
             st.dataframe(pd.DataFrame(imp.evidence).round(3), hide_index=True, width="stretch")
         else:
             st.caption("Evidence loop: when a section's result is borderline, this agent sends it back to Agent C "
-                       "to search the top 10 instead of the top 5 and answer again. No section was borderline in "
+                       f"to search the {top('top_k')} instead of the {top('answer_k')} and answer again. No "
+                       "section was borderline in "
                        "this run, so every result above is clear-cut.")
         if imp.examples:
             heading("What that looks like")
@@ -646,7 +677,7 @@ with tabs[5]:
     if rec is None:
         st.info("Not run yet. This page shows Agent E's recommendations once the full pipeline has run.")
     else:
-        intro(f"Nine possible actions, taken from the project brief. For each, a rule written in code checks the "
+        intro(f"{len(rec.recommendations)} possible actions, taken from the project brief. For each, a rule written in code checks the "
               f"other agents' results and decides whether it is needed. {models['writer']} then explains each "
               "recommended action from its evidence, and code rejects any explanation that uses a number not in "
               "the evidence, so the text cannot invent or change a result.")

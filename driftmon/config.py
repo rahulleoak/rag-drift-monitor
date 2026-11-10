@@ -26,6 +26,22 @@ def load_config(path: str | Path | None = None) -> dict[str, Any]:
         return yaml.safe_load(f)
 
 
+# Settings the dashboard quotes in its text ("the top 5", "at least 8 questions"...), saved with each
+# run in run_info.json so a run is described by the settings that produced it, not today's config.
+RUN_SETTINGS = {"top_k": ("retrieval", "top_k"), "judge_k": ("retrieval", "judge_k"),
+                "answer_k": ("impact", "answer_k"), "min_segment_questions": ("impact", "min_segment_questions"),
+                "topic_min_ratio": ("drift", "topic_min_ratio")}
+
+
+def run_settings(config: dict[str, Any]) -> dict[str, Any]:
+    """The settings listed in ``RUN_SETTINGS`` plus the active dataset's description."""
+    out = {name: config.get(section, {}).get(key) for name, (section, key) in RUN_SETTINGS.items()}
+    name = config.get("active_dataset", "")
+    out["dataset"] = name
+    out["description"] = config.get("datasets", {}).get(name, {}).get("description") or f"Documents from {name}"
+    return out
+
+
 def resolve_path(path: str | Path) -> Path:
     """Return ``path`` as an absolute path, treating relative paths as
     relative to the repository root."""

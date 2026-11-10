@@ -28,6 +28,12 @@ def _weighted(rows: list[dict[str, Any]], col: str) -> float:
     return sum(r[col] * r["questions"] for r in rows) / n if n else float("nan")
 
 
+def _top(run: Run, key: str) -> str:
+    """'top 5' from the run's settings, or 'top results' when the run does not record them."""
+    k = run.settings.get(key)
+    return f"top {k}" if k else "top results"
+
+
 def _years(periods: list[str]) -> str:
     return f"{periods[0]}–{periods[-1]}" if len(periods) > 1 else periods[0]
 
@@ -185,7 +191,8 @@ def retrieval_takeaway(run: Run) -> str:
     base = [r for r in rep.judged_by_period if str(r["period"]) == run.baseline]
     if not later:
         return ""
-    s = (f"For questions about {_years([str(r['period']) for r in later])}, the top 5 holds an answer for "
+    s = (f"For questions about {_years([str(r['period']) for r in later])}, an answer is in the {_top(run, 'judge_k')} "
+         f"for "
          f"{pct_range([r['stale_answer'] for r in later])} on the stale index and "
          f"{pct_range([r['refreshed_answer'] for r in later])} on the refreshed one.")
     if base:
@@ -205,13 +212,14 @@ def ranking_takeaway(run: Run) -> str:
     first, last = rc[0], rc[-1]
     if "overlap" not in first:
         return ""
-    s = (f"As new articles are added, the old questions' top 10 changes gradually: overlap with the stale "
+    s = (f"As new articles are added, the old questions' {_top(run, 'top_k')} change gradually: "
+         f"overlap with the stale "
          f"index falls from {pct(first['overlap'])} to {pct(last['overlap'])}")
     if "newer_share" in first:
         s += f", and newer articles grow from {pct(first['newer_share'])} to {pct(last['newer_share'])} of the results"
     s += "."
     if all("source_displaced" in r and r["source_displaced"] == 0 for r in rc):
-        s += " The article each question came from is never pushed out of the top 10."
+        s += f" The article each question came from is never pushed out of the {_top(run, 'top_k')}."
     return s
 
 

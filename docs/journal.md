@@ -16,6 +16,27 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-09 (evening): the two extensions worth doing before Friday
+- **Built:** the newer-wording test (D31, F23) and the applied targeted
+  re-index (D32, F24), each with thresholds written down before the run.
+  Agent E now cites the applied fix and pairs it with a scheduled full
+  re-index; new demo run `20261109-221754` (only that recommendation
+  changed). Presentation brief and slide screenshots on their own branch.
+- **Tried and abandoned:** the first newer-wording run (50 questions per
+  group) kept 11 of 199, too few; widened to all 370 with nothing else
+  changed. Relaxing the "newer word" check after seeing results (option B)
+  was skipped: it would be tuning after the fact, for a handful of items.
+- **Surprises:** only 5% of questions have a natural newer wording (names
+  carry them); the edit finder only saw sentences with a number, so a name
+  change could never be sampled (added `facts.other_edits`); the 90 listed
+  articles are the long ones, 64% of the passages, not about half; the
+  targeted fix missed our own 80% bar (77%), and every miss was "cannot
+  answer", never a wrong fact.
+- **Open questions:** whether to count *added* numbers as changed facts (2
+  of the 3 real misses; would also flag added citation years).
+- **Next:** walkthrough preparation in a separate read-only session;
+  rehearse; delete `docs/dashboard-review.md` once no longer needed.
+
 ## 2026-11-09: public repo, reorganised library, dashboard rebuilt around readers
 - **Repo public** with `main` protected (pull requests only, no force-push),
   issues/wiki/projects off and interactions limited to contributors.

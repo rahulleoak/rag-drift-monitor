@@ -30,7 +30,7 @@ from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.dashboard import story  # noqa: E402
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.dashboard.runs import (answers_stale_vs_refreshed, harm_vs_drift, list_runs, load_run,  # noqa: E402
-                                     run_models, severity_grid, stale_label, stale_vs_refreshed)
+                                     run_label, run_models, severity_grid, stale_label, stale_vs_refreshed)
 from driftmon.policy import pct  # noqa: E402
 
 st.set_page_config(page_title="RAG drift monitor", layout="wide")
@@ -47,7 +47,9 @@ if not runs:
     st.warning(f"No pipeline runs in {runs_dir}. Run `python scripts/run_pipeline.py` first.")
     st.stop()
 
-run_id = st.sidebar.selectbox("Pipeline run", runs, help="Saved runs, newest first")
+run_id = st.sidebar.selectbox("Pipeline run", runs, format_func=lambda r: run_label(runs_dir, r),
+                              help="Saved runs, newest first, with the agents each one holds. Older runs "
+                              "can be kept in runs/archive/, which is not listed.")
 run = load_run(runs_dir, run_id)
 models = run_models(run, config)
 first_year, last_year = run.baseline.split("-")[0], run.monitoring.periods[-1]

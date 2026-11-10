@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +26,28 @@ def list_runs(runs_dir: Path) -> list[str]:
     """Run ids (folder names) that contain a drift report, newest first."""
     return sorted((p.name for p in runs_dir.glob(RUN_PATTERN) if (p / "drift.json").exists()),
                   reverse=True)
+
+
+AGENT_FILES = [("A", "monitoring.json"), ("B", "drift.json"), ("C", "retrieval.json"), ("D", "impact.json"),
+               ("E", "recommendations.json")]
+
+
+def run_label(runs_dir: Path, run_id: str) -> str:
+    """Picker label: when the run was made and which agents it holds,
+    e.g. '9 Nov 2026, 14:43 · all agents' or '5 Nov 2026, 08:39 · agents A–B'."""
+    try:
+        when = datetime.strptime(run_id, "%Y%m%d-%H%M%S")
+        stamp = f"{when.day} {when:%b %Y, %H:%M}"
+    except ValueError:
+        stamp = run_id
+    have = [a for a, f in AGENT_FILES if (runs_dir / run_id / f).exists()]
+    if len(have) == len(AGENT_FILES):
+        what = "all agents"
+    elif have:
+        what = f"agents {have[0]}–{have[-1]}" if len(have) > 1 else f"agent {have[0]}"
+    else:
+        what = "no reports"
+    return f"{stamp} · {what}"
 
 
 @dataclass

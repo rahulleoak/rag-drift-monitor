@@ -169,3 +169,16 @@ def test_run_models_come_from_the_run_and_fall_back_to_the_config(tmp_path):
                    "source": "run"}
     (run_path / "run_info.json").write_text(json.dumps({"models": None, "embedding_model": "e5"}), "utf-8")
     assert run_models(load_run(tmp_path, src.name), config)["writer"].startswith("none")
+
+
+def test_run_labels_say_when_and_which_agents(tmp_path):
+    from driftmon.dashboard.runs import run_label
+    full, partial = tmp_path / "20261109-144329", tmp_path / "20261105-083957"
+    for d, files in ((full, ["monitoring.json", "drift.json", "retrieval.json", "impact.json",
+                             "recommendations.json"]), (partial, ["monitoring.json", "drift.json"])):
+        d.mkdir()
+        for f in files:
+            (d / f).write_text("{}", encoding="utf-8")
+    assert run_label(tmp_path, full.name) == "9 Nov 2026, 14:43 · all agents"
+    assert run_label(tmp_path, partial.name) == "5 Nov 2026, 08:39 · agents A–B"
+    assert run_label(tmp_path, "my-run") == "my-run · no reports"

@@ -530,6 +530,17 @@ date and reason, and add a new entry that supersedes it.
   from 5% to 60% is found and spans two sections; a word whose contexts
   change is detected while a stable one is not; correlations need
   variation).
+- **Revised 2026-11-09 (emerging and declining words per segment):** the
+  dashboard's new before/after word chart showed that 5 of 460 listed
+  words moved the wrong way or barely moved, all in small segments (54-82
+  articles, about 800 words). Example: "trump" listed as emerging in 2018
+  TECH, where it is not used at all that year. Cause: the log-odds prior
+  (1,000 pseudo-words, shaped like the whole archive) is as large as such
+  a segment, so words common across the archive inherit a high rate.
+  Choice: keep the log-odds ranking, but list a word as emerging only if
+  its observed rate rose, and as declining only if it fell. Whole-period
+  lists (e.g. coronavirus in 2020) are unchanged. Test:
+  `tests/test_dashboard.py::test_listed_words_move_the_way_their_label_says`.
 
 ## D13. Plan: detecting quality loss without drift
 - **Date:** 2026-11-05

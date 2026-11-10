@@ -226,3 +226,15 @@ def test_settings_come_from_the_run(tmp_path):
     assert "an answer is in the top 3" in story.retrieval_takeaway(run)
     run.settings = {}
     assert "an answer is in the top results" in story.retrieval_takeaway(run)
+
+
+def test_listed_words_move_the_way_their_label_says():
+    """Emerging words are used more in the year than in the baseline, fading words less (D12 revision)."""
+    run = load_run(DEMO, list_runs(DEMO)[0])
+    rows = [t for s in run.drift.whole_period + run.drift.segments for t in s.term_shares]
+    assert rows, "the demo run should carry term_shares"
+    for t in rows:
+        if t["direction"] == "emerging":
+            assert t["per_1000_period"] > t["per_1000_reference"], t
+        else:
+            assert t["per_1000_period"] < t["per_1000_reference"], t

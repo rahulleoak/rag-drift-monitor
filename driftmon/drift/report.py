@@ -62,13 +62,20 @@ def metric_correlations(segments: list[SegmentDrift]) -> pd.DataFrame:
 def _terms(inp: DriftInputs, rows: np.ndarray, ref_rows: np.ndarray, prior, k: int = 5
            ) -> tuple[list[str], list[str], list[dict[str, Any]]]:
     """Top ``k`` emerging and declining terms, and how often each is used on both sides
-    (per 1,000 words) for the dashboard's before/after chart."""
+    (per 1,000 words) for the dashboard's before/after chart.
+
+    Terms are ranked by log-odds z, but a term is only listed as emerging if its observed
+    rate rose, and as declining if it fell. In a small segment (a few hundred words) the
+    prior can outweigh the data, so a term common across the archive could otherwise rank
+    as emerging in a segment that never uses it (D12, revised 2026-11-09)."""
     target = lex.term_counts(inp.tokens[i] for i in rows)
     reference = lex.term_counts(inp.tokens[i] for i in ref_rows)
     t = lex.log_odds_dirichlet(target, reference, prior)
     t = t[t["count_target"] + t["count_reference"] >= 5]
-    up, down = t.head(k), t.tail(k).iloc[::-1]
     nt, nr = max(sum(target.values()), 1), max(sum(reference.values()), 1)
+    rate_t, rate_r = t["count_target"] / nt, t["count_reference"] / nr
+    up = t[(t["z"] > 0) & (rate_t > rate_r)].head(k)
+    down = t[(t["z"] < 0) & (rate_t < rate_r)].tail(k).iloc[::-1]
     shares = [{"term": term, "direction": direction,
                "per_1000_reference": round(1000 * r["count_reference"] / nr, 3),
                "per_1000_period": round(1000 * r["count_target"] / nt, 3)}

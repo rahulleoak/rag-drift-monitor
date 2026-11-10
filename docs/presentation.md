@@ -669,5 +669,11 @@ Not done, in the order I would do them; each has the reason it would help.
 10. **Entity graph per period** for a few key entities (D21), and a
     **fine-tuning experiment** for the retraining action (D7): larger
     pieces of work, lower priority.
-11. **Production:** scheduled runs with alerts, a shared vector database,
+11. **Length guard inside the pipeline.** The length check (D33, F25) runs
+    beside the pipeline today and changed nothing here. On other data (an
+    archive moving from short summaries to full articles) length could
+    raise false drift alerts. Design: Agent A already measures length per
+    period; when the gap is large, Agent B runs the length-matched
+    comparison and reports drift both ways.
+12. **Production:** scheduled runs with alerts, a shared vector database,
     access control and audit (section 12b).

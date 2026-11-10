@@ -129,7 +129,7 @@ dashboard), as agreed with the author on 2026-11-08.**
 | Larger hand-label samples; a second labeller for the answer sheet | Samples are 15-20 items per part; the answer sheet has one labeller | F19, F20 |
 | The open "revisit" points in D17 (is the unanswerable set useful; do keep rates differ by section; did common knowledge make retrieval easier) and D2 (weight of known-item metrics) | Written down when the results did not exist yet | D17, D2, F11 |
 | Let the LLM propose what to investigate (for example which terms to test), code tests it | More visibly agentic without the LLM deciding | D7 (not adopted yet) |
-| Length-matched drift check: document drift on baseline samples matched to later lengths | Planned as D6 check 5; shows how much embedding drift is length | D6, D8. **Done 2026-11-09 (D33, F25):** about 11% of embedding drift is length; no severity band changes |
+| Length-matched drift check: document drift on baseline samples matched to later lengths | Planned as D6 check 5; shows how much embedding drift is length | D6, D8. **Done 2026-11-09 (D33, F25):** about 11% of embedding drift is length; no severity band changes. Next: run it inside Agent B when Agent A sees a large length gap |
 
 ## Success criteria
 

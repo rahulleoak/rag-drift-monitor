@@ -1,9 +1,11 @@
 # Presentation brief: RAG Drift Monitor
 
 Single source for the slides. Upload this file and the images in this folder
-(`00_architecture.png` to `16_not_recommended.png`). Every number below comes
-from the committed demo run `20261109-184053`; nothing else in `docs/` should
-be used for numbers (older notes contain superseded figures).
+(`00_architecture.png` to `18_applied_fix.png`). Every number below comes
+from the committed demo run `20261109-221754` and the long-form results saved
+with it; nothing else in `docs/` should be used for numbers (older notes
+contain superseded figures). Updated 2026-11-10: chunking and the applied fix
+added as slides, slides 6 and 7 merged, new backup questions, numbers updated.
 
 ## Instructions for the slide tool
 
@@ -18,7 +20,7 @@ be used for numbers (older notes contain superseded figures).
 - **Images:** place each image at a readable size (it is a screenshot of the
   real dashboard); do not crop away its heading.
 - **Speaker notes:** copy the "Say" text into the notes, not onto the slide.
-- **Length:** 13 main slides plus backup slides. Target about 16.5 minutes, then a
+- **Length:** 14 main slides plus backup slides. Target about 17 minutes, then a
   3 minute live demo.
 
 ## The story in one paragraph
@@ -42,16 +44,17 @@ right policy is to re-index on a schedule, not on drift alerts.
 | 3 | The setting | 1 |
 | 4 | How it works | 1.5 |
 | 5 | The key experiment | 1 |
-| 6 | What drifted | 1.5 |
-| 7 | Where it drifted | 1 |
-| 8 | Without re-indexing, answers fail, silently | 1.5 |
-| 9 | Drift scores do not predict where answers break | 1.5 |
+| 6 | What drifted, and where | 1.5 |
+| 7 | Without re-indexing, answers fail, silently | 1.5 |
+| 8 | Drift scores do not predict where answers break | 1.5 |
+| 9 | Long documents: chunking | 1 |
 | 10 | Changed facts: the subtle failure | 1.5 |
-| 11 | What to do, with evidence | 1.5 |
-| 12 | Can the judges be trusted? | 1 |
-| 13 | Design decisions, limits, next steps | 1.5 |
+| 11 | We applied the fix | 1.5 |
+| 12 | What to do, with evidence | 1.5 |
+| 13 | Can the judges be trusted? | 1 |
+| 14 | Design decisions, limits, next steps | 1.5 |
 | | Live demo | 3 |
-| | **Total** | **about 19.5** (drop slide 7 if running long) |
+| | **Total** | **about 20** (if running long, say slide 9 in one sentence and move on) |
 
 ---
 
@@ -118,33 +121,24 @@ right policy is to re-index on a schedule, not on drift alerts.
 - **Say:** "This turns 'drift exists' into 'drift costs this much', and the
   control tells us re-indexing does not break old questions."
 
-## Slide 6: What drifted
+## Slide 6: What drifted, and where
 
-- **Title:** 2020 moved furthest; year-on-year comparison hides gradual drift
+- **Title:** 2020 moved furthest, and COVID reached sections you would not expect
 - **Image:** `02_drift_per_year.png`
 - **Bullets:**
-  - 2020: 2.5× ordinary change from the baseline (high).
+  - 2020: 2.5× ordinary change from the baseline (high); 6 of 7 analysable sections flagged.
   - 2022 looks ordinary next to 2021 (0.5×) but has moved 2.1× from the baseline.
-  - Two techniques: meaning (embeddings) and vocabulary (word use).
-- **Say:** "Drift is measured against the archive's own ordinary change
-  inside the baseline, the same month a year apart. 1.0 is normal. A
-  monitor that only compares with last year would say 2022 is fine; against
-  the baseline it has clearly moved."
+  - Questions drift too: their vocabulary moved 3–6× ordinary from 2018 on (coronavirus 2020; capitol, covid 2021).
+- **Say:** "Drift is measured two ways, meaning (embeddings) and vocabulary,
+  against the archive's own ordinary change inside the baseline, the same
+  month a year apart. 1.0 is normal. A monitor that only compares with last
+  year would say 2022 is fine; against the baseline it has clearly moved.
+  COVID reached sections you would not expect: Food & Drink moved 17×
+  ordinary in 2020, as delivery, pantry and coronavirus came in and summer,
+  wine and meal faded. The users' questions drift as well, which the brief
+  asks us to monitor."
 
-## Slide 7: Where it drifted
-
-- **Title:** COVID reached sections you would not expect
-- **Image:** `04_drift_heatmap.png` (or `05_share_flagged.png` if space is short)
-- **Bullets:**
-  - 2020: 6 of 7 analysable sections flagged (86%); other years 24–40%.
-  - Largest shifts: Food & Drink, Style & Beauty, Parenting, Wellness.
-  - New topics mostly grew rather than appeared: 2022 Ukraine/Russia, 135 articles against 8 in the baseline sample.
-- **Say:** "Food & Drink moved 17× ordinary in 2020: delivery, pantry and
-  coronavirus came in; summer, wine and meal faded. Words also change
-  meaning: 'home' in 2020 moved from 'america, world, state' to 'hair,
-  coronavirus'."
-
-## Slide 8: Without re-indexing, answers fail, silently
+## Slide 7: Without re-indexing, answers fail, silently
 
 - **Title:** Without re-indexing, the assistant answers 0.3% of questions about new events
 - **Image:** `11_correct_answers.png`
@@ -157,7 +151,7 @@ right policy is to re-index on a schedule, not on drift alerts.
   failure is silent: the user gets 'the archive does not cover this', not a
   wrong answer that someone would notice."
 
-## Slide 9: Drift scores do not predict where answers break
+## Slide 8: Drift scores do not predict where answers break
 
 - **Title:** Every section lost answers, and drift detection flagged only 7 of 19
 - **Image:** `12_drift_vs_loss.png`
@@ -171,6 +165,19 @@ right policy is to re-index on a schedule, not on drift alerts.
   drift scores tell you where content changed, not where answers break: the
   policy has to be re-index on a schedule, not on alerts."
 
+## Slide 9: Long documents: chunking
+
+- **Title:** A whole-article embedding sees only the start of a long document
+- **Image:** `17_chunking.png`
+- **Bullets:**
+  - 165 Wikipedia articles, median about 8,000 tokens; the model reads 512, so 91% of the text is never seen.
+  - Following real edits: first 512 tokens 0.51 · averaged 0.78 · 256-token chunks 0.87.
+  - Edited documents need each version compared with its own earlier version.
+- **Say:** "The stakeholder asked for long documents, and this is why
+  chunking is one of the recommendations: without it, drift detection is
+  blind to most of the text. 128-token chunks did slightly better, 0.89, but
+  need twice the vectors; Agent E suggests testing them for retrieval."
+
 ## Slide 10: Changed facts: the subtle failure
 
 - **Title:** A changed number changes the answer half the time, and drift scores miss it
@@ -180,18 +187,31 @@ right policy is to re-index on a schedule, not on drift alerts.
   - The old index still finds the edited passage 92% of the time, so it serves the outdated fact with confidence.
   - 95% of articles with a changed fact had a "low" drift score; a changed-facts check catches them (391 changes in 90 of 165 articles).
 - **Say:** "On long documents, embeddings barely move when only a number
-  changes. Chunking helps drift detection see edits (section-aware chunks
-  track real edits at 0.87–0.89 vs 0.51 for the first 512 tokens), but the
-  reliable signal is a text check that matches each edited sentence to its
-  earlier version."
+  changes, even with chunks. The reliable signal is a text check that
+  matches each edited sentence to its earlier version and looks for a
+  replaced number or date."
 
-## Slide 11: What to do, with evidence
+## Slide 11: We applied the fix
+
+- **Title:** We applied the fix: changed-fact answers went from 68% outdated to 0%
+- **Image:** `18_applied_fix.png`
+- **Bullets:**
+  - Re-indexing only the 90 flagged articles: outdated answers 12.9% → 3.0%, for 64% of the re-embedding.
+  - It reached 77% of a full re-index's gain, short of the 80% we set in advance.
+  - Every miss was "can't answer", never a wrong fact: detail added to articles it did not list.
+- **Say:** "This is the brief's apply-a-fix-and-re-check. We copied the
+  index, applied Agent E's recommendation, and asked 140 questions about
+  edited sentences. It missed our own bar, and we report that. So the
+  recommendation became: re-index the flagged documents now, and keep a
+  scheduled full re-index."
+
+## Slide 12: What to do, with evidence
 
 - **Title:** Five actions recommended, four ruled out, each with its numbers
 - **Image:** `15_recommendations.png`
 - **Bullets:**
   1. Re-index on a schedule, not only on drift alerts.
-  2. Re-index the 90 articles with changed facts.
+  2. Re-index the 90 articles with changed facts now; full re-index on a schedule.
   3. Send the 12 unflagged sections that lost answers to a person.
   4. Section-aware chunking for long documents.
   5. Keep monitoring old questions; compare with the baseline, not just last year.
@@ -201,18 +221,18 @@ right policy is to re-index on a schedule, not on drift alerts.
   in the evidence; all five passed first time. The ruled-out actions matter
   too: re-indexing alone fixes every section, so retraining is not needed."
 
-## Slide 12: Can the judges be trusted?
+## Slide 13: Can the judges be trusted?
 
 - **Title:** The LLM judges agree with people, and are stricter when they differ
 - **Bullets (or a small table):**
   - Relevance judge vs two people: 14/15 and 11/15 (people vs each other: 12/15).
   - Changed-facts check, precision vs two people: 17/20 and 16/20 (people: 17/20).
   - Answer judge vs one person: 11/15.
-- **Small text:** Blind hand labels, first pass. 175 automated tests. All LLM calls cost $15.60 in total (4,558 calls, cached); a full rerun costs nothing and takes about 2 minutes.
+- **Small text:** Blind hand labels, first pass. 196 automated tests. All LLM calls cost $17.20 in total (5,556 calls, cached); a full rerun costs nothing and takes about 2 minutes.
 - **Say:** "Where the judge and a person disagree, the judge is almost always
   the stricter one, so the losses are not inflated."
 
-## Slide 13: Design decisions, limits, next steps
+## Slide 14: Design decisions, limits, next steps
 
 - **Title:** Built to be trusted, honest about its limits
 - **Bullets (decisions):**
@@ -221,7 +241,8 @@ right policy is to re-index on a schedule, not on drift alerts.
   - Stale vs refreshed on the same questions: harm measured, not assumed.
 - **Bullets (limits → next):**
   - Questions are simulated → connect a real query log.
-  - Years replayed as batches → schedule runs on live batches.
+  - The changed-facts check sees replaced numbers and dates only → add names and added numbers.
+  - Wording vs meaning untested for keyword search → add BM25 next to the dense retriever.
   - Small hand-label samples → grow them.
 - **Say:** "If I had another week, the first thing would be a real query log:
   it is the one input that is simulated here."
@@ -251,8 +272,27 @@ Fallback if anything fails: the README GIF, and the screenshots in these slides.
 | Why 2016–17 as the baseline? | Closest topic mix to the later years among the candidate windows (checked before choosing). |
 | What does "× ordinary change" mean? | Drift measured against change inside the baseline itself (the same month a year apart); 1.0 is normal, 2.5 is two and a half times that. At this size every comparison is "significant", so the multiple is what separates drift from noise. |
 | An early summary said 2020 was 5.7×; now it is 2.5×? | Same measurement, different yardstick: the early figure divided by one comparison (2017 vs 2016); the pipeline divides by the median of 12 same-month pairs inside the baseline. Rankings and conclusions are identical. |
-| How much did it cost? | $15.60 for the whole project (4,558 LLM calls, Batch API where possible). Reruns hit the cache and cost nothing. |
+| How much did it cost? | $17.20 for the whole project (5,556 LLM calls, Batch API where possible). Reruns hit the cache and cost nothing. |
 | Would it work on our data? | The dashboard reads any run; the pipeline needs a loader for the document format, dates and sections, and a question set. |
+| What if users ask in today's words, COVID instead of coronavirus? | Tested: only 5% of questions (18 of 370) had a natural newer wording; the article was still found for 17 of 18, sometimes a place lower. Names carry search, and names rarely change in five years. |
+| Isn't some of the drift just article length? | Checked with length-matched samples: about a tenth (11%); no severity flag changed. |
+| Why did your own fix miss its test? | It fixed changed facts completely (68% → 0%); it missed detail added to articles it did not list, reaching 77% against an 80% bar set before the run. Hence "targeted now, full on a schedule". |
+| How does this fit contracts and policies? | Superseded policies and renamed terms are the contract version of "coronavirus → covid"; changed facts are "which contract version is current". Monitoring, evidence and the stale-vs-refreshed check carry over unchanged. |
+
+## Backup image slides
+
+One image per slide, title as given:
+
+| # | Title | Image |
+|---|---|---|
+| B3 | Four actions checked and ruled out, each with its reason | `16_not_recommended.png` |
+| B4 | Search tells the same story: an answer in the top 5 for 0–1% stale, 96–100% refreshed | `09_retrieval_bars.png` |
+| B5 | The stale index declines; the refreshed index answers | `13_answer_example.png` |
+| B6 | Where it drifted: 2020 flagged 6 of 7 analysable sections (86%); other years 24–40% | `04_drift_heatmap.png` |
+| B7 | Most new topics existed before and grew: 2022 Ukraine/Russia, 135 articles against 8 | `07_topics.png` |
+| B8 | Everyday words changed meaning: "home" in 2020 moved 4.6× ordinary change | `08_words_meaning.png` |
+| B9 | 2020 Food & Drink: meaning 17.3×, words 7.1× | `06_one_group_words.png` |
+| B10 | The dashboard overview: the run at a glance | `01_overview.png` |
 
 ## Numbers sheet (the only figures to use)
 
@@ -281,13 +321,21 @@ Fallback if anything fails: the README GIF, and the screenshots in these slides.
 | Old index finds edited passage | 92% |
 | Changed-fact articles with "low" drift | 95% |
 | Chunking (rank correlation with real edits) | first 512 tokens 0.51 · averaged vector 0.78 · 256-token chunks 0.87 · 128-token chunks 0.89 |
+| Long articles | median about 8,000 tokens; 91% of the text past the model's 512 |
+| Applied fix (targeted re-index) | outdated answers 12.9% → 3.0%; changed facts 68% → 0%; 77% of a full re-index's gain (bar 80%); 64% of the re-embedding; 140 edited sentences |
+| Newer wording | 18 of 370 questions (5%) had one; article found for 17 of 18 |
+| Length check | about 11% of embedding drift is length; no severity band changes |
+| Query drift | question vocabulary 3–6× ordinary from 2018 (rough scale: one comparison, 2017 vs 2016 questions) |
 | Recommendations | 5 recommended, 4 ruled out; 5 of 5 explanations passed the number check first time |
 | Judges vs people | relevance 14/15 and 11/15 (people 12/15); changed facts 17/20 and 16/20 (people 17/20); answers 11/15 |
-| LLM cost | $15.60 total, 4,558 calls; reruns $0 |
-| Tests | 175 |
+| LLM cost | $17.20 total, 5,556 calls; reruns $0 |
+| Tests | 196 |
 
 ## Do not use (superseded)
 
 - 2020 at "5.7×", 2022 at "1.2× / 4.7×" (early yardstick; use 2.5× / 0.5× / 2.1×).
 - Correlation "up to 0.40" (it is 0.41).
+- "$15.60 / 4,558 calls" and "175 tests" (now $17.20 / 5,556 and 196).
+- "86%" for the applied fix (exploratory, after removing noise; the result is 77%).
+- Slide numbers from the first draft: old slides 6 and 7 are merged; chunking and the applied fix are new slides 9 and 11.
 - Any "tab" names (the dashboard now uses pages: Overview, Data Monitoring, Drift, Retrieval, Impact, Recommendations).

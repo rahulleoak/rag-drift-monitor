@@ -128,14 +128,50 @@ def overview_findings(run: Run) -> list[str]:
 
 
 def route_sentence(run: Run) -> str:
-    """What the routing decision after Agent B was, in words."""
+    """What the routing decisions were, in words: after Agent B, and the evidence loop after Agent D."""
     n = len(run.drift.drifted_segments)
     if run.next_step == "full_evaluation":
-        return (f"Drift detection flagged {n} year × section groups, so the system ran the full answer check "
-                "on every question.")
-    if run.next_step == "regression_check":
-        return "No group was flagged, so the system ran a small regression check instead of the full answer check."
-    return f"Routing after drift detection: {run.next_step.replace('_', ' ')}."
+        s = (f"Drift detection flagged {n} year × section groups, so the system ran the full answer check "
+             "on every question.")
+    elif run.next_step == "regression_check":
+        s = "No group was flagged, so the system ran a small regression check instead of the full answer check."
+    else:
+        s = f"Routing after drift detection: {run.next_step.replace('_', ' ')}."
+    loop = run.impact.evidence if run.impact is not None else []
+    if loop:
+        s += (f" {len(loop)} borderline section{'s' if len(loop) != 1 else ''} went back to Agent C for more "
+              "evidence (the evidence loop, see Impact).")
+    return s
+
+
+def _segment_name(segment_id: str) -> str:
+    """'2020|WORLD NEWS|vs 2016-17' -> '2020 WORLD NEWS'."""
+    period, cat = segment_id.split("|")[:2]
+    return f"{period} {cat}"
+
+
+def fault_banner(run: Run) -> str:
+    """For a run with a simulated failure (D34): what was broken, so it is never mistaken for a normal run."""
+    f = run.info.get("fault_injection")
+    if not f:
+        return ""
+    return (f"Simulated failure: {float(f['drop_share']):.0%} of the {f['period']} {f['category']} articles were "
+            "left out of the refreshed index, as if an ingestion batch had failed. This run demonstrates the "
+            "evidence loop; its numbers are not the project's results.")
+
+
+def evidence_loop_takeaway(run: Run) -> str:
+    """What the evidence loop found, per borderline section, and what Agent E did with it."""
+    rows = run.impact.evidence if run.impact is not None else []
+    if not rows:
+        return ""
+    parts = []
+    for e in rows:
+        parts.append(f"{_segment_name(e['segment_id'])} ({e['questions']} questions): {pct(e['loss_top5'])} fewer "
+                     f"correct answers on the stale index when answering from the {_top(run, 'answer_k')}, "
+                     f"{pct(e['loss_top10'])} from the {_top(run, 'top_k')} (interval {pct(e['loss_top10_low'])} to "
+                     f"{pct(e['loss_top10_high'])}). Conclusion: {e['conclusion']}.")
+    return " ".join(parts)
 
 
 def drift_chart_takeaway(run: Run) -> str:

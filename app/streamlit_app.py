@@ -95,6 +95,8 @@ st.markdown('<div class="topbar">' + "".join(f'<span class="chip">{html.escape(k
                                              '</span>' for k, v in facts) + "</div>", unsafe_allow_html=True)
 if models["source"] != "run":
     st.caption("Model names from the current config: this run predates run_info.json.")
+if story.fault_banner(run):
+    st.warning(story.fault_banner(run), icon="⚠️")
 if demo:
     st.sidebar.info("Showing the bundled demo run (`demo/runs/`). Run `python scripts/run_pipeline.py` to see "
                     "your own.")
@@ -558,8 +560,17 @@ def impact() -> None:
                                                    "spearman": "Rank correlation", "p_value": "p-value"},
                   help={"spearman": "1 = more drift always means more loss; 0 = unrelated."})
     if imp.evidence:
-        section(f"Evidence loop: borderline sections, answered again from the {top('top_k')}")
-        st.dataframe(pd.DataFrame(imp.evidence).round(3), hide_index=True, width="stretch")
+        section(f"Evidence loop: borderline sections, answered again from the {top('top_k')}",
+                f"A section is borderline when its drop passes the threshold but its interval still reaches zero. "
+                f"The graph sends it back to Agent C, which grades ranks 6-{run.settings.get('top_k', 10)}; this "
+                f"agent then answers from the {top('top_k')} and concludes in code: harm confirmed, answers just "
+                "outside the top results (a retrieval setting), or unclear (a person should look). Agent E acts on "
+                "the conclusion.", story.evidence_loop_takeaway(run))
+        table(pd.DataFrame(imp.evidence),
+              {"segment_id": "Section", "questions": "Questions", "loss_top5": f"Drop, {top('answer_k')}",
+               "loss_top10": f"Drop, {top('top_k')}", "loss_top10_low": "Interval low",
+               "loss_top10_high": "Interval high", "conclusion": "Conclusion"},
+              percent=("loss_top5", "loss_top10", "loss_top10_low", "loss_top10_high"))
     else:
         st.caption(f"Evidence loop: when a section's result is borderline, this agent sends it back to Agent C to "
                    f"search the {top('top_k')} instead of the {top('answer_k')} and answer again. No section was "

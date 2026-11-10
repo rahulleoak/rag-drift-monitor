@@ -68,8 +68,17 @@ def main(argv: list[str] | None = None) -> int:
     mode.add_argument("--estimate", action="store_true", help="no LLM spend: print the judge's cost")
     mode.add_argument("--no-judge", action="store_true", help="skip the LLM relevance judge")
     parser.add_argument("--pilot", type=int, help="Agent D on this many questions only")
+    parser.add_argument("--label", help="a short name for this run, shown in the dashboard's run picker")
+    parser.add_argument("--fault", metavar="PERIOD|SECTION",
+                        help="simulate a failed re-index: leave most of this section's articles out of the "
+                             "refreshed index (D34), e.g. \"2020|WORLD NEWS\"")
+    parser.add_argument("--fault-share", type=float, default=0.85, help="share of those articles left out")
     args = parser.parse_args(argv)
     config = load_config()
+    if args.fault:
+        period, category = args.fault.split("|", 1)
+        config["fault_injection"] = {"period": period.strip(), "category": category.strip(),
+                                     "drop_share": args.fault_share}
     run_dir = resolve_path(config["paths"]["runs"]) / datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
@@ -170,6 +179,8 @@ def _save_run_info(run_dir: Path, config: dict, args, llm, spent_before: float, 
         "llm_cost_usd": round(llm.spent() - spent_before, 4) if llm is not None and mode == "full" else None,
         "code_version": _git_commit(),
         "settings": run_settings(config),
+        "label": args.label,
+        "fault_injection": config.get("fault_injection"),
     }
     (run_dir / "run_info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
 

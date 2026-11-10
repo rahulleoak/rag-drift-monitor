@@ -47,7 +47,9 @@ def run_label(runs_dir: Path, run_id: str) -> str:
         what = f"agents {have[0]}–{have[-1]}" if len(have) > 1 else f"agent {have[0]}"
     else:
         what = "no reports"
-    return f"{stamp} · {what}"
+    info = runs_dir / run_id / "run_info.json"
+    label = json.loads(info.read_text(encoding="utf-8")).get("label") if info.exists() else None
+    return f"{stamp} · {what}" + (f" · {label}" if label else "")
 
 
 @dataclass

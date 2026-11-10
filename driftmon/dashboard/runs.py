@@ -226,3 +226,59 @@ def severity_grid(run: Run) -> pd.DataFrame:
     cols = ["category", "period", "severity", "kind", "flagged", "times_ordinary_embedding",
             "times_ordinary_lexical", "n_period"]
     return pd.concat([whole[cols], seg[cols]], ignore_index=True) if len(seg) else whole[cols]
+
+
+def flagged_share_by_year(run: Run) -> pd.DataFrame:
+    """Per later year: how many analysable sections were compared with the baseline, and how many flagged."""
+    seg = run.segments
+    if not len(seg):
+        return pd.DataFrame(columns=["period", "groups", "flagged", "share"])
+    seg = seg[seg["compared_with"] == run.baseline]
+    out = seg.groupby(seg["period"].astype(str)).agg(groups=("flagged", "size"), flagged=("flagged", "sum"))
+    out["flagged"] = out["flagged"].astype(int)
+    out["share"] = out["flagged"] / out["groups"]
+    return out.reset_index()
+
+
+OTHER, OTHER_NEW = "Other sections", "Other new sections"
+
+
+def section_mix(run: Run, min_share: float = 0.03) -> pd.DataFrame:
+    """Share of each year's articles per section, baseline first, for a stacked bar.
+
+    Sections never reaching ``min_share`` in any year are folded into "Other sections"
+    (or "Other new sections"). Columns: period, section, articles, share, new (not in the
+    baseline), y0 / y1 (stack bounds, largest baseline sections at the bottom, new ones on top).
+    """
+    seg = pd.DataFrame(run.monitoring.segments)
+    if not len(seg) or not {"period", "category", "n_period", "n_baseline"} <= set(seg.columns):
+        return pd.DataFrame()
+    base = seg.groupby("category")["n_baseline"].max()
+    rows = [{"period": run.baseline, "section": c, "articles": int(n)} for c, n in base.items() if n > 0]
+    rows += [{"period": str(r["period"]), "section": r["category"], "articles": int(r["n_period"])}
+             for r in seg.to_dict("records") if r["n_period"] > 0]
+    d = pd.DataFrame(rows)
+    d["share"] = d["articles"] / d.groupby("period")["articles"].transform("sum")
+    d["new"] = d["section"].map(lambda c: base.get(c, 0) == 0)
+    keep = d.groupby("section")["share"].max() >= min_share
+    d["section"] = [s if keep[s] else (OTHER_NEW if new else OTHER) for s, new in zip(d["section"], d["new"])]
+    d = d.groupby(["period", "section", "new"], as_index=False)[["articles", "share"]].sum()
+    rank = {s: i for i, s in enumerate(base.sort_values(ascending=False).index)}
+    d["order"] = [(2, 0) if s == OTHER_NEW else (1, -sh) if new else (0, 10**6) if s == OTHER else (0, rank.get(s, 0))
+                  for s, new, sh in zip(d["section"], d["new"], d["share"])]
+    d = d.sort_values(["period", "order"]).drop(columns="order")
+    d["y1"] = d.groupby("period")["share"].cumsum()
+    d["y0"] = d["y1"] - d["share"]
+    periods = [run.baseline] + list(run.monitoring.periods)
+    d["period"] = pd.Categorical(d["period"], categories=periods, ordered=True)
+    return d.sort_values(["period", "y0"]).reset_index(drop=True)
+
+
+def term_shift(row: Any) -> pd.DataFrame:
+    """A segment's emerging and declining words with their use per 1,000 words before and after."""
+    shares = row.get("term_shares") if hasattr(row, "get") else None
+    if shares is None or not len(shares):
+        return pd.DataFrame()
+    d = pd.DataFrame(list(shares))
+    d["label"] = [("↑ " if x == "emerging" else "↓ ") + t for t, x in zip(d["term"], d["direction"])]
+    return d

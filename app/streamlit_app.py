@@ -30,8 +30,8 @@ from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.dashboard import story  # noqa: E402
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.dashboard.runs import (answers_stale_vs_refreshed, harm_vs_drift, list_runs, load_run,  # noqa: E402
-                                     run_label, run_models, severity_grid, stale_label, stale_vs_refreshed,
-                                     with_settings)
+                                     run_label, run_models, section_mix, severity_grid, stale_label,
+                                     stale_vs_refreshed, term_shift, with_settings, flagged_share_by_year)
 from driftmon.policy import pct  # noqa: E402
 
 st.set_page_config(page_title="RAG drift monitor", layout="wide")
@@ -281,6 +281,69 @@ def year_bars(df: pd.DataFrame, col: str, title: str) -> alt.Chart:
     return (bars + text).properties(title=title, height=200)
 
 
+def flagged_bars(f: pd.DataFrame) -> alt.Chart:
+    """Per year: share of analysable sections flagged, labelled 'n of m' (one series: no legend)."""
+    f = f.assign(label=[f"{a} of {b}" for a, b in zip(f["flagged"], f["groups"])])
+    x = alt.X("period:N", title=None, axis=alt.Axis(labelAngle=tilted(len(f))))
+    y = alt.Y("share:Q", title="Sections flagged", scale=alt.Scale(domain=[0, 1]),
+              axis=alt.Axis(format="%", tickCount=5))
+    tip = [alt.Tooltip("period:N", title="Year"), alt.Tooltip("flagged:Q", title="Flagged"),
+           alt.Tooltip("groups:Q", title="Analysable sections"), alt.Tooltip("share:Q", title="Share", format=".0%")]
+    bars = alt.Chart(f).mark_bar(cornerRadiusEnd=4, color=T.series[0], width={"band": 0.55}).encode(
+        x=x, y=y, tooltip=tip)
+    text = alt.Chart(f).mark_text(dy=-8, color=T.ink, fontSize=12).encode(x=x, y=y, text="label:N")
+    return (bars + text).properties(height=220)
+
+
+MIX_STATUS = ["In the baseline", "New since the baseline"]
+
+
+def mix_chart(d: pd.DataFrame) -> alt.Chart:
+    """Each year's articles by section, stacked to 100%: grey = sections in the baseline, orange = new ones.
+
+    Only two colours on purpose: the chart is about the reshuffle and the new sections, and ~30 sections
+    cannot each get a distinguishable colour. Large segments are labelled; every segment has a tooltip."""
+    d = d.assign(status=[MIX_STATUS[int(n)] for n in d["new"]], mid=(d["y0"] + d["y1"]) / 2,
+                 period=d["period"].astype(str))
+    order = [str(p) for p in d["period"].cat.categories] if hasattr(d["period"], "cat") else None
+    order = order or sorted(d["period"].unique())
+    x = alt.X("period:N", title=None, sort=order, axis=alt.Axis(labelAngle=tilted(len(order))))
+    colour = alt.Color("status:N", scale=alt.Scale(domain=MIX_STATUS, range=[T.muted, T.series[0]]),
+                       legend=alt.Legend(title=None, orient="top"))
+    tip = [alt.Tooltip("period:N", title="Year"), alt.Tooltip("section:N", title="Section"),
+           alt.Tooltip("share:Q", title="Share of the year", format=".1%"),
+           alt.Tooltip("articles:Q", title="Articles", format=","), alt.Tooltip("status:N", title="")]
+    bars = alt.Chart(d).mark_bar(stroke=T.surface, strokeWidth=1.5, width={"band": 0.7}).encode(
+        x=x, y=alt.Y("y0:Q", title="Share of the year's articles", scale=alt.Scale(domain=[0, 1]),
+                     axis=alt.Axis(format="%", tickCount=5)), y2="y1:Q", color=colour, tooltip=tip)
+    big = d[d["share"] >= 0.07].assign(text=lambda z: z["section"].str.slice(0, 16) + " "
+                                       + (100 * z["share"]).round().astype(int).astype(str) + "%")
+    labels = alt.Chart(big).mark_text(fontSize=10).encode(
+        x=alt.X("period:N", sort=order), y="mid:Q", text="text:N",
+        color=alt.Color("status:N", scale=alt.Scale(domain=MIX_STATUS, range=[T.on(T.muted), T.on(T.series[0])]),
+                        legend=None))
+    return (bars + labels).resolve_scale(color="independent").properties(height=380)
+
+
+def butterfly(d: pd.DataFrame, baseline: str, period: str) -> alt.Chart:
+    """Words before vs after: use per 1,000 words in the baseline (left) and in the year (right)."""
+    order = d["label"].tolist()
+    top = float(max(d["per_1000_reference"].max(), d["per_1000_period"].max()) * 1.15) or 1.0
+    y = alt.Y("label:N", sort=order, title=None, axis=None)
+    tip = [alt.Tooltip("term:N", title="Word"), alt.Tooltip("direction:N", title="Became"),
+           alt.Tooltip("per_1000_reference:Q", title=f"Per 1,000 words, {baseline}", format=".2f"),
+           alt.Tooltip("per_1000_period:Q", title=f"Per 1,000 words, {period}", format=".2f")]
+    left = alt.Chart(d).mark_bar(color=T.series[1], cornerRadiusEnd=3, height=14).encode(
+        x=alt.X("per_1000_reference:Q", title=f"{baseline} (per 1,000 words)", scale=alt.Scale(domain=[0, top],
+                reverse=True)), y=y, tooltip=tip).properties(width=260, height={"step": 24})
+    words = alt.Chart(d).mark_text(color=T.ink, fontSize=12).encode(y=y, text="label:N").properties(
+        width=130, height={"step": 24})
+    right = alt.Chart(d).mark_bar(color=T.series[0], cornerRadiusEnd=3, height=14).encode(
+        x=alt.X("per_1000_period:Q", title=f"{period} (per 1,000 words)", scale=alt.Scale(domain=[0, top])),
+        y=y, tooltip=tip).properties(width=260, height={"step": 24})
+    return alt.hconcat(left, words, right, spacing=4)
+
+
 tabs = st.tabs(["Overview", "Data monitoring", "Drift", "Retrieval", "Impact", "Recommendations"])
 
 # ---- Overview ----------------------------------------------------------------------------------
@@ -364,6 +427,13 @@ with tabs[1]:
                        width="stretch")
         b.altair_chart(themed(year_bars(later, "new_term_rate", "Words never used in the baseline")),
                        width="stretch")
+    mix = section_mix(run)
+    if len(mix):
+        heading("How the mix of sections changed")
+        st.altair_chart(themed(mix_chart(mix)), width="stretch")
+        read("each bar is one year's articles, split by section and stacked to 100%. Grey sections existed in the "
+             "baseline; orange ones are new since then, so drift cannot be scored for them. Sections that never "
+             "reach 3% of a year are grouped as 'other'. Hover for every section's share.")
     heading("Each year compared with the baseline")
     table(summary, {"period": "Year", "documents": "Articles", "median_words": "Words per article",
                     "new_sections": "New sections", "new_section_share": "In new sections",
@@ -421,6 +491,13 @@ with tabs[2]:
     read("each cell is one section in one year, compared with the baseline. Coloured cells carry a label when "
          "flagged: the kind of drift (meaning, wording or both). Empty cells had too few articles to analyse. "
          "Hover for the numbers.")
+    fs = flagged_share_by_year(run)
+    if len(fs):
+        heading("How much of the archive drifted each year?")
+        st.altair_chart(themed(flagged_bars(fs)), width="stretch")
+        read("of the sections with enough articles to analyse that year, the share flagged: significant drift of "
+             "at least medium severity against the baseline.")
+        shows(story.flag_share_takeaway(run))
     heading("Drill down into one group")
     ids = run.whole["segment_id"].tolist() + run.segments["segment_id"].tolist()
     first = ids.index(run.flagged()["segment_id"].iloc[0]) if len(run.flagged()) else 0
@@ -436,8 +513,15 @@ with tabs[2]:
     m[3].metric("Unlike anything in the baseline", f"{row['novel_share']:.0%}",
                 help="Articles far from every baseline article. Low means familiar content recombined around "
                      "new events, not brand-new content.")
-    st.markdown(f"**Words that became common:** {', '.join(row['emerging_terms'])}  \n"
-                f"**Words that faded:** {', '.join(row['declining_terms'])}")
+    words = term_shift(row)
+    if len(words):
+        st.markdown("**Words before and after**")
+        st.altair_chart(themed(butterfly(words, str(row["compared_with"]), str(row["period"]))))
+        read(f"how often each word is used, per 1,000 words: blue in {row['compared_with']} (left), orange in "
+             f"{row['period']} (right). ↑ words became common, ↓ words faded; they are the five strongest each way.")
+    else:
+        st.markdown(f"**Words that became common:** {', '.join(row['emerging_terms'])}  \n"
+                    f"**Words that faded:** {', '.join(row['declining_terms'])}")
     if row["examples"]:
         st.markdown("**Example headlines:**\n" + "\n".join(f"- {t}" for t in row["examples"]))
     st.caption(f"Compared with {row['compared_with']} · {row['n_period']} vs {row['n_reference']} articles · "

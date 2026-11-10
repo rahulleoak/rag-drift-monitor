@@ -60,11 +60,20 @@ def metric_correlations(segments: list[SegmentDrift]) -> pd.DataFrame:
 
 
 def _terms(inp: DriftInputs, rows: np.ndarray, ref_rows: np.ndarray, prior, k: int = 5
-           ) -> tuple[list[str], list[str]]:
-    t = lex.log_odds_dirichlet(lex.term_counts(inp.tokens[i] for i in rows),
-                               lex.term_counts(inp.tokens[i] for i in ref_rows), prior)
+           ) -> tuple[list[str], list[str], list[dict[str, Any]]]:
+    """Top ``k`` emerging and declining terms, and how often each is used on both sides
+    (per 1,000 words) for the dashboard's before/after chart."""
+    target = lex.term_counts(inp.tokens[i] for i in rows)
+    reference = lex.term_counts(inp.tokens[i] for i in ref_rows)
+    t = lex.log_odds_dirichlet(target, reference, prior)
     t = t[t["count_target"] + t["count_reference"] >= 5]
-    return t.head(k).index.tolist(), t.tail(k).index[::-1].tolist()
+    up, down = t.head(k), t.tail(k).iloc[::-1]
+    nt, nr = max(sum(target.values()), 1), max(sum(reference.values()), 1)
+    shares = [{"term": term, "direction": direction,
+               "per_1000_reference": round(1000 * r["count_reference"] / nr, 3),
+               "per_1000_period": round(1000 * r["count_target"] / nt, 3)}
+              for direction, part in (("emerging", up), ("declining", down)) for term, r in part.iterrows()]
+    return up.index.tolist(), down.index.tolist(), shares
 
 
 def _examples(inp: DriftInputs, rows: np.ndarray, term: str | None, k: int = 3) -> list[str]:
@@ -100,7 +109,8 @@ def _to_segment(row: Mapping[str, Any], null: sev.NullDistribution, thresholds, 
         embedding_band=e_band, lexical_band=l_band, severity=severity,
         kind=sev.drift_kind(e_band, l_band), significant=bool(significant),
         flagged=bool(significant and severity != "low"), null_window=null.window, null_n=null.n,
-        emerging_terms=terms[0], declining_terms=terms[1], examples=examples)
+        emerging_terms=terms[0], declining_terms=terms[1],
+        term_shares=terms[2] if len(terms) > 2 else [], examples=examples)
 
 
 def build_drift_report(config: Mapping[str, Any], docs: pd.DataFrame, vectors: np.ndarray,

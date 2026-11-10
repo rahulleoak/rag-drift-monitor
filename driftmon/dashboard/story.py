@@ -294,3 +294,18 @@ def wikipedia_takeaway(run: Run) -> str:
         s += (f" Drift detection would not have warned: {pct(low_band_share(fs))} of the articles with a changed "
               "fact had a \"low\" drift score.")
     return s
+
+
+def flag_share_takeaway(run: Run) -> str:
+    """Which year had the largest share of its analysable sections flagged."""
+    from driftmon.dashboard.runs import flagged_share_by_year
+    f = flagged_share_by_year(run)
+    if not len(f) or not f["flagged"].any():
+        return ""
+    top = f.sort_values(["share", "groups"], ascending=False).iloc[0]
+    rest = f[f["period"] != top["period"]]
+    s = (f"{top['period']}: {int(top['flagged'])} of {int(top['groups'])} analysable sections flagged "
+         f"({pct(top['share'])}), the most of any year")
+    if len(rest):
+        s += f"; other years {pct_range(rest['share'])}"
+    return s + "."

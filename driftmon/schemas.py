@@ -63,6 +63,8 @@ class SegmentDrift(BaseModel):
     null_n: int
     emerging_terms: list[str] = Field(default_factory=list)
     declining_terms: list[str] = Field(default_factory=list)
+    # each emerging / declining term's use per 1,000 words, baseline vs period (dashboard before/after chart)
+    term_shares: list[dict[str, Any]] = Field(default_factory=list)
     examples: list[str] = Field(default_factory=list)
 
 

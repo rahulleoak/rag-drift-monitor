@@ -74,3 +74,26 @@ def test_route_sentence_names_the_decision(run):
 def test_wikipedia_takeaway_includes_the_hidden_point(run):
     text = story.wikipedia_takeaway(run)
     assert "50%" in text and "2%" in text and "92%" in text and "95%" in text
+
+
+def test_flagged_share_per_year(run):
+    from driftmon.dashboard.runs import flagged_share_by_year
+    f = flagged_share_by_year(run)
+    assert list(f["period"]) == list(run.monitoring.periods)
+    assert ((f["flagged"] <= f["groups"]) & (f["share"].between(0, 1))).all()
+    text = story.flag_share_takeaway(run)
+    top = f.sort_values("share").iloc[-1]
+    assert f"{int(top['flagged'])} of {int(top['groups'])}" in text and "the most of any year" in text
+
+
+def test_section_mix_stacks_to_one_and_marks_new_sections(run):
+    from driftmon.dashboard.runs import OTHER, section_mix
+    m = section_mix(run)
+    sums = m.groupby("period", observed=True)["share"].sum()
+    assert (sums - 1).abs().max() < 1e-9
+    assert str(m["period"].iloc[0]) == run.baseline            # baseline first
+    assert not m[m["period"] == run.baseline]["new"].any()     # nothing is new in the baseline itself
+    y = m[m["period"] == run.monitoring.periods[1]]
+    assert (y["y1"].diff().dropna() > 0).all() and abs(y["y1"].max() - 1) < 1e-9   # stacked without gaps
+    assert y[y["new"]]["y0"].min() >= y[~y["new"]]["y1"].max() - 1e-9                # new sections on top
+    assert OTHER in set(m["section"])

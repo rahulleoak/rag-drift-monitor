@@ -85,7 +85,7 @@ Last checked: 2026-11-09, against the demo run `demo/runs/20261109-221754`
 | Deliverable | Where | Status |
 |---|---|---|
 | Working application | LangGraph pipeline + Streamlit dashboard (works from the committed demo run, no key needed) | **Done** |
-| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (192 tests) | **Done** |
+| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (195 tests) | **Done** |
 | Agent architecture diagram | `docs/architecture.md` (Mermaid), README | **Done**, kept up to date |
 | Drift analysis: metrics, visualisations, explanations, examples | Agent B outputs, dashboard Drift page, `docs/figures/` | **Done** (F4–F6) |
 | RAG evaluation across periods | Agents C and D, dashboard Retrieval and Impact pages | **Done** (F15, F20) |
@@ -129,7 +129,7 @@ dashboard), as agreed with the author on 2026-11-08.**
 | Larger hand-label samples; a second labeller for the answer sheet | Samples are 15-20 items per part; the answer sheet has one labeller | F19, F20 |
 | The open "revisit" points in D17 (is the unanswerable set useful; do keep rates differ by section; did common knowledge make retrieval easier) and D2 (weight of known-item metrics) | Written down when the results did not exist yet | D17, D2, F11 |
 | Let the LLM propose what to investigate (for example which terms to test), code tests it | More visibly agentic without the LLM deciding | D7 (not adopted yet) |
-| Length-matched drift check: document drift on baseline samples matched to later lengths | Planned as D6 check 5, not run; shows how much embedding drift is length | D6, D8 |
+| Length-matched drift check: document drift on baseline samples matched to later lengths | Planned as D6 check 5; shows how much embedding drift is length | D6, D8. **Done 2026-11-09 (D33, F25):** about 11% of embedding drift is length; no severity band changes |
 
 ## Success criteria
 
@@ -141,5 +141,5 @@ dashboard), as agreed with the author on 2026-11-08.**
 | Measurable retrieval and answer quality | Retrieval metrics and judged answer quality, with confidence intervals; judge checked against blind hand labels | **Done** (F15, F19, F20) |
 | Evidence-based impact assessment | Stale vs refreshed experiment; historical control set; the outdated-answer test; an applied fix re-checked | **Done** (F20, F21, F24) |
 | Intelligent recommendations and decision-making | One rule per action, each recommended with evidence or ruled out with a number | **Done** (F22). The model-evaluation loop is designed, not built (no section needs it) |
-| Sound engineering practices | Tested pure modules, one config file, disk caches, a cost ledger, thresholds fixed before results, documented decisions | **Done** (192 tests; D1–D32) |
+| Sound engineering practices | Tested pure modules, one config file, disk caches, a cost ledger, thresholds fixed before results, documented decisions | **Done** (195 tests; D1–D33) |
 | Translate research into practice | MMD (Gretton et al.), Fightin' Words (Monroe et al.), TREC pooling, ideas from the author's paper (D5) | **Done** |

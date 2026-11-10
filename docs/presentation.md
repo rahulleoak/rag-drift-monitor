@@ -128,11 +128,12 @@ year is compared against.
   every cleaned article.
 - **Validation:** a throwaway simulation and the real cleaning code, written
   separately, gave identical counts for every rule and period.
-- ❓ **Length gap, not tested:** baseline articles have a median of 24
-  words, 2019–2022 have 29–31. This might inflate embedding drift. D6 check
-  5 planned a re-run on length-matched baseline samples; it was not run (a
-  next step, section 16). If asked: the finding that matters (drift does
-  not predict harm) does not depend on the size of the drift scores.
+- ✅ **Length gap, tested (D33, F25):** baseline articles have a median of
+  24 words, 2019–2022 have 29–31. Comparing each year with a baseline
+  sample of the same lengths lowers embedding drift by 11% (9-13% per
+  year), under the one-third bar set in advance; no severity band changes
+  (2020 stays high at 2.27×, 2022 stays medium at 2.08×). Good answer to
+  "isn't some of that drift just length?": about a tenth of it is.
 
 ## 6. Architecture (✅, diagram in `docs/architecture.md`)
 
@@ -447,12 +448,12 @@ as D5.
   (F2).
 - **Every number reproduces:** a confidence check re-ran everything from
   scratch; 14 of 14 documented numbers matched.
-- **Tests:** 192, covering the cleaning rules, the drift statistics, the
+- **Tests:** 195, covering the cleaning rules, the drift statistics, the
   LLM layer (with a fake API), every agent, the policy rules, the dashboard
   on any run (including one without LLM results) and every script. They run
   in about 30 seconds, with no models or keys.
 - **Thresholds written before results:** every experiment's pass/fail rule
-  is in the config and the decision log before the run (D28, D31, D32), and
+  is in the config and the decision log before the run (D28, D31-D33), and
   one of them failed (F24) and was reported as failed.
 - **Config, not hard-coding:** periods, thresholds, models and the category
   mapping all live in one file.
@@ -461,7 +462,7 @@ as D5.
 - **Money is controlled in code:** a $150 budget enforced *before* any
   request is sent, a ledger of every billed call, a 20-question pilot before
   any full run, and half-price batches for bulk jobs (D15).
-- **Decisions are logged** with options, reasons and evidence (D1–D32); when one
+- **Decisions are logged** with options, reasons and evidence (D1–D33); when one
   changes, it is marked "Revised", not deleted (e.g. D12, Q2, Q7, Q12).
 - **Total LLM spend:** about $17 for the whole project, every call in a
   ledger (`runs/llm_costs.csv`).
@@ -524,6 +525,8 @@ Honest moments that show judgement, good for a "what we learned" slide:
 - **Our own fix missed our own bar** (F24): the targeted re-index reached
   77% against 80%, reported as a miss, and turned into a better
   recommendation.
+- **A check planned on day one, run at the end** (F25): whether shorter
+  baseline articles inflate drift. About a tenth; no flag changes.
 
 ## 12b. From prototype to production (README section and one slide)
 
@@ -666,8 +669,5 @@ Not done, in the order I would do them; each has the reason it would help.
 10. **Entity graph per period** for a few key entities (D21), and a
     **fine-tuning experiment** for the retraining action (D7): larger
     pieces of work, lower priority.
-11. **Length-matched drift check** (D6, check 5): re-run document drift on
-    baseline samples matched to later article lengths, to see how much of
-    the embedding drift is length.
-12. **Production:** scheduled runs with alerts, a shared vector database,
+11. **Production:** scheduled runs with alerts, a shared vector database,
     access control and audit (section 12b).

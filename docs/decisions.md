@@ -1261,3 +1261,27 @@ date and reason, and add a new entry that supersedes it.
   fixes (weighted); and, as a check, in the listed articles the targeted
   answer agrees with the full one at least 90% of the time.
 - **Reproduce:** `python scripts/reindex_check.py` (`runs/longform/reindex_*`).
+
+## D33. Check whether article length explains the drift (D6 check 5)
+- **Date:** 2026-11-09
+- **Status:** Accepted (approved by the author 2026-11-09); rule set before
+  any result
+- **Context:** baseline articles are shorter (median 24 words in the drift
+  sample) than later ones (25 in 2018, 29-31 from 2019). Longer texts can
+  sit in a different part of the embedding space whatever their topic, so
+  some of the measured drift could be length. D6 (check 5) and D8 planned a
+  re-run on length-matched baseline samples; it had not been run.
+- **Options:** (a) regress drift on length: needs many segments and mixes
+  topic with length; (b) length-matched baseline samples: for each later
+  period, draw a baseline sample with the same word counts as that
+  period's drift sample, and compare the drift with a random baseline
+  sample of the same size. Simple, and uses Agent B's own comparison.
+- **Choice:** (b). Whole periods vs the baseline, 5 random and 5 matched
+  samples per period (1,398 articles each), Agent B's comparison and its
+  ordinary-change yardstick (unchanged, from the baseline's own month
+  pairs). No LLM.
+- **Rule (config `drift.length_check`):** length explains a large part of
+  the drift if matching lowers embedding drift by a third or more, averaged
+  over the later periods. If it does, D8 says to switch the drift samples to
+  length-matched ones, which would change the drift numbers.
+- **Reproduce:** `python scripts/length_check.py` (`runs/length_check/`).

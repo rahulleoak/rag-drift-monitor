@@ -150,11 +150,13 @@ Every dataset is mapped onto one record shape (`doc_id, date, category,
 title, text`) in `driftmon/data/records.py`, so switching datasets is a config change.
 
 **Dashboard (Q16).** `app/streamlit_app.py` only reads saved runs, so a
-demo cannot fail on a live LLM call. Tabs: Overview, Data monitoring (A),
-Drift (B), Retrieval (C), Impact (D: answers stale vs refreshed, drift score
-vs loss per section, the Wikipedia outdated-answer test) and Recommendations
-(E: each action with its explanation and evidence, and the actions ruled
-out). It reads `runs/` and falls back to the committed `demo/runs/`, so it
+demo cannot fail on a live LLM call. Pages (left bar): Overview, Data
+Monitoring (A), Drift (B), Retrieval (C), Impact (D: answers stale vs
+refreshed, drift score vs loss per section, the Wikipedia outdated-answer
+test) and Recommendations (E: each action with its explanation and evidence,
+and the actions ruled out). Charts are live Altair charts
+(`driftmon/dashboard/live.py`); every "what this run shows" sentence is
+built from the run's numbers (`driftmon/dashboard/story.py`). It reads `runs/` and falls back to the committed `demo/runs/`, so it
 works straight after cloning, without an API key, a GPU or a rerun.
 
 **Storage (no database server).** Vector search uses FAISS exact

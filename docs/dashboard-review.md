@@ -201,3 +201,26 @@ baseline, unaffected).
 - [x] **"Checked, not recommended" reads awkwardly:** "(not needed): Not
       needed: …" repeats, and evidence sentences run together. One clean
       sentence each, with the deciding number.
+
+## Round 2: the author's final comments (2026-11-09)
+
+- [x] Title and page names in title case ("RAG Drift Monitor", "Data Monitoring").
+- [x] Pages in the left bar; run facts in a top bar of chips; the run picker
+      at the top right, level with the title.
+- [x] Less text: "how to read" moved into each heading's ⓘ icon; this run's
+      finding stated under the heading; numbers bold white; "stale" and
+      "refreshed" carry their chart colour as a dot.
+- [x] Lists of article titles as bullets (stale and refreshed side by side).
+- [x] Subtitle: "Tracks how a document archive drifts over time, and whether
+      that drift breaks the answers of a RAG (retrieval-augmented generation)
+      assistant." Archive and years moved to the top bar.
+- [x] Question headings replaced by short headings plus a statement.
+- [x] Captions rewritten as full sentences, larger and lighter.
+- [x] Hover (ⓘ) details on headings, tiles and table columns.
+- [x] Live charts instead of images (topics, words that changed meaning,
+      method check).
+- [x] Section mix as labelled lines per section (validated palette, new
+      sections dashed) instead of a squeezed stacked bar.
+- [x] Stale vs refreshed as grouped bars (Retrieval, Impact).
+- [x] Drift-vs-loss scatter zoomed to the data.
+- [x] Evidence grouped by source, without double colons.

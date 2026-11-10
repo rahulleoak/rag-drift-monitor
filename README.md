@@ -128,16 +128,20 @@ is recomputed and no model is called. With an NVIDIA GPU, install
 for faster embedding.
 
 <details>
-<summary><b>What each dashboard tab shows</b></summary>
+<summary><b>What each dashboard page shows</b></summary>
 
-| Tab | What it shows |
+Pick a page in the left bar and a run at the top right; the top bar lists what
+produced the run (archive, years, models, cost). Each section states this run's
+finding under its heading; the ⓘ icon explains how to read the chart.
+
+| Page | What it shows |
 |---|---|
-| Overview | Drift per year, answers stale vs refreshed, the top recommendation |
-| Data monitoring | Agent A: what arrived each year, data quality, new sections, the query stream |
-| Drift | Agent B: drift by section and year, emerging words and topics, words that changed meaning, query drift |
-| Retrieval | Agent C: does the top 5 contain an answer, stale vs refreshed; how rankings changed |
-| Impact | Agent D: correct answers stale vs refreshed; drift score vs loss per section; the Wikipedia outdated-answer test |
-| Recommendations | Agent E: each action with its explanation and evidence, and the actions ruled out |
+| Overview | The main findings, headline numbers, drift per year, the most drifted groups |
+| Data Monitoring | Agent A: new sections and new words per year, section shares over time, data quality, the question stream |
+| Drift | Agent B: drift by section and year, share of sections flagged, one group in detail (words before and after), topics that grew, words that changed meaning, question drift |
+| Retrieval | Agent C: answer found in the top 5, stale vs refreshed, with examples; old questions after re-indexing |
+| Impact | Agent D: correct answers stale vs refreshed; drift score against lost answers; examples; the Wikipedia edited-documents test |
+| Recommendations | Agent E: each action with its explanation, scope and evidence, and the actions ruled out |
 
 </details>
 

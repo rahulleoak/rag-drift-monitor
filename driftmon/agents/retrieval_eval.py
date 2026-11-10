@@ -26,6 +26,7 @@ import pandas as pd
 
 from driftmon.config import resolve_path
 from driftmon.evaluation import retrieval as rv
+from driftmon.rag import fault as ft
 from driftmon.rag.index import load_or_build_study_indexes
 from driftmon.data.periods import study_periods
 from driftmon.schemas import PipelineState, RetrievalReport
@@ -62,6 +63,13 @@ def retrieval_evaluation(state: PipelineState) -> dict[str, Any]:
     indexes, loaded = load_or_build_study_indexes(state["docs"], state["vectors"], periods[0].name,
                                                   [p.name for p in periods[1:]], directory,
                                                   cfg["embeddings"]["model"])
+    fault_note = None
+    if cfg.get("fault_injection"):   # simulated failed re-index (D34); in memory only
+        f = cfg["fault_injection"]
+        dropped = ft.dropped_doc_ids(state["docs"], f, int(cfg["seed"]))
+        total = int(((state["docs"]["period"] == f["period"]) & (state["docs"]["category"] == f["category"])).sum())
+        indexes = ft.without_documents(indexes, state["docs"], state["vectors"], dropped)
+        fault_note = ft.describe(f, len(dropped), total)
     tables = rv.evaluate(cfg, questions, qvecs, state["docs"], indexes, drift.drifted_segments,
                          drift.control_segments, state.get("llm"))
     q = tables["questions"]
@@ -69,6 +77,8 @@ def retrieval_evaluation(state: PipelineState) -> dict[str, Any]:
              "article, so it shares that article's words and is easy to find."]
     if state.get("llm") is None:
         notes.append("No LLM client: the judged stale-vs-refreshed comparison was skipped.")
+    if fault_note:
+        notes.insert(0, fault_note)
     report = RetrievalReport(
         mode=mode, questions=len(q), questions_by_status=q["drift_status"].value_counts().to_dict(),
         index_store={"directory": str(directory), "reloaded": loaded,

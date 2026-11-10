@@ -31,7 +31,8 @@ from typing import Any
 
 import pandas as pd
 
-from driftmon.evaluation.answers import DRIFT_HARMLESS, DRIFT_HURTS, HARM_WITHOUT_DRIFT, JUST_OUTSIDE, UNCLEAR
+from driftmon.evaluation.answers import (BORDERLINE, DRIFT_HARMLESS, DRIFT_HURTS, HARM_WITHOUT_DRIFT, JUST_OUTSIDE,
+                                         UNCLEAR)
 from driftmon.schemas import (DriftReport, EvidenceItem, ImpactReport, MonitoringReport, Recommendation,
                               RetrievalReport)
 
@@ -81,7 +82,7 @@ class Inputs:
         if self.impact is None or not self.impact.segments:
             return pd.DataFrame()
         s = pd.DataFrame(self.impact.segments)
-        return s[s["class"].isin([DRIFT_HURTS, DRIFT_HARMLESS, HARM_WITHOUT_DRIFT, "healthy"])]
+        return s[s["class"].isin([DRIFT_HURTS, DRIFT_HARMLESS, HARM_WITHOUT_DRIFT, "healthy", BORDERLINE])]
 
     def baseline_name(self) -> str:
         return self.cfg["periods"]["baseline"]["name"]

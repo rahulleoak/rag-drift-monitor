@@ -9,6 +9,7 @@ per-question tables stay in ``runs/``.
 Usage (from the repository root):
     python scripts/export_demo.py                     # the latest complete run
     python scripts/export_demo.py --run 20261107-202242
+    python scripts/export_demo.py --run 20261110-135233 --add   # keep the current demo run(s) too
 """
 from __future__ import annotations
 
@@ -36,14 +37,17 @@ def latest_complete(runs: Path) -> Path:
     return done[-1]
 
 
-def export(run: Path, demo: Path) -> list[str]:
-    """Replace ``demo`` with the dashboard's files from ``run``; return what was copied."""
+def export(run: Path, demo: Path, add: bool = False) -> list[str]:
+    """Replace ``demo`` with the dashboard's files from ``run`` (or, with ``add``, put them next to the runs
+    already there); return what was copied."""
     missing = [f for f in FILES if not (run / f).exists()]
     if missing:
         raise SystemExit(f"{run.name} is missing {', '.join(missing)}")
-    if demo.exists():
-        shutil.rmtree(demo)
     out = demo / run.name
+    if add and out.exists():
+        shutil.rmtree(out)
+    elif not add and demo.exists():
+        shutil.rmtree(demo)
     out.mkdir(parents=True)
     copied = []
     for f in FILES:
@@ -64,12 +68,13 @@ def main(argv: list[str] | None = None) -> int:
     """Command-line entry point."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--run", help="run id (folder name under runs/); default: the latest complete run")
+    parser.add_argument("--add", action="store_true", help="keep the runs already in demo/runs/")
     args = parser.parse_args(argv)
     config = load_config()
     runs = resolve_path(config["paths"]["runs"])
     run = runs / args.run if args.run else latest_complete(runs)
     demo = resolve_path(config["paths"]["demo_runs"])
-    copied = export(run, demo)
+    copied = export(run, demo, add=args.add)
     size = sum(p.stat().st_size for p in demo.rglob("*") if p.is_file())
     print(f"Copied {len(copied)} files from {run.name} to {demo} ({size / 1e6:.1f} MB)")
     return 0

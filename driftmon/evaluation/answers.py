@@ -36,6 +36,7 @@ from driftmon.llm.prompts import (ANSWER_JUDGE_SYSTEM, ANSWER_JUDGE_TEMPLATE, AN
 ROLES = ("stale", "refreshed")
 DRIFT_HURTS, DRIFT_HARMLESS = "drift that hurts", "drift that does not hurt"
 HARM_WITHOUT_DRIFT, HEALTHY = "harm without drift", "healthy"
+BORDERLINE = "borderline (sent back for more evidence)"   # not harmless: the loop decides (D28, D34)
 DRIFT_METRICS = ("mmd2", "jsd_excess", "centroid_shift", "novelty_mean", "novel_share", "new_term_rate",
                  "times_ordinary_embedding", "times_ordinary_lexical")
 
@@ -196,7 +197,8 @@ def segments(pq: pd.DataFrame, baseline: str, flagged: Sequence[str], cfg: Mappi
         row["material"] = bool(enough and loss >= threshold and lo > 0)
         row["borderline"] = bool(enough and loss >= threshold and lo <= 0)
         row["class"] = ("historical control" if row["baseline"] else
-                        classify(row["material"], row["flagged"]) if enough else "too few questions")
+                        "too few questions" if not enough else
+                        BORDERLINE if row["borderline"] else classify(row["material"], row["flagged"]))
         row["cause"] = diagnose(row["material"], row["refreshed_correct"], row["refreshed_retrieval"], cfg) \
             if enough else ""
         rows.append(row)

@@ -31,9 +31,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from driftmon.config import load_config, resolve_path  # noqa: E402
 from driftmon.dashboard import live, story  # noqa: E402
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
-from driftmon.dashboard.runs import (ALL_OTHER, answers_stale_vs_refreshed, flagged_share_by_year,  # noqa: E402
-                                     harm_vs_drift, list_runs, load_run, run_label, run_models, section_shares,
-                                     severity_grid, stale_label, stale_vs_refreshed, term_shift, with_settings)
+from driftmon.dashboard.runs import (ALL_OTHER, answers_stale_vs_refreshed, default_run,  # noqa: E402
+                                     flagged_share_by_year, harm_vs_drift, list_runs, load_run, run_label,
+                                     run_models, section_shares, severity_grid, stale_label, stale_vs_refreshed,
+                                     term_shift, with_settings)
 from driftmon.policy import pct  # noqa: E402
 
 st.set_page_config(page_title="RAG Drift Monitor", layout="wide", initial_sidebar_state="expanded")
@@ -73,7 +74,8 @@ head.markdown('<p class="subtitle">Tracks how a document archive drifts over tim
 if not runs:
     st.warning(f"No pipeline runs in {runs_dir}. Run `python scripts/run_pipeline.py` first.")
     st.stop()
-run_id = picker.selectbox("Pipeline run", runs, format_func=lambda r: run_label(runs_dir, r),
+run_id = picker.selectbox("Pipeline run", runs, index=runs.index(default_run(runs_dir, runs)),
+                          format_func=lambda r: run_label(runs_dir, r),
                           help="Saved runs, newest first, with the agents each one holds. Older runs can be kept "
                                "in runs/archive/, which is not listed.")
 run = with_settings(load_run(runs_dir, run_id), config)   # settings: from the run, else the config
@@ -95,6 +97,8 @@ st.markdown('<div class="topbar">' + "".join(f'<span class="chip">{html.escape(k
                                              '</span>' for k, v in facts) + "</div>", unsafe_allow_html=True)
 if models["source"] != "run":
     st.caption("Model names from the current config: this run predates run_info.json.")
+if story.fault_banner(run):
+    st.warning(story.fault_banner(run), icon="⚠️")
 if demo:
     st.sidebar.info("Showing the bundled demo run (`demo/runs/`). Run `python scripts/run_pipeline.py` to see "
                     "your own.")
@@ -558,8 +562,19 @@ def impact() -> None:
                                                    "spearman": "Rank correlation", "p_value": "p-value"},
                   help={"spearman": "1 = more drift always means more loss; 0 = unrelated."})
     if imp.evidence:
-        section(f"Evidence loop: borderline sections, answered again from the {top('top_k')}")
-        st.dataframe(pd.DataFrame(imp.evidence).round(3), hide_index=True, width="stretch")
+        section(f"Evidence loop: borderline sections, answered again from the {top('top_k')}",
+                f"A section is borderline when its drop passes the threshold but its interval still reaches zero. "
+                f"The graph sends it back to Agent C, which grades ranks 6-{run.settings.get('top_k', 10)}; this "
+                f"agent then answers from the {top('top_k')} and concludes in code: harm confirmed, answers just "
+                "outside the top results (a retrieval setting), or unclear (a person should look). Agent E acts on "
+                "the conclusion.", story.evidence_loop_takeaway(run))
+        loop = pd.DataFrame(imp.evidence)
+        loop["segment_id"] = loop["segment_id"].map(story.segment_name)
+        table(loop,
+              {"segment_id": "Section", "questions": "Questions", "loss_top5": f"Drop, {top('answer_k')}",
+               "loss_top10": f"Drop, {top('top_k')}", "loss_top10_low": "Interval low",
+               "loss_top10_high": "Interval high", "conclusion": "Conclusion"},
+              percent=("loss_top5", "loss_top10", "loss_top10_low", "loss_top10_high"))
     else:
         st.caption(f"Evidence loop: when a section's result is borderline, this agent sends it back to Agent C to "
                    f"search the {top('top_k')} instead of the {top('answer_k')} and answer again. No section was "

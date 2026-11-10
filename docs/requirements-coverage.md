@@ -85,7 +85,7 @@ Last checked: 2026-11-09, against the demo run `demo/runs/20261109-221754`
 | Deliverable | Where | Status |
 |---|---|---|
 | Working application | LangGraph pipeline + Streamlit dashboard (works from the committed demo run, no key needed) | **Done** |
-| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (196 tests) | **Done** |
+| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (202 tests) | **Done** |
 | Agent architecture diagram | `docs/architecture.md` (Mermaid), README | **Done**, kept up to date |
 | Drift analysis: metrics, visualisations, explanations, examples | Agent B outputs, dashboard Drift page, `docs/figures/` | **Done** (F4–F6) |
 | RAG evaluation across periods | Agents C and D, dashboard Retrieval and Impact pages | **Done** (F15, F20) |
@@ -135,11 +135,11 @@ dashboard), as agreed with the author on 2026-11-08.**
 
 | Criterion | How it is met | Status |
 |---|---|---|
-| Working agentic system, not independent prompts | Agents depend on each other's reports; routing decided in code; a loop from D back to C for borderline sections | **Done**: A → B → route → C → D (loop to C) → E. The split (decisions in code, LLM for generation, judging and explanation) confirmed by the stakeholder, 2026-11-06 |
+| Working agentic system, not independent prompts | Agents depend on each other's reports; routing decided in code; a loop from D back to C for borderline sections | **Done**: A → B → route → C → D (loop to C) → E; the loop shown on real data with a simulated failed re-index (F26). The split (decisions in code, LLM for generation, judging and explanation) confirmed by the stakeholder, 2026-11-06 |
 | Meaningful collaboration between agents | Each agent's input is the previous agents' reports (architecture §3): C tests B's flagged and control segments, D answers from C's results, E's rules read D's classes | **Done** |
 | Quantifiable and explainable drift detection | Numbers, significance tests and examples for every claim; severity against ordinary change | **Done** (F4–F6) |
 | Measurable retrieval and answer quality | Retrieval metrics and judged answer quality, with confidence intervals; judge checked against blind hand labels | **Done** (F15, F19, F20) |
 | Evidence-based impact assessment | Stale vs refreshed experiment; historical control set; the outdated-answer test; an applied fix re-checked | **Done** (F20, F21, F24) |
 | Intelligent recommendations and decision-making | One rule per action, each recommended with evidence or ruled out with a number | **Done** (F22). The model-evaluation loop is designed, not built (no section needs it) |
-| Sound engineering practices | Tested pure modules, one config file, disk caches, a cost ledger, thresholds fixed before results, documented decisions | **Done** (196 tests; D1–D33) |
+| Sound engineering practices | Tested pure modules, one config file, disk caches, a cost ledger, thresholds fixed before results, documented decisions | **Done** (202 tests; D1–D33) |
 | Translate research into practice | MMD (Gretton et al.), Fightin' Words (Monroe et al.), TREC pooling, ideas from the author's paper (D5) | **Done** |

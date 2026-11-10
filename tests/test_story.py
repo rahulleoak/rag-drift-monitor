@@ -6,14 +6,14 @@ from pathlib import Path
 import pytest
 
 from driftmon.dashboard import story
-from driftmon.dashboard.runs import list_runs, load_run
+from driftmon.dashboard.runs import default_run, list_runs, load_run
 
 DEMO = Path(__file__).resolve().parents[1] / "demo" / "runs"
 
 
 @pytest.fixture(scope="module")
 def run():
-    return load_run(DEMO, list_runs(DEMO)[0])
+    return load_run(DEMO, default_run(DEMO, list_runs(DEMO)))
 
 
 def _with_impact(run, **changes):

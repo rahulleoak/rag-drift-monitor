@@ -1285,3 +1285,29 @@ date and reason, and add a new entry that supersedes it.
   over the later periods. If it does, D8 says to switch the drift samples to
   length-matched ones, which would change the drift numbers.
 - **Reproduce:** `python scripts/length_check.py` (`runs/length_check/`).
+
+## D34. Show the evidence loop on real data with a simulated failed re-index
+- **Date:** 2026-11-10
+- **Status:** Accepted (approved by the author 2026-11-10)
+- **Context:** the loop from Agent D back to Agent C (D28) is built and
+  tested, but never fires on this data: every section's loss is 89-100
+  points with a tight interval, and only 6 of 374 questions about new events
+  did not lose their answer. Even a 2-question minimum per section gives no
+  borderline section. A reviewer can fairly ask to see the loop work.
+- **Options:** (a) loosen a setting until something qualifies: nothing
+  does, and it would be a statistical quirk; (b) a tiny random pilot that
+  happens to produce one: a fluke; (c) simulate a realistic operations
+  failure, a re-index whose ingestion batch failed, so most of one section's
+  new articles never reach the refreshed index.
+- **Choice:** (c), as a separate, labelled run; the demo run is unchanged.
+  `python scripts/run_pipeline.py --fault "2020|WORLD NEWS" --fault-share
+  0.85 --label "..."` drops 85% of 2020 World News articles from every
+  refreshed index, in memory only (`driftmon/rag/fault.py`). Chosen by a
+  dry run without the LLM: with 85% dropped, 2 of the section's 20
+  questions still find their source article in the top 5, so the loss
+  should be small and uncertain. The answers are judged by the LLM, so the
+  outcome is reported as it comes.
+- **What it shows:** whether the graph routes the section back to C, what
+  ranks 6-10 and answers from the top 10 conclude, and what Agent E does
+  with the conclusion. Also a limit worth stating: a broken refresh makes
+  the stale-vs-refreshed loss shrink, because both indexes fail.

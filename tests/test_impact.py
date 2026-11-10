@@ -121,7 +121,7 @@ def test_material_needs_size_and_an_interval_above_zero():
     big = seg([1.0] * 10)
     assert big["material"] and not big["borderline"] and big["class"] == an.DRIFT_HURTS
     noisy = seg([1.0, -1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])   # mean 0.1, interval spans 0
-    assert not noisy["material"] and noisy["borderline"] and noisy["class"] == an.DRIFT_HARMLESS
+    assert not noisy["material"] and noisy["borderline"] and noisy["class"] == an.BORDERLINE  # not "harmless"
     small = seg([0.05] * 10, flagged=False)                              # real but below the threshold
     assert not small["material"] and small["class"] == an.HEALTHY
     few = seg([1.0] * 5)

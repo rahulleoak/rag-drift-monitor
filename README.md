@@ -120,12 +120,15 @@ pip install -r requirements.txt
 pip install -e .
 
 streamlit run app/streamlit_app.py  # the dashboard, from the committed demo run
-pytest                              # 196 tests, ~30 s, synthetic data and a fake LLM
+pytest                              # 202 tests, ~30 s, synthetic data and a fake LLM
 ```
 
 With no local runs, the dashboard shows the run committed under
 [`demo/runs/`](demo/runs/), exactly as the full pipeline produced it. Nothing
-is recomputed and no model is called. With an NVIDIA GPU, install
+is recomputed and no model is called. The run picker (top right) also lists a
+second, labelled run, "Evidence loop demo (simulated failed re-index)": the
+same pipeline with one section's new articles left out of the refreshed
+index, which sends that section back for more evidence (F26; Impact page). With an NVIDIA GPU, install
 `pip install torch --index-url https://download.pytorch.org/whl/cu128` first
 for faster embedding.
 

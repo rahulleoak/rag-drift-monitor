@@ -3,7 +3,7 @@
 Agent A (Data Monitoring) -> Agent B (Drift Detection) -> the routing
 decision -> Agent C (Retrieval Evaluation) -> Agent D (RAG Impact) -> Agent E
 (Recommendation). Agent E also reads the long-form evidence and the hand-label
-checks saved outside the graph (``driftmon.evidence``).
+checks saved outside the graph (``driftmon.longform.evidence``).
 
 Writes:
     monitoring.json    Agent A's MonitoringReport
@@ -22,6 +22,7 @@ Writes:
     recommendations.json  Agent E's RecommendationReport
     recommendations.md    the same, readable
     longform/          a copy of the long-form results Agent E read (for the dashboard)
+    run_info.json      what produced the run: models, question set, mode, cost, code version
 
 Usage (from the repository root):
     python scripts/run_pipeline.py --estimate   # everything except the judge; prints its cost
@@ -35,6 +36,8 @@ waits, run the same command again: it collects the batch already submitted.
 from __future__ import annotations
 
 import argparse
+import json
+import subprocess
 import sys
 import time
 from datetime import datetime
@@ -45,13 +48,13 @@ import pandas as pd
 if __package__ in (None, ""):  # allow `python scripts/run_pipeline.py` without installing
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.corpus import load_corpus  # noqa: E402
-from driftmon.embeddings import Embedder  # noqa: E402
-from driftmon.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
+from driftmon.config import load_config, resolve_path, run_settings  # noqa: E402
+from driftmon.data.corpus import load_corpus  # noqa: E402
+from driftmon.rag.embeddings import Embedder  # noqa: E402
+from driftmon.longform.evidence import load_label_checks, load_longform, save_longform_snapshot  # noqa: E402
 from driftmon.graph import build_graph  # noqa: E402
-from driftmon.llm import LLMClient, LLMResult  # noqa: E402
-from driftmon.queries import load_questions, query_stream  # noqa: E402
+from driftmon.llm.client import LLMClient, LLMResult  # noqa: E402
+from driftmon.data.queries import load_questions, query_stream  # noqa: E402
 
 SHOW = ["segment_id", "times_ordinary_embedding", "times_ordinary_lexical", "embedding_band",
         "lexical_band", "kind", "flagged", "emerging_terms"]
@@ -86,6 +89,7 @@ def main(argv: list[str] | None = None) -> int:
                         client=_NoCalls() if args.estimate else None)
         if args.estimate:
             llm = _EstimateOnly(llm)
+    spent_before = llm.spent() if llm is not None else 0.0
     state = build_graph().invoke({"config": config, "docs": docs, "vectors": vectors,
                                   "queries": queries, "query_vectors": query_vectors,
                                   "questions": questions, "question_vectors": question_vectors, "llm": llm,
@@ -139,6 +143,7 @@ def main(argv: list[str] | None = None) -> int:
     _report_retrieval(state, run_dir)
     _report_impact(state, run_dir)
     _report_recommendations(state, run_dir)
+    _save_run_info(run_dir, config, args, llm, spent_before, questions is not None, time.time() - t0)
     if args.estimate and llm is not None:
         print(f"\nEstimate only: the uncached LLM calls would cost about ${llm.estimate:.2f} "
               f"({llm.uncached} uncached requests, batch price); spent so far ${llm.spent():.2f}")
@@ -146,6 +151,40 @@ def main(argv: list[str] | None = None) -> int:
           f"{len(drift.control_segments)}; next step: {state['next_step']}")
     print(f"Reports in {run_dir} ({time.time() - t0:.0f} s)")
     return 0
+
+
+def _save_run_info(run_dir: Path, config: dict, args, llm, spent_before: float, has_questions: bool,
+                   seconds: float) -> None:
+    """Record what produced this run, so every run carries its provenance."""
+    mode = "estimate" if args.estimate else "no_judge" if args.no_judge else "full"
+    info = {
+        "run_id": run_dir.name,
+        "created": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "duration_s": round(seconds),
+        "mode": mode,
+        "pilot_questions": args.pilot,
+        "question_set": config["evaluation"].get("question_set", "full") if has_questions else None,
+        "models": ({"writer": config["llm"]["generator_model"], "judge": config["llm"]["judge_model"]}
+                   if llm is not None else None),
+        "embedding_model": config["embeddings"]["model"],
+        "llm_cost_usd": round(llm.spent() - spent_before, 4) if llm is not None and mode == "full" else None,
+        "code_version": _git_commit(),
+        "settings": run_settings(config),
+    }
+    (run_dir / "run_info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
+
+
+def _git_commit() -> str | None:
+    """Short commit id of the code that produced the run, with '+changes' if uncommitted edits exist."""
+    repo = Path(__file__).resolve().parents[1]
+    try:
+        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True,
+                             check=True, cwd=repo).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], capture_output=True,
+                               text=True, check=True, cwd=repo).stdout.strip()
+        return sha + ("+changes" if dirty else "")
+    except (OSError, subprocess.CalledProcessError):
+        return None
 
 
 def _report_retrieval(state, run_dir: Path) -> None:

@@ -4,8 +4,8 @@ from collections import Counter
 from datetime import date
 from pathlib import Path
 
-from driftmon.data import iter_records
-from driftmon.periods import Period
+from driftmon.data.records import iter_records
+from driftmon.data.periods import Period
 from scripts.exploration.compare_baselines import (
     count_categories,
     main,

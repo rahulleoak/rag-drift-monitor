@@ -141,7 +141,8 @@ def log_odds_dirichlet(target: Counter, reference: Counter, prior: Counter,
 
     Returns:
         DataFrame indexed by term with columns ``z``, ``log_odds``,
-        ``count_target``, ``count_reference``, sorted by ``z`` descending.
+        ``count_target``, ``count_reference``, sorted by ``z`` descending,
+        ties broken alphabetically so repeated runs give the same order.
     """
     # The prior is defined over the whole vocabulary (alpha_0 = prior_size), as in
     # Monroe et al.; min_count only decides which terms are *reported*.
@@ -161,7 +162,7 @@ def log_odds_dirichlet(target: Counter, reference: Counter, prior: Counter,
     out = pd.DataFrame({"z": delta / np.sqrt(var), "log_odds": delta,
                         "count_target": yt.astype(int), "count_reference": yr.astype(int)},
                        index=pd.Index(vocab, name="term"))
-    return out.sort_values("z", ascending=False)
+    return out.sort_values(["z", "term"], ascending=[False, True])
 
 
 def new_term_rate(docs: Iterable[Sequence[str]], reference_vocab: set[str]) -> float:

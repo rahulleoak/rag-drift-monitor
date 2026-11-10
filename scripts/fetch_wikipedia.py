@@ -23,8 +23,8 @@ import pandas as pd
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon import chunking, wikipedia  # noqa: E402
-from driftmon.chunking import token_counter  # noqa: E402
+from driftmon.longform import chunking, wikipedia  # noqa: E402
+from driftmon.longform.chunking import token_counter  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
 
 

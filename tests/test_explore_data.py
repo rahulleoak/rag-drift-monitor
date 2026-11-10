@@ -1,7 +1,7 @@
 """Tests for the exploration aggregates (scripts/exploration/explore_data.py)."""
 from pathlib import Path
 
-from driftmon.data import iter_records
+from driftmon.data.records import iter_records
 from scripts.exploration.explore_data import (
     category_year_table,
     main,

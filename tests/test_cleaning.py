@@ -1,12 +1,12 @@
-"""Tests for the cleaning rules (driftmon.cleaning) and periods (driftmon.periods)."""
+"""Tests for the cleaning rules (driftmon.data.cleaning) and periods (driftmon.data.periods)."""
 from datetime import date
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from driftmon import cleaning
-from driftmon.periods import Period, assign_period, study_periods
+from driftmon.data import cleaning
+from driftmon.data.periods import Period, assign_period, study_periods
 
 
 def _df(rows):

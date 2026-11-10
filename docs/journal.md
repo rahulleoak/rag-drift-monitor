@@ -16,6 +16,39 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-09: public repo, reorganised library, dashboard rebuilt around readers
+- **Repo public** with `main` protected (pull requests only, no force-push),
+  issues/wiki/projects off and interactions limited to contributors.
+  `CLAUDE.md` is no longer published (kept locally); unused stubs removed.
+- **Reorganised `driftmon`** into `data/`, `rag/`, `llm/`, `longform/`,
+  `dashboard/`. Checked by a full pipeline run before and after: identical
+  reports. That check also found that tied words in the query-drift lists
+  came out in random order; ties now break alphabetically.
+- **README rewritten** results and architecture first, a design-decisions
+  table, detail in collapsible sections; a recorded GIF of the dashboard.
+- **Run provenance:** each run saves `run_info.json` (models, settings,
+  cost, code version); the dashboard quotes the run's own settings and model
+  names. Old runs moved to `runs/archive/`; the run picker says when each run
+  was made and which agents it holds.
+- **Dashboard, two rounds of review with the author.** The first made every
+  page explain itself (statements built from the run's numbers by
+  `dashboard/story.py`, so text cannot contradict the charts). The second
+  rebuilt the layout: pages in the left bar, run facts in a top bar, short
+  headings with the finding underneath and the "how to read" in an info
+  icon, live charts (`dashboard/live.py`), grouped bars for stale vs
+  refreshed, section shares as labelled lines, a before/after word chart,
+  and the share of sections flagged per year (the last three inspired by
+  Evidently's drift views).
+- **Found on the way:** the before/after word chart showed 5 of 460 listed
+  words contradicting their label in small segments (log-odds prior too
+  strong for ~800 words); words must now move at least 20% in the labelled
+  direction (D12 revised). The drift-vs-loss correlation tops out at 0.406,
+  quoted as 0.40; now 0.41 everywhere.
+- **Snag:** two pipeline runs failed with out-of-memory while building
+  indexes; the machine was near its commit limit with other apps open.
+  Stopping the dashboard during the run was enough.
+- **Next:** pull request for `review-polish`, then the presentation.
+
 ## 2026-11-08: dashboard complete; works without a key
 - **Built:** the Impact tab (answers stale vs refreshed by year; each section's
   drift score against its drop in correct answers; the Wikipedia

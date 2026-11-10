@@ -25,6 +25,7 @@ from driftmon.config import load_config, resolve_path  # noqa: E402
 FILES = ["monitoring.json", "drift.json", "route.txt", "retrieval.json", "impact.json", "recommendations.json",
          "recommendations.md"]
 FOLDERS = ["charts/dark", "longform"]
+OPTIONAL = ["run_info.json"]   # provenance; older runs may not have it
 
 
 def latest_complete(runs: Path) -> Path:
@@ -48,6 +49,10 @@ def export(run: Path, demo: Path) -> list[str]:
     for f in FILES:
         shutil.copy2(run / f, out / f)
         copied.append(f)
+    for f in OPTIONAL:
+        if (run / f).exists():
+            shutil.copy2(run / f, out / f)
+            copied.append(f)
     for d in FOLDERS:
         if (run / d).exists():
             shutil.copytree(run / d, out / d)

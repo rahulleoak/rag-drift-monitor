@@ -30,7 +30,7 @@ import pandas as pd
 from driftmon.config import resolve_path
 from driftmon.drift import embedding as emb
 from driftmon.drift import lexical as lex
-from driftmon.embeddings import Embedder
+from driftmon.rag.embeddings import Embedder
 from driftmon.evaluation.stats import benjamini_hochberg
 
 KEPT = ("answerable", "unanswerable")  # a real stream also holds questions the archive cannot answer

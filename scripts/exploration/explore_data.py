@@ -39,7 +39,7 @@ if __package__ in (None, ""):  # allow `python scripts/exploration/explore_data.
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.data import LoadStats, Record, iter_records  # noqa: E402
+from driftmon.data.records import LoadStats, Record, iter_records  # noqa: E402
 
 TOP_N_CATEGORIES = 20
 

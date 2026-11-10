@@ -1,10 +1,10 @@
-"""Tests for dataset loading (driftmon.data) using synthetic fixtures."""
+"""Tests for dataset loading (driftmon.data.records) using synthetic fixtures."""
 from datetime import date
 from pathlib import Path
 
 import pytest
 
-from driftmon.data import LoadStats, iter_records
+from driftmon.data.records import LoadStats, iter_records
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

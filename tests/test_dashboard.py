@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from driftmon.dashboard_data import list_runs, load_run, severity_grid, stale_vs_refreshed
+from driftmon.dashboard.runs import list_runs, load_run, severity_grid, stale_vs_refreshed
 from driftmon.schemas import RetrievalReport
 from driftmon.graph import build_graph
 from scripts.make_charts import latest_run, make_all
@@ -73,19 +73,37 @@ def test_make_all_charts(run_dir, tmp_path):
     assert f"dark/{names[0][:-4]}" in run.charts  # the dashboard finds the dark versions
 
 
+PAGES = ["Overview", "Data Monitoring", "Drift", "Retrieval", "Impact", "Recommendations"]
+
+
+def _visit_all(at):
+    """Open every page from the left bar; collect what was shown and any exception."""
+    seen = {"metric": {}, "markdown": [], "caption": [], "info": [], "subheader": [], "exception": []}
+    assert at.sidebar.radio[0].options == PAGES
+    for name in PAGES:
+        at.sidebar.radio[0].set_value(name).run()
+        seen["exception"] += [e.message for e in at.exception]
+        seen["metric"].update({m.label: m.value for m in at.metric})
+        seen["markdown"] += [m.value for m in at.markdown]
+        seen["caption"] += [c.value for c in at.caption]
+        seen["info"] += [i.value for i in at.info]
+        seen["subheader"] += [s.value for s in at.subheader]
+    return seen
+
+
 def test_dashboard_renders_every_tab(run_dir, monkeypatch):
     from streamlit.testing.v1 import AppTest
     monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(run_dir.parent))
     at = AppTest.from_file(str(APP), default_timeout=120)
     at.run()
     assert not at.exception
-    assert [t.label for t in at.tabs] == ["Overview", "Data monitoring", "Drift", "Retrieval",
-                                          "Impact", "Recommendations"]
-    metrics = {m.label: m.value for m in at.metric}
-    assert metrics["Flagged (vs baseline)"] == "2"
-    assert metrics["Judged questions"] == "20" and metrics["LLM cost, this run"] == "$0.12"
-    assert metrics["Next step"] == "full evaluation"
-    segment = next(s for s in at.selectbox if s.label == "Segment")
+    seen = _visit_all(at)
+    assert not seen["exception"]
+    assert seen["metric"]["Groups flagged for drift"] == "2"
+    assert "Questions tested" in seen["metric"] and "Found after re-indexing" in seen["metric"]
+    assert any("ran the full answer check" in c for c in seen["caption"])   # the routing decision, in words
+    at.sidebar.radio[0].set_value("Drift").run()
+    segment = next(s for s in at.selectbox if s.label == "Group")
     segment.select("2020|POLITICS|vs 2016-17").run()
     assert not at.exception
 
@@ -104,7 +122,7 @@ DEMO = Path(__file__).resolve().parents[1] / "demo" / "runs"
 
 
 def test_the_bundled_demo_run_loads_with_every_agent():
-    from driftmon.dashboard_data import answers_stale_vs_refreshed, harm_vs_drift
+    from driftmon.dashboard.runs import answers_stale_vs_refreshed, harm_vs_drift
     runs = list_runs(DEMO)
     assert len(runs) == 1, "demo/runs should hold exactly one run (scripts/export_demo.py)"
     run = load_run(DEMO, runs[0])
@@ -121,13 +139,16 @@ def test_dashboard_renders_the_demo_run_on_every_tab(monkeypatch):
     monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(DEMO))
     at = AppTest.from_file(str(APP), default_timeout=120)
     at.run()
-    assert not at.exception
-    labels = {m.label for m in at.metric}
-    assert {"Correct, stale index", "Recommended actions", "Questions answered (both indexes)",
-            "Recommended", "Not needed"} <= labels
-    text = " ".join(m.value for m in at.markdown)
-    assert "Checked, not recommended" in text and "Top recommendation" in text
-
+    seen = _visit_all(at)
+    assert not seen["exception"]
+    assert {"Correct without re-indexing", "Correct after re-indexing", "Recommended actions",
+            "Questions answered", "Recommended", "Not needed", "Admits it doesn't know"} <= set(seen["metric"])
+    text = " ".join(seen["markdown"])
+    assert "Top recommendation" in text and "Checked, not recommended" in seen["subheader"]
+    assert 'class="stmt"' in text                         # findings built from the run sit under the headings
+    assert '<span class="num">' in text                   # numbers are emphasised
+    assert "(F11)" not in text and "D27:" not in text     # no internal document codes on screen
+    assert "RAG (retrieval-augmented generation)" in text  # the subtitle spells out RAG
 
 def test_export_demo_copies_only_what_the_dashboard_reads(tmp_path):
     from scripts.export_demo import export
@@ -137,3 +158,103 @@ def test_export_demo_copies_only_what_the_dashboard_reads(tmp_path):
     assert (out / "impact.json").exists() and (out / "recommendations.json").exists()
     assert "longform/outdated_verdict.json" in copied
     assert list_runs(tmp_path / "demo") == [src.name]
+
+
+def test_model_names_are_readable():
+    from driftmon.dashboard.runs import model_name
+    assert model_name("claude-sonnet-5-5") == "Claude Sonnet 5.5"
+    assert model_name("claude-opus-5-5") == "Claude Opus 5.5"
+    assert model_name("some-other-model") == "some-other-model"
+    assert model_name(None) == "unknown"
+
+
+def test_run_models_come_from_the_run_and_fall_back_to_the_config(tmp_path):
+    import json
+    import shutil
+    from driftmon.dashboard.runs import run_models
+    config = {"llm": {"generator_model": "claude-sonnet-5-5", "judge_model": "claude-opus-5-5"},
+              "embeddings": {"model": "BAAI/bge-small-en-v1.5"}}
+    src = DEMO / list_runs(DEMO)[0]
+    run_path = tmp_path / src.name
+    shutil.copytree(src, run_path)
+    (run_path / "run_info.json").unlink(missing_ok=True)          # an older run: no provenance file
+    old = run_models(load_run(tmp_path, src.name), config)
+    assert old == {"writer": "Claude Sonnet 5.5", "judge": "Claude Opus 5.5",
+                   "embedding": "BAAI/bge-small-en-v1.5", "source": "config"}
+    info = {"models": {"writer": "claude-haiku-5-5", "judge": "claude-fable-5-1"}, "embedding_model": "e5-small"}
+    (run_path / "run_info.json").write_text(json.dumps(info), encoding="utf-8")
+    new = run_models(load_run(tmp_path, src.name), config)          # the run's own record wins
+    assert new == {"writer": "Claude Haiku 5.5", "judge": "Claude Fable 5.1", "embedding": "e5-small",
+                   "source": "run"}
+    (run_path / "run_info.json").write_text(json.dumps({"models": None, "embedding_model": "e5"}), "utf-8")
+    assert run_models(load_run(tmp_path, src.name), config)["writer"].startswith("none")
+
+
+def test_run_labels_say_when_and_which_agents(tmp_path):
+    from driftmon.dashboard.runs import run_label
+    full, partial = tmp_path / "20261109-144329", tmp_path / "20261105-083957"
+    for d, files in ((full, ["monitoring.json", "drift.json", "retrieval.json", "impact.json",
+                             "recommendations.json"]), (partial, ["monitoring.json", "drift.json"])):
+        d.mkdir()
+        for f in files:
+            (d / f).write_text("{}", encoding="utf-8")
+    assert run_label(tmp_path, full.name) == "9 Nov 2026, 14:43 · all agents"
+    assert run_label(tmp_path, partial.name) == "5 Nov 2026, 08:39 · agents A–B"
+    assert run_label(tmp_path, "my-run") == "my-run · no reports"
+
+
+def _demo_copy(tmp_path):
+    import shutil
+    src = DEMO / list_runs(DEMO)[0]
+    dst = tmp_path / "runs" / src.name
+    shutil.copytree(src, dst)
+    return dst
+
+
+def test_dashboard_on_a_run_without_the_llm_or_static_charts(tmp_path, monkeypatch):
+    """A `--no-judge` run without make_charts: every page renders; the drift charts are live, so they
+    still show; the pages without LLM results say why."""
+    import json
+    import shutil
+    from streamlit.testing.v1 import AppTest
+    run = _demo_copy(tmp_path)
+    (run / "impact.json").unlink()
+    shutil.rmtree(run / "charts")
+    info = json.loads((run / "run_info.json").read_text(encoding="utf-8"))
+    info.update(mode="no_judge", models=None, llm_cost_usd=None)
+    (run / "run_info.json").write_text(json.dumps(info), encoding="utf-8")
+    monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(run.parent))
+    at = AppTest.from_file(str(APP), default_timeout=120)
+    at.run()
+    seen = _visit_all(at)
+    assert not seen["exception"]
+    assert any("Skipped: this run did not use the LLM" in i for i in seen["info"])
+    assert {"Topics that grew", "Words that changed meaning"} <= set(seen["subheader"])   # live, no images needed
+    assert any("Writes: <b>none" in m for m in seen["markdown"])
+
+def test_settings_come_from_the_run(tmp_path):
+    import json
+    from driftmon.config import load_config
+    from driftmon.dashboard import story
+    from driftmon.dashboard.runs import with_settings
+    run_dir = _demo_copy(tmp_path)
+    info = json.loads((run_dir / "run_info.json").read_text(encoding="utf-8"))
+    info["settings"] = {**info.get("settings", {}), "judge_k": 3, "description": "A support-desk assistant"}
+    (run_dir / "run_info.json").write_text(json.dumps(info), encoding="utf-8")
+    run = with_settings(load_run(run_dir.parent, run_dir.name), load_config())
+    assert run.settings["judge_k"] == 3 and run.settings["description"] == "A support-desk assistant"
+    assert "an answer is in the top 3" in story.retrieval_takeaway(run)
+    run.settings = {}
+    assert "an answer is in the top results" in story.retrieval_takeaway(run)
+
+
+def test_listed_words_move_the_way_their_label_says():
+    """Emerging words are used more in the year than in the baseline, fading words less (D12 revision)."""
+    run = load_run(DEMO, list_runs(DEMO)[0])
+    rows = [t for s in run.drift.whole_period + run.drift.segments for t in s.term_shares]
+    assert rows, "the demo run should carry term_shares"
+    for t in rows:
+        if t["direction"] == "emerging":
+            assert t["per_1000_period"] >= 1.2 * t["per_1000_reference"], t
+        else:
+            assert 1.2 * t["per_1000_period"] <= t["per_1000_reference"], t

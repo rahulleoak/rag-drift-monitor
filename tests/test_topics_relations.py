@@ -7,7 +7,7 @@ import pandas as pd
 from driftmon.drift import relations as rel
 from driftmon.drift import topics as top
 from driftmon.drift.report import metric_correlations
-from driftmon.periods import Period
+from driftmon.data.periods import Period
 
 
 def _unit(rows):

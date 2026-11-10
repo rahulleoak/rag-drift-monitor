@@ -23,9 +23,9 @@ import pandas as pd
 if __package__ in (None, ""):  # allow `python scripts/make_charts.py` without installing
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon import charts  # noqa: E402
+from driftmon.dashboard import charts  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.periods import study_periods  # noqa: E402
+from driftmon.data.periods import study_periods  # noqa: E402
 
 MEASURE_NAMES = {"mmd2": "MMD²", "centroid_shift": "Centroid shift", "jsd_excess": "Word drift (JSD)",
                  "novelty_mean": "Novelty (mean)", "novel_share": "Novel share",

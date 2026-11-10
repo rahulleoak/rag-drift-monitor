@@ -26,8 +26,8 @@ import pandas as pd
 
 from driftmon.config import resolve_path
 from driftmon.evaluation import retrieval as rv
-from driftmon.index import load_or_build_study_indexes
-from driftmon.periods import study_periods
+from driftmon.rag.index import load_or_build_study_indexes
+from driftmon.data.periods import study_periods
 from driftmon.schemas import PipelineState, RetrievalReport
 
 REGRESSION_POOLS = ("random",)
@@ -65,8 +65,8 @@ def retrieval_evaluation(state: PipelineState) -> dict[str, Any]:
     tables = rv.evaluate(cfg, questions, qvecs, state["docs"], indexes, drift.drifted_segments,
                          drift.control_segments, state.get("llm"))
     q = tables["questions"]
-    notes = ["Known-item numbers are weighted down: questions are written from their source "
-             "article, which makes it easy to find (F11)."]
+    notes = ["Known-item numbers are a sanity check only: each question was written from its source "
+             "article, so it shares that article's words and is easy to find."]
     if state.get("llm") is None:
         notes.append("No LLM client: the judged stale-vs-refreshed comparison was skipped.")
     report = RetrievalReport(

@@ -1,4 +1,4 @@
-"""Tests for the question generator (driftmon.simulate) with a fake API."""
+"""Tests for the question generator (driftmon.data.simulate) with a fake API."""
 import copy
 import hashlib
 import json
@@ -6,11 +6,11 @@ import json
 import numpy as np
 import pandas as pd
 
-from driftmon import simulate
+from driftmon.data import simulate
 from driftmon.config import load_config
-from driftmon.embeddings import Embedder
-from driftmon.llm import LLMClient
-from driftmon.prompts import REVIEW_CHECKS, DraftQuestion
+from driftmon.rag.embeddings import Embedder
+from driftmon.llm.client import LLMClient
+from driftmon.llm.prompts import REVIEW_CHECKS, DraftQuestion
 from tests.test_llm import FakeAPI, _msg
 
 LIMITS = {"min_words": 6, "max_words": 30, "copy_ngram": 4, "copy_ngram_description": 7,

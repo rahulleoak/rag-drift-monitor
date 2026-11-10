@@ -1,8 +1,8 @@
-"""Tests for the query stream and query drift (driftmon.queries)."""
+"""Tests for the query stream and query drift (driftmon.data.queries)."""
 import numpy as np
 import pandas as pd
 
-from driftmon import queries
+from driftmon.data import queries
 
 RNG = np.random.default_rng(0)
 OLD = ["recipe", "garden", "budget", "senate", "travel", "school", "music", "movie"]

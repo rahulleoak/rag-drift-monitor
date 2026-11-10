@@ -29,13 +29,13 @@ import pandas as pd
 if __package__ in (None, ""):  # allow `python scripts/generate_questions.py` without installing
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from driftmon import simulate  # noqa: E402
+from driftmon.data import simulate  # noqa: E402
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.corpus import load_corpus  # noqa: E402
-from driftmon.embeddings import Embedder  # noqa: E402
-from driftmon.llm import LLMClient  # noqa: E402
-from driftmon.periods import study_periods  # noqa: E402
-from driftmon.prompts import DraftQuestion  # noqa: E402
+from driftmon.data.corpus import load_corpus  # noqa: E402
+from driftmon.rag.embeddings import Embedder  # noqa: E402
+from driftmon.llm.client import LLMClient  # noqa: E402
+from driftmon.data.periods import study_periods  # noqa: E402
+from driftmon.llm.prompts import DraftQuestion  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -140,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def _latest_drift(cfg):
     """(run id, DriftReport) of the newest pipeline run: flagged and control segments."""
-    from driftmon.dashboard_data import list_runs, load_run
+    from driftmon.dashboard.runs import list_runs, load_run
     runs_dir = resolve_path(cfg["paths"]["runs"])
     runs = list_runs(runs_dir)
     if not runs:

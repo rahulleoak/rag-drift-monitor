@@ -7,8 +7,8 @@ them identically and switching datasets is a config change.
 Files are streamed line by line (both are JSON Lines), because the arXiv
 snapshot is several GB and must not be loaded into memory at once.
 
-Period assignment lives in ``driftmon.periods``; cleaning and deduplication
-in ``driftmon.cleaning``; category normalisation is applied by
+Period assignment lives in ``driftmon.data.periods``; cleaning and deduplication
+in ``driftmon.data.cleaning``; category normalisation is applied by
 ``scripts/prepare_data.py`` using the config's ``categories.normalise``.
 """
 from __future__ import annotations

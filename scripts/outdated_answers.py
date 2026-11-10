@@ -23,10 +23,10 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.embeddings import Embedder, document_text  # noqa: E402
+from driftmon.rag.embeddings import Embedder, document_text  # noqa: E402
 from driftmon.evaluation import outdated as od  # noqa: E402
-from driftmon.index import VectorIndex  # noqa: E402
-from driftmon.llm import LLMClient  # noqa: E402
+from driftmon.rag.index import VectorIndex  # noqa: E402
+from driftmon.llm.client import LLMClient  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:

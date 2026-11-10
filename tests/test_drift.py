@@ -8,7 +8,7 @@ import pytest
 from driftmon.drift import embedding as emb
 from driftmon.drift import lexical as lex
 from driftmon.evaluation.stats import benjamini_hochberg
-from driftmon.index import VectorIndex, build_study_indexes
+from driftmon.rag.index import VectorIndex, build_study_indexes
 
 
 def _normal_rows(rng, n, d, shift=0.0):
@@ -101,6 +101,19 @@ def test_log_odds_ranks_emerging_and_declining_terms():
     assert t.index[0] == "covid"            # most emerging
     assert t.index[-1] == "election"        # most declining
     assert abs(t.loc["news", "z"]) < 1.0    # unchanged term near zero
+
+
+def test_log_odds_breaks_ties_alphabetically():
+    # Six words with identical counts score identically; their order must not
+    # depend on set or insertion order, so repeated runs list the same words.
+    words = ["paso", "golden", "jeffrey", "epstein", "zebra", "apple"]
+    old = Counter({"filler": 100})
+    forward = Counter({w: 3 for w in words}) + Counter({"filler": 100})
+    backward = Counter({w: 3 for w in reversed(words)}) + Counter({"filler": 100})
+    a = lex.log_odds_dirichlet(forward, old, forward + old, min_count=3)
+    b = lex.log_odds_dirichlet(backward, old, backward + old, min_count=3)
+    assert a.index.tolist() == b.index.tolist()
+    assert a.index[:6].tolist() == sorted(words)
 
 
 def test_new_term_rate():

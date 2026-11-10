@@ -1,5 +1,5 @@
 """Tests for chunking and Wikipedia cleaning (D26). No network."""
-from driftmon import chunking, wikipedia
+from driftmon.longform import chunking, wikipedia
 
 
 def words(text: str) -> int:
@@ -71,7 +71,7 @@ def test_vital_titles_and_stratified_sample():
 
 
 def test_changed_share_and_where_the_change_is():
-    from driftmon import longform
+    from driftmon.longform import experiment as longform
     old = "Alpha beta gamma. Delta epsilon zeta.\nEta theta iota."
     new = "Alpha beta gamma. Delta epsilon zeta.\nEta theta iota. Brand new sentence here."
     share, beyond = longform.changed_share(old, new, cutoff_words=9)
@@ -81,7 +81,7 @@ def test_changed_share_and_where_the_change_is():
 
 def test_chunk_change_and_auc():
     import numpy as np
-    from driftmon import longform
+    from driftmon.longform import experiment as longform
     old = np.eye(3)
     same, moved = np.eye(3), np.array([[1.0, 0, 0], [0, 1, 0], [0, 0.6, 0.8]])
     assert longform.chunk_change(old, same) == (0.0, 0.0)
@@ -91,7 +91,7 @@ def test_chunk_change_and_auc():
 
 
 def test_number_only_edits():
-    from driftmon import longform
+    from driftmon.longform import experiment as longform
     old = "The plague killed over 75 million people. It began in Asia."
     new = "The plague killed over 20 million people. It began in Europe. A new sentence."
     edits = longform.number_only_edits(old, new)

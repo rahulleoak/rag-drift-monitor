@@ -1,8 +1,8 @@
 """Tests for Agent E's node: explanations are number-checked, the report is complete (D29)."""
 from driftmon.agents import recommendation as rec
 from driftmon.config import load_config
-from driftmon.llm import LLMResult
-from driftmon.prompts import Explanation
+from driftmon.llm.client import LLMResult
+from driftmon.llm.prompts import Explanation
 from driftmon.schemas import EvidenceItem, Recommendation
 
 

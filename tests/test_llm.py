@@ -1,11 +1,11 @@
-"""Tests for driftmon.llm with a fake API client: no network, no key, no spend."""
+"""Tests for driftmon.llm.client with a fake API client: no network, no key, no spend."""
 import json
 from types import SimpleNamespace
 
 import pytest
 from pydantic import BaseModel
 
-from driftmon.llm import BudgetExceeded, LLMClient, LLMRequest, json_schema
+from driftmon.llm.client import BudgetExceeded, LLMClient, LLMRequest, json_schema
 
 CONFIG = {"budget_usd": 1.0, "use_batch_api": True,
           "prices": {"m-small": {"input": 2.0, "output": 10.0}, "m-big": {"input": 4.0, "output": 20.0}},
@@ -191,7 +191,7 @@ def test_interrupted_batch_is_resumed_not_resubmitted(tmp_path):
 
 
 def test_api_key_ignores_an_empty_environment_variable(tmp_path, monkeypatch):
-    from driftmon.llm import api_key
+    from driftmon.llm.client import api_key
     env = tmp_path / ".env"
     env.write_text("ANTHROPIC_API_KEY=from-file\n", encoding="utf-8")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "")

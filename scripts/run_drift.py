@@ -35,7 +35,7 @@ if __package__ in (None, ""):  # allow `python scripts/run_drift.py` without ins
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.corpus import load_corpus  # noqa: E402
+from driftmon.data.corpus import load_corpus  # noqa: E402
 from driftmon.drift import lexical as lex  # noqa: E402
 from driftmon.drift.compare import NOVELTY_PERCENTILE, novelty_of, prepare, whole_period_table  # noqa: E402
 from driftmon.evaluation.stats import benjamini_hochberg  # noqa: E402

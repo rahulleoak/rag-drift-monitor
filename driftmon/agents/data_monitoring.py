@@ -1,7 +1,7 @@
 """Agent A: Data Monitoring.
 
 Reads: the cleaned documents of every period, and the query stream (the
-simulated questions, ``driftmon.queries``) when a question set exists.
+simulated questions, ``driftmon.data.queries``) when a question set exists.
 Does: fixes the baseline snapshot; tracks volumes, text lengths, category
 mix (chi-square with Cramér's V), new sections, renamed sections, new-term
 rate and data quality from the cleaning step; summarises the query stream
@@ -15,10 +15,10 @@ from typing import Any
 
 import pandas as pd
 
-from driftmon import monitoring, queries
+from driftmon.data import monitoring, queries
 from driftmon.config import resolve_path
 from driftmon.drift.compare import eligible_segments, tokenize_documents
-from driftmon.periods import study_periods
+from driftmon.data.periods import study_periods
 from driftmon.schemas import MonitoringReport, PipelineState
 
 

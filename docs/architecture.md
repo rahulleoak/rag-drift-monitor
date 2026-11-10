@@ -23,7 +23,7 @@ checking the design against every requirement (`docs/requirements-coverage.md`).
 The system watches a RAG assistant over a document archive and answers one
 question: **which drift matters?** It has three parts:
 
-1. **Simulator** (`driftmon/simulate.py`, not an agent). Stands in for
+1. **Simulator** (`driftmon/data/simulate.py`, not an agent). Stands in for
    production: it releases the archive period by period as "new documents",
    and produces an unlabelled **query stream** (what users ask) plus a
    labelled **golden evaluation set** (question, reference answer, source
@@ -33,7 +33,7 @@ question: **which drift matters?** It has three parts:
    period) *(D7)*. Some recent queries are deliberately phrased in newer
    wording about older topics, so query drift is not just a copy of
    document drift *(D7)*.
-2. **RAG pipeline under test** (`embeddings.py`, `index.py`, `evaluation/answers.py`). Two
+2. **RAG pipeline under test** (`rag/embeddings.py`, `rag/index.py`, `evaluation/answers.py`). Two
    indexes: **stale** (baseline period only) and **refreshed** (baseline plus
    the new period). Comparing them on the same questions isolates the effect of
    new data: the key experiment. A second, ready-made embedding model is kept
@@ -45,7 +45,7 @@ question: **which drift matters?** It has three parts:
 
 Design rule: agents are thin. Statistics, metrics and decisions live in plain,
 unit-tested modules (`drift/`, `evaluation/`, `policy.py`) that never import
-`llm.py`. The LLM writes questions, answers, judgements and explanations; it
+`llm/client.py`. The LLM writes questions, answers, judgements and explanations; it
 never makes the decision.
 
 ## 2. Agent flow
@@ -108,7 +108,7 @@ Solid boxes are built and tested; dashed boxes are designed, not built yet.
 | **B. Semantic Drift Detection** | `MonitoringReport`, embeddings | Technique 1: MMD + permutation test, per-document novelty, centroid shift, dispersion *(P3)*. Technique 2: Jensen–Shannon divergence and log-odds emerging terms. Each period is compared with the baseline and with the previous period *(P1)*, both as a whole and within each category, so a change in topic mix is not mistaken for a change in meaning (F2, D6). Benjamini–Hochberg correction; severity bands calibrated on within-baseline drift *(P7)*; lexical × semantic drift type *(P2)*. Also: the same techniques on the **query stream** (query drift) *(D7)*; **term-context shift** for key terms (how far the meaning of articles containing a term moves, and its neighbouring words before and after) *(D7)*; **emerging topics** by clustering each period's most novel articles, labelled with their top terms *(D7)*. LLM explains flagged segments from the numbers and examples. | `DriftReport`: per-segment scores, p-values, severity, examples, drifted + control segments (C, D, E) |
 | **C. Retrieval Evaluation** | `DriftReport`, golden eval set, both indexes | Saves each FAISS index to disk with a manifest and reloads it when the embeddings are unchanged (D22). Selects questions from drifted and control segments. Known-item MRR and Recall@K; LLM-judged Precision@K and nDCG@K over pooled results of both indexes. Per-segment deltas with bootstrap CIs; worst queries with what was retrieved. **Ranking change** between stale and refreshed for baseline questions: top-K overlap, share of newer articles, and whether the source article was displaced *(D7, D25)*. The judge grades the pooled top 5 of both indexes in one blind, shuffled call per question *(D25)*. Runs historical and recent questions separately *(D7)*. When E triggers model evaluation, re-runs the affected segments with the alternative embedding model *(D7)*. | `RetrievalReport` (D) |
 | **D. RAG Impact Assessment** | `RetrievalReport` (top 5 per index, relevance grades), `DriftReport` | Sonnet answers every question from the stale and the refreshed top 5, only from those articles; Opus grades each answer on its own (correct 0/1/2, grounded, declined), not told the index *(D28)*. Code: loss in correct answers per segment with a bootstrap interval; material if at least 10 points and the interval excludes zero (fixed before results); the four classes and a likely cause (D13); Spearman of each drift measure vs the loss; whether declines were right (from C's grades); unanswerable questions. Historical questions are the control *(D7)*. A borderline segment goes back to C once: C grades ranks 6-10, D answers from the top 10 and concludes (confirmed / answers just outside the top 5 / escalate). On Wikipedia, the outdated-answer test checks whether flagged changed facts change answers, against edits whose numbers did not change *(D27, D28)*. | `ImpactReport` (E) |
-| **E. Recommendation** | `ImpactReport`, `RetrievalReport`, `DriftReport`, `MonitoringReport`; long-form results (changed facts, outdated-answer test, chunking) and hand-label checks (`driftmon/evidence.py`) | `policy.py`: one rule per action in the brief (re-index; re-index specific documents; chunking; retrieval settings; prompts; model evaluation; retraining; escalate; continue monitoring). Every rule reports: recommended with evidence, not needed with the number that ruled it out, or not checked if an input is missing. A recommendation without evidence with numbers is rejected. Sonnet explains each recommended action from its evidence only; code rejects any number not in the evidence, retries once, else keeps the rule's text *(D29)*. Model evaluation would send C back to test a second embedding model *(D7)*; not built, because no section stays poor after re-indexing. | `RecommendationReport` → `recommendations.json`, `recommendations.md` (dashboard) |
+| **E. Recommendation** | `ImpactReport`, `RetrievalReport`, `DriftReport`, `MonitoringReport`; long-form results (changed facts, outdated-answer test, chunking) and hand-label checks (`driftmon/longform/evidence.py`) | `policy.py`: one rule per action in the brief (re-index; re-index specific documents; chunking; retrieval settings; prompts; model evaluation; retraining; escalate; continue monitoring). Every rule reports: recommended with evidence, not needed with the number that ruled it out, or not checked if an input is missing. A recommendation without evidence with numbers is rejected. Sonnet explains each recommended action from its evidence only; code rejects any number not in the evidence, retries once, else keeps the rule's text *(D29)*. Model evaluation would send C back to test a second embedding model *(D7)*; not built, because no section stays poor after re-indexing. | `RecommendationReport` → `recommendations.json`, `recommendations.md` (dashboard) |
 
 **Why these dependencies are real:** C cannot choose what to test without B's
 ranked segments; D reuses C's retrieved contexts and needs B's scores to relate
@@ -147,14 +147,16 @@ agent breaks the next one.
 | Settings, periods, thresholds | `config/config.yaml` | Yes |
 
 Every dataset is mapped onto one record shape (`doc_id, date, category,
-title, text`) in `driftmon/data.py`, so switching datasets is a config change.
+title, text`) in `driftmon/data/records.py`, so switching datasets is a config change.
 
 **Dashboard (Q16).** `app/streamlit_app.py` only reads saved runs, so a
-demo cannot fail on a live LLM call. Tabs: Overview, Data monitoring (A),
-Drift (B), Retrieval (C), Impact (D: answers stale vs refreshed, drift score
-vs loss per section, the Wikipedia outdated-answer test) and Recommendations
-(E: each action with its explanation and evidence, and the actions ruled
-out). It reads `runs/` and falls back to the committed `demo/runs/`, so it
+demo cannot fail on a live LLM call. Pages (left bar): Overview, Data
+Monitoring (A), Drift (B), Retrieval (C), Impact (D: answers stale vs
+refreshed, drift score vs loss per section, the Wikipedia outdated-answer
+test) and Recommendations (E: each action with its explanation and evidence,
+and the actions ruled out). Charts are live Altair charts
+(`driftmon/dashboard/live.py`); every "what this run shows" sentence is
+built from the run's numbers (`driftmon/dashboard/story.py`). It reads `runs/` and falls back to the committed `demo/runs/`, so it
 works straight after cloning, without an API key, a GPU or a rerun.
 
 **Storage (no database server).** Vector search uses FAISS exact

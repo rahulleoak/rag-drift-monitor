@@ -923,8 +923,9 @@ chart, and whether it supports or contradicts what we expected.
   year); 4 are U.S. NEWS, a section that did not exist in the baseline, so
   drift detection could not score it (Agent A reports it as a new section;
   found while building Agent E). Across segments, no drift measure
-  predicts the size of the loss (Spearman -0.19 to 0.40, all p > 0.1, 15
-  segments with drift scores). No segment was
+  predicts the size of the loss (Spearman -0.19 to 0.41, all p > 0.1, 15
+  segments with drift scores; the top value, 0.406, was first quoted as
+  0.40, corrected 2026-11-09). No segment was
   borderline, so the evidence loop back to C did not trigger.
 - **What it means:** on a news archive, the harm comes from new events
   missing from the index, whatever the section's distribution shift.

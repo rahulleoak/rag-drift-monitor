@@ -36,12 +36,12 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from driftmon import cleaning
+from driftmon.data import cleaning
 from driftmon.drift import embedding as emb
 from driftmon.drift import lexical as lex
-from driftmon.embeddings import Embedder
-from driftmon.llm import LLMClient, LLMRequest
-from driftmon.prompts import (QUESTION_SYSTEM, QUESTION_TEMPLATE, QUESTION_VERSION, REVIEW_CHECKS,
+from driftmon.rag.embeddings import Embedder
+from driftmon.llm.client import LLMClient, LLMRequest
+from driftmon.llm.prompts import (QUESTION_SYSTEM, QUESTION_TEMPLATE, QUESTION_VERSION, REVIEW_CHECKS,
                               REVIEW_SYSTEM, REVIEW_TEMPLATE, REVIEW_VERSION, DraftQuestion,
                               QuestionDraft, QuestionReview)
 

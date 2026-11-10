@@ -48,7 +48,7 @@ is the causal cost of not keeping up with drift.
 re-index on a schedule rather than only on drift alerts; re-index the 90
 Wikipedia articles with changed facts, then a scheduled full re-index; send 12 unflagged sections to a person;
 chunk long documents; keep monitoring older questions. Full text:
-[`recommendations.md`](demo/runs/20261109-184053/recommendations.md).
+[`recommendations.md`](demo/runs/20261109-221754/recommendations.md).
 
 ---
 

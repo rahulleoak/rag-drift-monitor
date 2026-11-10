@@ -88,3 +88,16 @@ def test_dashboard_shows_the_label_banner_and_loop(tmp_path, monkeypatch, run):
     assert not at.exception
     assert any("Evidence loop" in s.value for s in at.subheader)
     assert any("escalate" in m.value for m in at.markdown)
+
+
+def test_a_borderline_section_is_not_called_harmless():
+    from driftmon.config import load_config
+    from driftmon.evaluation import answers as an
+    cfg = load_config()
+    n = 20
+    pq = pd.DataFrame({"period": "2020", "category": "WORLD NEWS", "set": "answerable",
+                       "loss_correct": [1.0] * 3 + [0.0] * (n - 3), "stale_correct": 0.0,
+                       "refreshed_correct": [1.0] * 3 + [0.0] * (n - 3), "stale_hallucinated": 0.0,
+                       "refreshed_context_has_answer": [1.0] * 3 + [0.0] * (n - 3)})
+    seg = an.segments(pq, "2016-17", ["2020|WORLD NEWS|vs 2016-17"], cfg).iloc[0]
+    assert seg["borderline"] and seg["class"] == an.BORDERLINE

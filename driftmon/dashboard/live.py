@@ -21,7 +21,8 @@ from driftmon.dashboard.charts import DARK as T
 ORDINAL = alt.Scale(domain=["low", "medium", "high"], range=list(T.bands.values()))
 SECTION_COLOURS = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300"]
 CLASS_COLOURS = {"drift that hurts": T.series[0], "harm without drift": T.series[1],
-                 "drift that does not hurt": T.series[2], "healthy": T.muted}
+                 "drift that does not hurt": T.series[2], "healthy": T.muted,
+                 "borderline (sent back for more evidence)": T.ink_2}
 MEASURE_NAMES = {"mmd2": "MMD²", "centroid_shift": "Centroid shift", "jsd_excess": "Word drift (JSD)",
                  "novelty_mean": "Novelty (mean)", "novel_share": "Novel share", "new_term_rate": "New-term rate"}
 

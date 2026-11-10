@@ -470,12 +470,17 @@ def retrieval() -> None:
                         example_pair(w["question"], f"{w['period']} · {w['category']}", "Stale index found",
                                      w["stale_top3"], "Refreshed index found", w["refreshed_top3"])
         with st.expander("The numbers, with 95% intervals, by year and by drift status"):
+            jk = run.settings.get("judge_k") or 5
             cols = {"period": "Year", "drift_status": "Drift status", "questions": "Questions",
                     "stale_answer": "Answer found, stale", "refreshed_answer": "Answer found, refreshed",
-                    "stale_ndcg": "Ranking quality, stale", "refreshed_ndcg": "Ranking quality, refreshed"}
-            tips = {"stale_ndcg": "nDCG: 1 = the answering articles are ranked first.",
-                    "refreshed_ndcg": "nDCG: 1 = the answering articles are ranked first."}
-            pc = ("stale_answer", "refreshed_answer")
+                    "stale_precision": f"Precision@{jk}, stale", "refreshed_precision": f"Precision@{jk}, refreshed",
+                    "stale_ndcg": f"nDCG@{jk}, stale", "refreshed_ndcg": f"nDCG@{jk}, refreshed"}
+            prec_tip = (f"Share of the top {jk} judged relevant. Most questions have only one or two articles "
+                        f"that answer them, so around 40% is typical even for a good search.")
+            tips = {"stale_precision": prec_tip, "refreshed_precision": prec_tip,
+                    "stale_ndcg": "Ranking quality: 1 = the answering articles are ranked first.",
+                    "refreshed_ndcg": "Ranking quality: 1 = the answering articles are ranked first."}
+            pc = ("stale_answer", "refreshed_answer", "stale_precision", "refreshed_precision")
             table(pd.DataFrame(rep.judged_by_period), cols, percent=pc, help=tips)
             table(pd.DataFrame(rep.judged_by_status), cols, percent=pc, help=tips)
     else:
@@ -497,8 +502,10 @@ def retrieval() -> None:
             ki = pd.DataFrame(rep.known_item)
             table(ki.assign(index=ki["index"].str.replace("refreshed_", "", regex=False)),
                   {"index": "Refreshed up to", "asked_by": "Questions", "questions": "Count",
-                   "reciprocal_rank": "Source article's rank score", "recall": f"Source article in {top('top_k')}"},
-                  percent=("recall",), help={"reciprocal_rank": "1 = always first, 0.5 = second on average."})
+                   "reciprocal_rank": "Source article's rank (MRR)",
+                   "recall": f"Source article in {top('top_k')} (Recall@{run.settings.get('top_k') or 10})"},
+                  percent=("recall",), help={"reciprocal_rank": "Mean reciprocal rank: 1 = always first, 0.5 = "
+                                                                "second on average."})
 
 
 def impact() -> None:

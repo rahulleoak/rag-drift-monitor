@@ -1,5 +1,11 @@
 # Design summary for feedback
 
+> **Kept as sent (2026-11-07).** A record of what the stakeholder saw, not
+> the current results. Two things have changed since: drift multiples are
+> now quoted on the pipeline's scale (2020 is 2.5×, not 5.7×; D30), and
+> Agents C-E have been run (F15, F20-F24). Current numbers: `README.md` and
+> `docs/findings.md`.
+
 **Project:** Semantic Drift Detection & RAG Quality Assurance\
 **To:** Ani · **From:** Rahul · **Date:** 2026-11-07 (first version 2026-11-06) · **Due:** Friday 2026-11-13
 

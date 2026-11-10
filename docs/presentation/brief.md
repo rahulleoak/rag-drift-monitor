@@ -1,7 +1,7 @@
 # Presentation brief: RAG Drift Monitor
 
 Single source for the slides. Upload this file and the images in this folder
-(`00_architecture.png` to `18_applied_fix.png`). Every number below comes
+(`00_architecture.png` to `20_evidence_loop.png`). Every number below comes
 from the committed demo run `20261109-221754` and the long-form results saved
 with it; nothing else in `docs/` should be used for numbers (older notes
 contain superseded figures). Updated 2026-11-10: chunking and the applied fix
@@ -228,7 +228,7 @@ right policy is to re-index on a schedule, not on drift alerts.
   - Relevance judge vs two people: 14/15 and 11/15 (people vs each other: 12/15).
   - Changed-facts check, precision vs two people: 17/20 and 16/20 (people: 17/20).
   - Answer judge vs one person: 11/15.
-- **Small text:** Blind hand labels, first pass. 196 automated tests. All LLM calls cost $17.20 in total (5,556 calls, cached); a full rerun costs nothing and takes about 2 minutes.
+- **Small text:** Blind hand labels, first pass. 202 automated tests. All LLM calls cost $17.20 in total (5,556 calls, cached); a full rerun costs nothing and takes about 2 minutes.
 - **Say:** "Where the judge and a person disagree, the judge is almost always
   the stricter one, so the losses are not inflated."
 
@@ -277,6 +277,7 @@ Fallback if anything fails: the README GIF, and the screenshots in these slides.
 | What if users ask in today's words, COVID instead of coronavirus? | Tested: only 5% of questions (18 of 370) had a natural newer wording; the article was still found for 17 of 18, sometimes a place lower. Names carry search, and names rarely change in five years. |
 | Isn't some of the drift just article length? | Checked with length-matched samples: about a tenth (11%); no severity flag changed. |
 | Why did your own fix miss its test? | It fixed changed facts completely (68% → 0%); it missed detail added to articles it did not list, reaching 77% against an 80% bar set before the run. Hence "targeted now, full on a schedule". |
+| Is this really agentic, or a pipeline? | The agents depend on each other's reports (C tests what B flagged; D answers from C's results; E reads D's classes), and the graph decides what runs next: full check or quick check after B, and a loop back to C when a result is borderline. On the real data every result was clear-cut, so the loop did not fire; on a simulated failed re-index it did: 2020 World News went back to C, came back unclear, and E escalated it to a person (backup B11). The LLM writes and judges; code decides, by design, as agreed with the stakeholder. |
 | How does this fit contracts and policies? | Superseded policies and renamed terms are the contract version of "coronavirus → covid"; changed facts are "which contract version is current". Monitoring, evidence and the stale-vs-refreshed check carry over unchanged. |
 
 ## Backup image slides
@@ -293,6 +294,7 @@ One image per slide, title as given:
 | B8 | Everyday words changed meaning: "home" in 2020 moved 4.6× ordinary change | `08_words_meaning.png` |
 | B9 | 2020 Food & Drink: meaning 17.3×, words 7.1× | `06_one_group_words.png` |
 | B10 | The dashboard overview: the run at a glance | `01_overview.png` |
+| B11 | The evidence loop on a simulated failed re-index: sent back to Agent C, found unclear, escalated to a person | `20_evidence_loop.png` (and `19_loop_overview.png` for the banner and route line) |
 
 ## Numbers sheet (the only figures to use)
 
@@ -325,11 +327,12 @@ One image per slide, title as given:
 | Applied fix (targeted re-index) | outdated answers 12.9% → 3.0%; changed facts 68% → 0%; 77% of a full re-index's gain (bar 80%); 64% of the re-embedding; 140 edited sentences |
 | Newer wording | 18 of 370 questions (5%) had one; article found for 17 of 18 |
 | Length check | about 11% of embedding drift is length; no severity band changes |
+| Evidence loop demo (simulated failed re-index) | 85% of 2020 World News articles left out; drop 15% (interval 0–30%), borderline; top 10 still 15%; conclusion: escalate; cost $0.58 |
 | Query drift | question vocabulary 3–6× ordinary from 2018 (rough scale: one comparison, 2017 vs 2016 questions) |
 | Recommendations | 5 recommended, 4 ruled out; 5 of 5 explanations passed the number check first time |
 | Judges vs people | relevance 14/15 and 11/15 (people 12/15); changed facts 17/20 and 16/20 (people 17/20); answers 11/15 |
 | LLM cost | $17.20 total, 5,556 calls; reruns $0 |
-| Tests | 196 |
+| Tests | 202 |
 
 ## Do not use (superseded)
 

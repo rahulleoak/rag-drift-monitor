@@ -355,6 +355,68 @@ class AnswerChange(BaseModel):
     verdict: Literal["same", "different", "one_declined", "both_declined"]
 
 
+# ---------- newer-wording test (Agent C's open question, D31) ----------
+
+REWORDING_VERSION = "rw-v1"
+
+REWORDING_SYSTEM = """You help test a newsroom archive assistant. Journalists and editors ask it \
+questions about articles from past years. Language changes over time: a new name for the same \
+thing (coronavirus became COVID; the company Facebook became Meta), a new term for an issue, a \
+person described by a later role. We want to know whether a question asked in later words still \
+finds an older article.
+
+You will see a question about an article and the date the article was published. Write two \
+versions of the question:
+1. same_era: the same question reworded, as a reader at the time of the article would ask it. \
+Change the sentence structure and ordinary words, but keep the names and terms of that time.
+2. newer: start from your same_era version and change only the words that a reader in {query_time} \
+would naturally say differently about this topic. Keep the same people, places, events and \
+facts. Do not add or remove details, and do not put the answer in the question.
+
+If a reader in {query_time} would ask it in the same words, set has_newer to false and leave newer \
+empty. Do not force a change: an ordinary synonym is not newer wording. List the words you \
+changed for {query_time} in changed_words."""
+
+REWORDING_TEMPLATE = """Article published: {date}
+Question: {question}"""
+
+
+class Rewording(BaseModel):
+    """A same-era rewording of a question, and a version in later wording."""
+
+    same_era: str
+    has_newer: bool
+    newer: str = Field(description="Empty when has_newer is false")
+    changed_words: list[str] = Field(description="Words in newer that a later reader says differently")
+    reason: str = Field(description="At most 20 words: what changed, or why nothing would")
+
+
+MEANING_VERSION = "mc-v1"
+
+MEANING_SYSTEM = """You check rewordings of questions for a test set. You will see an original \
+question and two rewordings of it.
+
+For each rewording, decide whether it asks the same thing as the original: a correct answer to \
+the original would be a correct answer to the rewording, and the rewording asks for nothing more \
+or less. Different words for the same thing are fine (coronavirus and COVID-19; Facebook and \
+Meta, for the company). Adding or dropping a detail that changes what is asked, or putting the \
+answer in the question, is not."""
+
+MEANING_TEMPLATE = """Original: {original}
+
+Rewording 1: {first}
+
+Rewording 2: {second}"""
+
+
+class MeaningCheck(BaseModel):
+    """Whether each of two rewordings asks the same thing as the original."""
+
+    reason: str = Field(description="At most 25 words")
+    rewording_1_same: bool
+    rewording_2_same: bool
+
+
 # ---------- explanations of recommendations (Sonnet, Agent E) ----------
 
 EXPLAIN_VERSION = "ex-v1"

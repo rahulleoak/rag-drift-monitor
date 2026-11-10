@@ -166,6 +166,8 @@ llm:
     wiki_answers:    {effort: low, max_tokens: 2000, expected_output: 400}
     answer_change:   {effort: low, max_tokens: 2000, expected_output: 300}
     explanations:    {effort: low, max_tokens: 2000, expected_output: 300}
+    rewording:       {effort: low, max_tokens: 2000, expected_output: 350}
+    meaning_check:   {effort: low, max_tokens: 2000, expected_output: 250}
 
 # D26: long-form documents where chunking applies (stakeholder request, 2026-11-06).
 # Wikipedia articles captured at the last revision before the end of each period
@@ -234,6 +236,19 @@ evaluation:
   # D7: the query stream = questions from pools drawn the same way in every
   # period; flagged/control pools are picked by document drift, so excluded here
   query_stream_pools: [random, oversample]
+  # D31: does a question in later wording still find an older article? (scripts/newer_wording.py)
+  # Thresholds set on 2026-11-09, before any result.
+  newer_wording:
+    question_periods: ["2016-17", "2018", "2019", "2020", "2021"]
+    query_period: "2022"         # later wording = the newest period's; searched on its refreshed index
+    per_group: 1000              # questions per drift status, at random; 1000 = all (first run: 50, 11 kept, too few; 2026-11-09)
+    min_z: 1.96                  # a word counts as newer if it is significantly more typical of the query period
+    min_rate_change: 1.2         #   and its rate rose at least 20% (the dashboard's rule, D12)
+    hit_k: 5                     # found = the source article is in the top 5 (what the answer step reads)
+    min_drop: 0.10               # wording drift hurts search: newer finds the article 10+ points less often
+    min_group_gap: 0.10          # drift level matters: the drop is 10+ points bigger in flagged than control
+    alpha: 0.05                  # both must also be significant (exact McNemar; permutation test)
+    permutations: 5000
 
 impact:
   min_retrieval_drop: null       # practical-significance thresholds, set before running (Q11)

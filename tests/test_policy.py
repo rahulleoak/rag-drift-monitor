@@ -163,3 +163,17 @@ def test_decide_considers_every_action_once_and_ranks_recommended_first(cfg):
     kinds = [pol.KIND[r.key] for r in recs[:n]]
     assert kinds == sorted(kinds)                 # measured answer loss first, maintenance last
     assert recs[0].key == pol.REINDEX
+
+
+def test_applied_reindex_is_cited_and_a_shortfall_asks_for_a_scheduled_full_reindex(cfg):
+    applied = {"enough": False, "recovered": 0.77, "min_recovered": 0.8, "outdated_stale": 0.129,
+               "outdated_targeted": 0.03, "targeted_share": 0.64,
+               "by_stratum": {"listed_number": {"items": 40, "outdated_stale": 0.675, "outdated_targeted": 0.0}}}
+    r = pol.reindex_documents(_x(cfg, None, longform={**_longform(), "reindex_verdict": applied}))
+    assert r.status == "recommended" and "scheduled full re-index" in r.finding
+    claim = next(e.claim for e in r.evidence if e.source == "Wikipedia: targeted re-index applied")
+    assert "13%" in claim and "3%" in claim and "64%" in claim
+    ok = pol.reindex_documents(_x(cfg, None, longform={**_longform(), "reindex_verdict": {**applied, "enough": True}}))
+    assert "alone was enough" in ok.finding
+    plain = pol.reindex_documents(_x(cfg, None, longform=_longform()))
+    assert all(e.source != "Wikipedia: targeted re-index applied" for e in plain.evidence)

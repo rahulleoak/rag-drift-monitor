@@ -267,7 +267,29 @@ def reindex_documents(x: Inputs) -> Recommendation:
     finding = (f"Re-index the {len(titles)} articles whose numbers or dates changed, and check the flagged "
                f"sentences: on an edited archive the stale index gives outdated answers with confidence, and drift "
                f"scores do not see it.")
+    applied = lf.get("reindex_verdict")
+    if applied and applied.get("enough") is not None:
+        ev.append(EvidenceItem(source="Wikipedia: targeted re-index applied",
+                               claim=_applied_claim(applied)))
+        if applied["enough"]:
+            finding += " Applied to a copy of the index, this fix alone was enough."
+        else:
+            finding += (f" Applied to a copy of the index, it removed {pct(applied['recovered'])} of the outdated "
+                        f"answers a full re-index removes (the rule asks {pct(applied['min_recovered'])}); what "
+                        f"it missed was detail added to other articles, so pair it with a scheduled full re-index.")
     return _rec(REINDEX_DOCS, "recommended", rule, finding, ev, list(titles.index))
+
+
+def _applied_claim(v: Mapping[str, Any]) -> str:
+    """The applied re-index in one sentence (D32)."""
+    facts_part = ""
+    s = v.get("by_stratum", {}).get("listed_number")
+    if s:
+        facts_part = (f" (edits that changed a fact: {pct(s['outdated_stale'])} to "
+                      f"{pct(s['outdated_targeted'])})")
+    return (f"Re-indexing only these articles took outdated answers from {pct(v['outdated_stale'])} to "
+            f"{pct(v['outdated_targeted'])}{facts_part}, re-embedding {pct(v['targeted_share'])} of the "
+            f"passages a full re-index would.")
 
 
 def _label_rate(labels: pd.DataFrame | None, part: str, column: str) -> list[tuple[str, float]]:

@@ -41,10 +41,12 @@ is the causal cost of not keeping up with drift.
 | Comparing only with last year hides gradual drift | 2022 vs 2021: 0.5× ordinary change; 2022 vs the baseline: 2.1× |
 | Emerging words match real events | coronavirus (2020), vaccine and capitol (2021), Russia and invasion (2022) |
 | Changed facts change answers, but hide from drift scores | Edits that replaced a number or date changed the answer 50% of the time (vs 2%, Fisher p = 1.5e-10); 95% of those articles scored "low" drift |
+| Applying the fix: re-indexing only the 90 flagged articles | Outdated answers 12.9% -> 3.0% (changed facts 68% -> 0%) for 64% of the re-embedding; it removed 77% of what a full re-index removes, short of the 80% set in advance, so it is paired with a scheduled full re-index (F24) |
+| Questions in newer wording ("COVID" for "coronavirus") | Only 18 of 370 questions had a natural newer wording; search still found the article for 17 (F23) |
 
 **Recommended** (5 actions, 4 ruled out with the number that ruled them out):
 re-index on a schedule rather than only on drift alerts; re-index the 90
-Wikipedia articles with changed facts; send 12 unflagged sections to a person;
+Wikipedia articles with changed facts, then a scheduled full re-index; send 12 unflagged sections to a person;
 chunk long documents; keep monitoring older questions. Full text:
 [`recommendations.md`](demo/runs/20261109-184053/recommendations.md).
 

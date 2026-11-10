@@ -163,8 +163,9 @@ def load_longform_snapshot(folder: Path) -> dict[str, Any]:
     for key, name in LONGFORM_FILES.items():
         if (folder / name).exists():
             out[key] = pd.read_csv(folder / name)
-    if (folder / "outdated_verdict.json").exists():
-        out["outdated_verdict"] = json.loads((folder / "outdated_verdict.json").read_text(encoding="utf-8"))
+    for key in ("outdated_verdict", "reindex_verdict"):
+        if (folder / f"{key}.json").exists():
+            out[key] = json.loads((folder / f"{key}.json").read_text(encoding="utf-8"))
     return out
 
 

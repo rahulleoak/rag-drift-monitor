@@ -1224,3 +1224,40 @@ date and reason, and add a new entry that supersedes it.
   filtering. The questions name specific people and events, which carry
   search; this tests wording around them, not unfamiliar names.
 - **Reproduce:** `python scripts/newer_wording.py` (`runs/wording/`).
+
+## D32. Apply Agent E's targeted re-index and check it worked
+- **Date:** 2026-11-09
+- **Status:** Accepted (approved by the author 2026-11-09); thresholds set
+  before any result
+- **Context:** the brief asks to apply a fix and re-check. Agent E
+  recommends re-indexing the 90 Wikipedia articles whose numbers or dates
+  changed since the index was built (end of 2017), 391 changed facts (F22).
+  F21 showed a flagged edit changes the answer half the time. Untested: does
+  re-indexing only those articles give users the current answers, and what
+  does it miss compared with re-indexing everything? Between the 2017 and
+  2022 versions there are 10,398 edited sentences (with a close earlier
+  version): 213 changed facts, all in the 90 articles; 7,084 other edits in
+  the 90; and 3,101 edits in the other articles, where a new name or role
+  would be missed by the check (D27). The 90 articles hold 64% of the 2022
+  passages (5,705 of 8,984), so the targeted fix is about two thirds of the
+  work of a full re-index.
+- **Options:** (a) re-run F21's items on a re-indexed index: they compare
+  consecutive years, not the 2017 index with today's; (b) new items: edits
+  between the 2017 and 2022 versions, answered from three chunk indexes,
+  stale (all articles as of 2017), targeted (the 90 at 2022, the rest as of
+  2017) and full (all at 2022); the full re-index is the reference. Edits
+  include sentences without a number (F21 used only sentences with one), so
+  a changed name can be sampled: `facts.other_edits`.
+- **Choice:** (b). Three strata, at random: changed facts in listed articles
+  (40), other edits in listed articles (40), edits in unlisted articles
+  (60, where the targeted fix can miss something). Sonnet writes a question
+  from the 2022 sentence (F21's prompt); Sonnet answers from the top 3
+  passages of each index; Opus compares the stale and the targeted answer
+  with the full one (F21's judge, shuffled, versions not named). An answer
+  is outdated when it differs from the full re-index's or only one of them
+  answers. Overall rates are weighted by stratum size (213, 7,084, 3,101).
+- **Thresholds (config `longform.reindex`):** the targeted re-index is
+  enough if it fixes at least 80% of the outdated answers the full re-index
+  fixes (weighted); and, as a check, in the listed articles the targeted
+  answer agrees with the full one at least 90% of the time.
+- **Reproduce:** `python scripts/reindex_check.py` (`runs/longform/reindex_*`).

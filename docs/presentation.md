@@ -448,7 +448,7 @@ as D5.
   (F2).
 - **Every number reproduces:** a confidence check re-ran everything from
   scratch; 14 of 14 documented numbers matched.
-- **Tests:** 195, covering the cleaning rules, the drift statistics, the
+- **Tests:** 196, covering the cleaning rules, the drift statistics, the
   LLM layer (with a fake API), every agent, the policy rules, the dashboard
   on any run (including one without LLM results) and every script. They run
   in about 30 seconds, with no models or keys.

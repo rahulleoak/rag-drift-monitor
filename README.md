@@ -120,7 +120,7 @@ pip install -r requirements.txt
 pip install -e .
 
 streamlit run app/streamlit_app.py  # the dashboard, from the committed demo run
-pytest                              # 195 tests, ~30 s, synthetic data and a fake LLM
+pytest                              # 196 tests, ~30 s, synthetic data and a fake LLM
 ```
 
 With no local runs, the dashboard shows the run committed under

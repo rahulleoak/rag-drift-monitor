@@ -6,7 +6,7 @@ diagram up to date whenever the agent design or data flow changes.
 
 **Status (2026-11-09):** all five agents run in LangGraph
 (A → B → route → C → D → E, with the loop from D back to C), with typed
-reports, 195 tests and the Streamlit dashboard. Built: data cleaning, cached
+reports, 196 tests and the Streamlit dashboard. Built: data cleaning, cached
 embeddings, stale and refreshed FAISS indexes saved to disk (D22), document
 and query drift (D11, D12, D24), the LLM layer (D15), the question set
 (D23), retrieval evaluation (D25), answer quality and the segment classes

@@ -235,6 +235,6 @@ def test_listed_words_move_the_way_their_label_says():
     assert rows, "the demo run should carry term_shares"
     for t in rows:
         if t["direction"] == "emerging":
-            assert t["per_1000_period"] > t["per_1000_reference"], t
+            assert t["per_1000_period"] >= 1.2 * t["per_1000_reference"], t
         else:
-            assert t["per_1000_period"] < t["per_1000_reference"], t
+            assert 1.2 * t["per_1000_period"] <= t["per_1000_reference"], t

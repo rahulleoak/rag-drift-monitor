@@ -538,7 +538,9 @@ date and reason, and add a new entry that supersedes it.
   (1,000 pseudo-words, shaped like the whole archive) is as large as such
   a segment, so words common across the archive inherit a high rate.
   Choice: keep the log-odds ranking, but list a word as emerging only if
-  its observed rate rose, and as declining only if it fell. Whole-period
+  its observed rate rose by at least 20%, and as declining only if it fell
+  by as much (otherwise "recipes", 12.2 -> 12.0 per 1,000 words, was listed
+  as fading in 2020 FOOD & DRINK). Whole-period
   lists (e.g. coronavirus in 2020) are unchanged. Test:
   `tests/test_dashboard.py::test_listed_words_move_the_way_their_label_says`.
 

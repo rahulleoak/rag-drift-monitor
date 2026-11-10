@@ -313,10 +313,11 @@ def mix_chart(d: pd.DataFrame) -> alt.Chart:
     tip = [alt.Tooltip("period:N", title="Year"), alt.Tooltip("section:N", title="Section"),
            alt.Tooltip("share:Q", title="Share of the year", format=".1%"),
            alt.Tooltip("articles:Q", title="Articles", format=","), alt.Tooltip("status:N", title="")]
-    bars = alt.Chart(d).mark_bar(stroke=T.surface, strokeWidth=1.5, width={"band": 0.7}).encode(
+    bars = alt.Chart(d).mark_bar(stroke=T.surface, strokeWidth=1.5, width={"band": 0.78}).encode(
         x=x, y=alt.Y("y0:Q", title="Share of the year's articles", scale=alt.Scale(domain=[0, 1]),
                      axis=alt.Axis(format="%", tickCount=5)), y2="y1:Q", color=colour, tooltip=tip)
-    big = d[d["share"] >= 0.07].assign(text=lambda z: z["section"].str.slice(0, 16) + " "
+    short = {"ENTERTAINMENT": "ENTERTAIN.", "Other sections": "Other", "Other new sections": "Other new"}
+    big = d[d["share"] >= 0.07].assign(text=lambda z: z["section"].map(lambda s: short.get(s, s[:12])) + " "
                                        + (100 * z["share"]).round().astype(int).astype(str) + "%")
     labels = alt.Chart(big).mark_text(fontSize=10).encode(
         x=alt.X("period:N", sort=order), y="mid:Q", text="text:N",

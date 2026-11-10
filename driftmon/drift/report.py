@@ -59,13 +59,16 @@ def metric_correlations(segments: list[SegmentDrift]) -> pd.DataFrame:
     return pd.DataFrame(np.atleast_2d(rho), index=CORRELATED_MEASURES, columns=CORRELATED_MEASURES)
 
 
+MIN_RATE_CHANGE = 1.2   # a listed word's rate must move at least 20% in the labelled direction
+
+
 def _terms(inp: DriftInputs, rows: np.ndarray, ref_rows: np.ndarray, prior, k: int = 5
            ) -> tuple[list[str], list[str], list[dict[str, Any]]]:
     """Top ``k`` emerging and declining terms, and how often each is used on both sides
     (per 1,000 words) for the dashboard's before/after chart.
 
     Terms are ranked by log-odds z, but a term is only listed as emerging if its observed
-    rate rose, and as declining if it fell. In a small segment (a few hundred words) the
+    rate rose by at least ``MIN_RATE_CHANGE``, and as declining if it fell by as much. In a small segment (a few hundred words) the
     prior can outweigh the data, so a term common across the archive could otherwise rank
     as emerging in a segment that never uses it (D12, revised 2026-11-09)."""
     target = lex.term_counts(inp.tokens[i] for i in rows)
@@ -74,8 +77,8 @@ def _terms(inp: DriftInputs, rows: np.ndarray, ref_rows: np.ndarray, prior, k: i
     t = t[t["count_target"] + t["count_reference"] >= 5]
     nt, nr = max(sum(target.values()), 1), max(sum(reference.values()), 1)
     rate_t, rate_r = t["count_target"] / nt, t["count_reference"] / nr
-    up = t[(t["z"] > 0) & (rate_t > rate_r)].head(k)
-    down = t[(t["z"] < 0) & (rate_t < rate_r)].tail(k).iloc[::-1]
+    up = t[(t["z"] > 0) & (rate_t > rate_r * MIN_RATE_CHANGE)].head(k)
+    down = t[(t["z"] < 0) & (rate_t * MIN_RATE_CHANGE < rate_r)].tail(k).iloc[::-1]
     shares = [{"term": term, "direction": direction,
                "per_1000_reference": round(1000 * r["count_reference"] / nr, 3),
                "per_1000_period": round(1000 * r["count_target"] / nt, 3)}

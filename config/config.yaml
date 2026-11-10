@@ -207,7 +207,14 @@ longform:
     top_k: 3                     # passages the answer step reads from each version's chunk index
     min_difference: 0.2          # flagged must change answers at least 20 points more often than the comparison group
     alpha: 0.05                  # and the difference must be significant (Fisher's exact test)
-  mmd_sample: 1500             # chunks per side for the archive-level MMD test
+  # D32: apply Agent E's targeted re-index and check it (scripts/reindex_check.py).
+  # Thresholds set on 2026-11-09, before any result.
+  reindex:
+    latest: "2022"               # the current version of every article (the full re-index)
+    per_stratum: {listed_number: 40, listed_wording: 40, unlisted: 60}
+    min_recovered: 0.8           # enough if it fixes 80%+ of the outdated answers the full re-index fixes
+    min_listed_agreement: 0.9    # check: in the re-indexed articles, targeted agrees with full 90%+ of the time
+  mmd_sample: 1500            # chunks per side for the archive-level MMD test
   mmd_permutations: 200
 
 drift:

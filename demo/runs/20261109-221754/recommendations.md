@@ -24,7 +24,7 @@ Re-index the archive on a schedule with every new batch of articles, not only wh
 
 ## 2. Re-index specific documents (changed facts)
 
-Re-index the 90 articles whose numbers or dates changed, and review the flagged sentences. The check found 391 changed numbers or dates in 90 of 165 articles, questions on flagged edits got a different answer from the old and new version 50% of the time vs 2% for other edits, and the old index still retrieves the edited passage 92% of the time. If this is not done, the assistant will keep giving outdated facts with confidence, and since 95% of these articles had a "low" drift score, drift alerts will not catch it.
+Re-index the 90 articles whose numbers or dates changed and check the flagged sentences, and pair this with a scheduled full re-index. Of the 165 articles checked, 90 had changed facts, questions on flagged edits got a different answer from the old and new version 50% of the time, and the old index still retrieves the edited passage 92% of the time, while 95% of these articles had a "low" drift score. If this is not done, the assistant will keep giving outdated answers with confidence and drift alerts will not catch them.
 
 **Applies to (90):** Germany, Israel, Hong Kong, Delhi, Ukraine, Mumbai, Climate change, Jerusalem, Malaria, Virus, and 80 more
 
@@ -36,6 +36,7 @@ Re-index the 90 articles whose numbers or dates changed, and review the flagged 
 - *Wikipedia: outdated-answer test:* The old index still retrieves the edited passage 92% of the time, so it serves the outdated fact with confidence.
 - *Hand labels:* Blind hand labels put the check's precision at 80% and 85% (author (first pass), second labeller).
 - *Wikipedia: example:* Sumer: "2525 BC on a stele called the Stele of the Vultures." became "2450 BC on a stele called the Stele of the Vultures.".
+- *Wikipedia: targeted re-index applied:* Re-indexing only these articles took outdated answers from 13% to 3% (edits that changed a fact: 68% to 0%), re-embedding 64% of the passages a full re-index would.
 
 *Rule:* the changed-facts check flags documents, and the outdated-answer test shows flagged edits change answers. *Explanation:* LLM, numbers checked (attempt 1).
 

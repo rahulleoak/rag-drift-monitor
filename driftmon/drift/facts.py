@@ -52,8 +52,9 @@ def _jaccard(a: set[str], b: set[str]) -> float:
 
 
 def matched_edits(old_sections: Sequence[tuple[str, str]], new_sections: Sequence[tuple[str, str]],
-                  min_similarity: float = 0.6) -> list[tuple[str, str, str, float]]:
-    """Edited sentences that contain a number, with their previous version.
+                  min_similarity: float = 0.6, with_number: bool = True) -> list[tuple[str, str, str, float]]:
+    """Edited sentences that contain a number (any edited sentence if
+    ``with_number`` is False), with their previous version.
 
     A new sentence that is not in the old version is matched with the old
     sentence, in the same section (or anywhere, if the section is new),
@@ -69,7 +70,7 @@ def matched_edits(old_sections: Sequence[tuple[str, str]], new_sections: Sequenc
         candidates = old_by_section.get(heading) or old_all
         cand_words = [(s, _words(s)) for s in candidates]
         for sent in _sentences(text):
-            if sent in old_set or not numbers(sent):
+            if sent in old_set or (with_number and not numbers(sent)):
                 continue
             w = _words(sent)
             best, score = None, 0.0
@@ -110,6 +111,17 @@ def wording_edits(old_sections: Sequence[tuple[str, str]], new_sections: Sequenc
             if sorted(numbers(b)) == sorted(numbers(a)) and " ".join(b.split()) != " ".join(a.split())
             and not (_is_reference(a) or _is_reference(b))]
 
+
+
+def other_edits(old_sections: Sequence[tuple[str, str]], new_sections: Sequence[tuple[str, str]],
+                min_similarity: float = 0.6) -> list[tuple[str, str, str, float]]:
+    """Every edited sentence that is *not* a changed fact, with or without a
+    number: what the changed-facts check does not flag (a new name or role,
+    a reworded claim). Used by the re-index check (D32)."""
+    flagged = {c.after for c in fact_changes(old_sections, new_sections, min_similarity)}
+    return [(h, b, a, s) for h, b, a, s in matched_edits(old_sections, new_sections, min_similarity, False)
+            if a not in flagged and " ".join(b.split()) != " ".join(a.split())
+            and not (_is_reference(a) or _is_reference(b))]
 
 _REFERENCE = re.compile(r"\bISBN\b|\bISSN\b|\bdoi\b|\bRetrieved\b|\bpp?\.\s*\d|\bVol\.|\d+px\b|\bthumb(?:nail)?\b|\bupright\b", re.I)   # citations, image captions
 

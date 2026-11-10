@@ -1103,3 +1103,61 @@ chart, and whether it supports or contradicts what we expected.
   0.11 in MRR); flagged no worse than control (cannot tell, too few).
 - **Verdict:** Supports F15 at the hardest point we could test; inconclusive
   on flagged vs control.
+
+## F24. Applying Agent E's targeted re-index: it removes three quarters of the outdated answers for two thirds of the work; what it misses is details added later, not wrong facts
+- **Date:** 2026-11-09
+- **Setup:** D32. Three chunk indexes over the 165 Wikipedia articles:
+  stale (every article as of the end of 2017), targeted (Agent E's 90
+  listed articles at their 2022 version, the rest as of 2017) and full
+  (every article at 2022, the reference). 140 sentences edited between
+  2017 and 2022, at random in three strata. Sonnet wrote a question from the
+  2022 sentence and answered it from the top 3 passages of each index; Opus
+  compared the stale and the targeted answer with the full one. Outdated =
+  a different answer, or only one of the two answers. Weighted by stratum
+  size. Thresholds fixed before results. Cost about $0.98 (batch).
+- **Result:**
+
+  | Stratum | Edits | Sampled | Outdated, stale | Outdated, targeted |
+  |---|---|---|---|---|
+  | Changed facts, listed articles | 213 | 40 | **68%** (14 different, 13 one declined) | **0%** |
+  | Other edits, listed articles | 7,084 | 40 | 12% | 0% |
+  | Edits in unlisted articles | 3,101 | 60 | 10% | 10% (the same 6) |
+  | **All, weighted** | 10,398 | 140 | **12.9%** | **3.0%** |
+
+  - The targeted fix removes **77%** of the outdated answers the full
+    re-index removes (interval 50-92%), re-embedding **64%** of the passages
+    (5,705 of 8,984). **Enough by the fixed rule: no** (needs 80%); the
+    check inside the listed articles passes (100% agree with full, needs 90%).
+  - Not one targeted answer states a *different* fact from the full
+    re-index; all 6 misses are "one version cannot answer".
+- **The 6 misses, read one by one:**
+  - 3 are details added later to an article outside the list: "sickle cell
+    disease" added to pneumonia's risk factors; Bach's start as organist
+    "August 1703" -> "14 August 1703"; the Buddha legend gaining "the 32
+    marks of a great man". Two of the three are numbers *added* to a
+    sentence, which D27 deliberately skips (only replaced numbers count).
+  - 3 are noise: a synonym swap the question copied ("generating" ->
+    "engendering", "deity" -> "godhead"), where one answer declined on the
+    exact word; and a text-cleaning gap where the 2022 version lost a
+    formula ("180 - x"), so the *stale* answer was the better one.
+  - Dropping the 3 noise items, the fix removes about 86% (exploratory;
+    the rule as fixed counts all 6).
+- **What it means:** the changed-facts check finds what matters most: edits
+  that change a stated fact go from 68% outdated to 0%, and the stale index
+  serves them with confidence (it still retrieves the edited passage 90% of
+  the time). What it leaves is new detail in articles it did not list, where
+  the old index cannot answer rather than answering wrongly. So the action
+  is: re-index the listed documents now (cheap, removes wrong answers), and
+  keep a scheduled full re-index for added content. Counting added numbers
+  ("14 August 1703") as a change would catch two of the three real misses;
+  not done, as it would also flag every added citation year.
+- **Caveats:** 60 unlisted items give a wide interval (50-92%); "outdated"
+  is judged against the full re-index's answer, not a hand-checked truth;
+  edits in articles new since 2017 (2 articles) are outside the test.
+- **Reproduce:** `python scripts/reindex_check.py` (`runs/longform/reindex_items.csv`,
+  `reindex_summary.csv`, `reindex_verdict.json`).
+- **Expectation:** the targeted fix would recover most of the full
+  re-index's benefit for about half the work (mostly: 77% for 64%).
+- **Verdict:** Supports D27/E's re-index-documents action for changed facts;
+  contradicts "the targeted fix is enough on its own" by the rule set in
+  advance. Agent E should pair it with a scheduled full re-index.

@@ -1,7 +1,7 @@
 {
-  "run_id": "20261109-181209",
-  "created": "2026-11-09T18:13:11-08:00",
-  "duration_s": 62,
+  "run_id": "20261109-184053",
+  "created": "2026-11-09T18:42:41-08:00",
+  "duration_s": 108,
   "mode": "full",
   "pilot_questions": null,
   "question_set": "full",
@@ -11,7 +11,7 @@
   },
   "embedding_model": "BAAI/bge-small-en-v1.5",
   "llm_cost_usd": 0.0,
-  "code_version": "29a69ea+changes",
+  "code_version": "7c9fe55",
   "settings": {
     "top_k": 10,
     "judge_k": 5,
@@ -19,6 +19,6 @@
     "min_segment_questions": 8,
     "topic_min_ratio": 3.0,
     "dataset": "huffpost",
-    "description": "A newsroom archive assistant over HuffPost articles"
+    "description": "HuffPost news articles"
   }
 }

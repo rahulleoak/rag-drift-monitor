@@ -1183,3 +1183,105 @@ date and reason, and add a new entry that supersedes it.
   year-on-year comparison hides gradual drift), so nothing else changes.
 - **If asked about 5.7×:** same measurement, smaller denominator (0.0021
   vs 0.0047); D11 already rejected the single-pair reference for the bands.
+
+## D31. Test questions in newer wording about older articles
+- **Date:** 2026-11-09
+- **Status:** Accepted (approved by the author 2026-11-09); thresholds set
+  before any result
+- **Context:** F15 found that how far a section drifted did not change how
+  much search lost: the drift that matters is new content the index lacks.
+  But every test question was written from its own article (F11), so it
+  shares the article's wording. The one case where a change of wording on
+  its own could hurt search is untested: an older article asked about in
+  later words ("COVID" for an article that says "coronavirus"). Parked as an
+  extension since 2026-11-06 (F15, requirements coverage).
+- **Options:**
+  (a) rewrite questions in later wording and compare with the original
+  wording: simple, but any rewording loses a little against the article's
+  own words, so the drop would mix "reworded" with "newer";
+  (b) two rewrites per question, one in the article's era and one that
+  changes only the words a later reader would say differently, and compare
+  the two: isolates the wording;
+  (c) substitute words by a list (coronavirus -> covid): clean, but only
+  covers the pairs we think of, and the swaps are often unnatural.
+- **Choice:** (b). Questions from 2016-17 to 2021, up to 50 per drift
+  status (flagged, control, other, baseline), at random. Sonnet writes both
+  versions from the question and the article's date only (not the article),
+  or says no natural newer wording exists (skipped). Code requires the newer
+  version to add a word significantly more typical of 2022 than of the
+  article's period (log-odds z >= 1.96 and the rate up 20%, as in D12).
+  Opus checks that both versions ask the same thing as the original, shown
+  in shuffled order. Search: the 2022 refreshed index (every article);
+  found = the source article in the top 5. No LLM in the scoring.
+- **Thresholds (config `evaluation.newer_wording`):** wording drift hurts
+  search if newer wording finds the article at least 10 points less often
+  than same-era wording, exact one-sided McNemar p < 0.05. Drift level
+  matters if that drop is at least 10 points bigger in flagged sections than
+  in control sections, one-sided permutation test p < 0.05.
+- **Limitations:** the "newer word" check is a floor, not proof: for
+  2016-17 it accepts ordinary words whose rate happened to rise (about
+  1,700 words qualify). The writer and the meaning check do the real
+  filtering. The questions name specific people and events, which carry
+  search; this tests wording around them, not unfamiliar names.
+- **Reproduce:** `python scripts/newer_wording.py` (`runs/wording/`).
+
+## D32. Apply Agent E's targeted re-index and check it worked
+- **Date:** 2026-11-09
+- **Status:** Accepted (approved by the author 2026-11-09); thresholds set
+  before any result
+- **Context:** the brief asks to apply a fix and re-check. Agent E
+  recommends re-indexing the 90 Wikipedia articles whose numbers or dates
+  changed since the index was built (end of 2017), 391 changed facts (F22).
+  F21 showed a flagged edit changes the answer half the time. Untested: does
+  re-indexing only those articles give users the current answers, and what
+  does it miss compared with re-indexing everything? Between the 2017 and
+  2022 versions there are 10,398 edited sentences (with a close earlier
+  version): 213 changed facts, all in the 90 articles; 7,084 other edits in
+  the 90; and 3,101 edits in the other articles, where a new name or role
+  would be missed by the check (D27). The 90 articles hold 64% of the 2022
+  passages (5,705 of 8,984), so the targeted fix is about two thirds of the
+  work of a full re-index.
+- **Options:** (a) re-run F21's items on a re-indexed index: they compare
+  consecutive years, not the 2017 index with today's; (b) new items: edits
+  between the 2017 and 2022 versions, answered from three chunk indexes,
+  stale (all articles as of 2017), targeted (the 90 at 2022, the rest as of
+  2017) and full (all at 2022); the full re-index is the reference. Edits
+  include sentences without a number (F21 used only sentences with one), so
+  a changed name can be sampled: `facts.other_edits`.
+- **Choice:** (b). Three strata, at random: changed facts in listed articles
+  (40), other edits in listed articles (40), edits in unlisted articles
+  (60, where the targeted fix can miss something). Sonnet writes a question
+  from the 2022 sentence (F21's prompt); Sonnet answers from the top 3
+  passages of each index; Opus compares the stale and the targeted answer
+  with the full one (F21's judge, shuffled, versions not named). An answer
+  is outdated when it differs from the full re-index's or only one of them
+  answers. Overall rates are weighted by stratum size (213, 7,084, 3,101).
+- **Thresholds (config `longform.reindex`):** the targeted re-index is
+  enough if it fixes at least 80% of the outdated answers the full re-index
+  fixes (weighted); and, as a check, in the listed articles the targeted
+  answer agrees with the full one at least 90% of the time.
+- **Reproduce:** `python scripts/reindex_check.py` (`runs/longform/reindex_*`).
+
+## D33. Check whether article length explains the drift (D6 check 5)
+- **Date:** 2026-11-09
+- **Status:** Accepted (approved by the author 2026-11-09); rule set before
+  any result
+- **Context:** baseline articles are shorter (median 24 words in the drift
+  sample) than later ones (25 in 2018, 29-31 from 2019). Longer texts can
+  sit in a different part of the embedding space whatever their topic, so
+  some of the measured drift could be length. D6 (check 5) and D8 planned a
+  re-run on length-matched baseline samples; it had not been run.
+- **Options:** (a) regress drift on length: needs many segments and mixes
+  topic with length; (b) length-matched baseline samples: for each later
+  period, draw a baseline sample with the same word counts as that
+  period's drift sample, and compare the drift with a random baseline
+  sample of the same size. Simple, and uses Agent B's own comparison.
+- **Choice:** (b). Whole periods vs the baseline, 5 random and 5 matched
+  samples per period (1,398 articles each), Agent B's comparison and its
+  ordinary-change yardstick (unchanged, from the baseline's own month
+  pairs). No LLM.
+- **Rule (config `drift.length_check`):** length explains a large part of
+  the drift if matching lowers embedding drift by a third or more, averaged
+  over the later periods. If it does, D8 says to switch the drift samples to
+  length-matched ones, which would change the drift numbers.
+- **Reproduce:** `python scripts/length_check.py` (`runs/length_check/`).

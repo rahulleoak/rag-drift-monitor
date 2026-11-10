@@ -1031,3 +1031,170 @@ chart, and whether it supports or contradicts what we expected.
   be "scored as ordinary" only (no: a third were unscorable).
 - **Verdict:** Supports D29: rules decide, the LLM explains, the number
   check holds.
+
+## F23. Newer wording about older articles: rare in this archive, and it costs rank, not the article
+- **Date:** 2026-11-09
+- **Setup:** D31. All 370 answerable questions from 2016-17 to 2021. Sonnet
+  wrote a same-era rewording and a version in late-2022 wording (or said
+  none would differ); code required the newer version to add a word
+  significantly more typical of 2022 (log-odds z >= 1.96, rate up 20%);
+  Opus checked that both still ask the same thing. Searched on the 2022
+  refreshed index; found = source article in the top 5. Thresholds fixed
+  before results. A first run on 50 per drift status (199 questions) kept
+  11 (`runs/wording_first50/`), too few, so the sample was widened to all
+  questions with nothing else changed. Cost about $0.60 for both runs (batch).
+- **Result (a), how often newer wording exists:**
+
+  | Step | Questions |
+  |---|---|
+  | Sampled | 370 |
+  | Sonnet: a 2022 reader would ask it the same way | 230 (62%) |
+  | Newer version identical to the same-era one | 43 |
+  | No newer word by the data | 76 |
+  | Meaning changed (Opus) | 3 |
+  | **Kept** | **18 (5%)**: 12 from 2020, 5 from 2018, 1 from 2016-17, none from 2019 or 2021 |
+
+  11 of the 18 are "coronavirus" or "COVID-19" -> "COVID"; the rest are
+  "Russians" -> "Russia" (2), "anti-Islam" -> "far-right", "Rep.",
+  "league", "murder of George Floyd" and "platform".
+- **Result (b), search:**
+
+  | | Questions | Found, original | Found, same era | Found, newer | MRR same era | MRR newer |
+  |---|---|---|---|---|---|---|
+  | All | 18 | 94% | 94% | 89% | 0.89 | 0.78 |
+  | Flagged sections | 8 | 100% | 100% | 88% | 0.88 | 0.76 |
+  | Control sections | 5 | 80% | 80% | 80% | 0.80 | 0.70 |
+
+  - Newer wording lost the article once (1 of 18; drop 6 points, McNemar
+    p = 0.5): "COVID-19 cases" -> "COVID cases" with "health guidelines"
+    -> "public health guidance", rank 2 -> 14. **Wording drift hurts
+    search: no** by the fixed rule (needs 10+ points and p < 0.05).
+  - **Drift level matters: no** (flagged drop 13 points vs control 0, 8
+    and 5 questions, permutation p = 0.61).
+  - Rank moved in one direction only: worse for 5 of 18, better for none
+    (13 unchanged). Exploratory, not a pre-set rule (sign test p = 0.03):
+    later words push the article down a place or two, mostly 1st -> 2nd.
+- **Examples:** "What did President Trump repeat about the coronavirus
+  that drew angry reactions on Twitter in early July 2020?" -> "...which
+  statement about COVID did then-President Trump say again...": rank 1 ->
+  2. Sonnet's reasons for no newer wording: "Notre-Dame, fire damage and
+  reconstruction are described the same way in late 2022."
+- **What it means:** the questions name specific people, places and events,
+  and those names carry search; the words around them rarely change in five
+  years, and when they do (coronavirus -> COVID) the embedding model treats
+  them as close. This is the case where F15's "drift level does not predict
+  harm" was most likely to fail, and it did not. The drift that matters on
+  this archive stays new content the index lacks (F15) and changed facts in
+  edited documents (F21).
+- **Caveats:**
+  - 18 questions is a small sample; the result is "no sign of harm", not a
+    measured zero. The rule could not have passed with fewer than 5 losses.
+  - The "newer word" check rejected some real name and role changes
+    ("then-President Trump", "former Seattle Mayor", "Ye" for Kanye West):
+    2022 descriptions rarely use those exact words. It errs towards fewer
+    items, not easier ones.
+  - Sonnet wrote "X" for Twitter 4 times, a 2023 name; 3 failed the data
+    check, 1 was kept (rank 1 on all versions).
+  - A real query log could hold vaguer questions without names, where
+    wording would matter more; the simulated questions cannot show that (D16).
+- **Reproduce:** `python scripts/newer_wording.py` (`runs/wording/items.csv`,
+  `summary.csv`, `verdict.json`).
+- **Expectation:** a small drop of a few points (yes: 6 points in found,
+  0.11 in MRR); flagged no worse than control (cannot tell, too few).
+- **Verdict:** Supports F15 at the hardest point we could test; inconclusive
+  on flagged vs control.
+
+## F24. Applying Agent E's targeted re-index: it removes three quarters of the outdated answers for two thirds of the work; what it misses is details added later, not wrong facts
+- **Date:** 2026-11-09
+- **Setup:** D32. Three chunk indexes over the 165 Wikipedia articles:
+  stale (every article as of the end of 2017), targeted (Agent E's 90
+  listed articles at their 2022 version, the rest as of 2017) and full
+  (every article at 2022, the reference). 140 sentences edited between
+  2017 and 2022, at random in three strata. Sonnet wrote a question from the
+  2022 sentence and answered it from the top 3 passages of each index; Opus
+  compared the stale and the targeted answer with the full one. Outdated =
+  a different answer, or only one of the two answers. Weighted by stratum
+  size. Thresholds fixed before results. Cost about $0.98 (batch).
+- **Result:**
+
+  | Stratum | Edits | Sampled | Outdated, stale | Outdated, targeted |
+  |---|---|---|---|---|
+  | Changed facts, listed articles | 213 | 40 | **68%** (14 different, 13 one declined) | **0%** |
+  | Other edits, listed articles | 7,084 | 40 | 12% | 0% |
+  | Edits in unlisted articles | 3,101 | 60 | 10% | 10% (the same 6) |
+  | **All, weighted** | 10,398 | 140 | **12.9%** | **3.0%** |
+
+  - The targeted fix removes **77%** of the outdated answers the full
+    re-index removes (interval 50-92%), re-embedding **64%** of the passages
+    (5,705 of 8,984). **Enough by the fixed rule: no** (needs 80%); the
+    check inside the listed articles passes (100% agree with full, needs 90%).
+  - Not one targeted answer states a *different* fact from the full
+    re-index; all 6 misses are "one version cannot answer".
+- **The 6 misses, read one by one:**
+  - 3 are details added later to an article outside the list: "sickle cell
+    disease" added to pneumonia's risk factors; Bach's start as organist
+    "August 1703" -> "14 August 1703"; the Buddha legend gaining "the 32
+    marks of a great man". Two of the three are numbers *added* to a
+    sentence, which D27 deliberately skips (only replaced numbers count).
+  - 3 are noise: a synonym swap the question copied ("generating" ->
+    "engendering", "deity" -> "godhead"), where one answer declined on the
+    exact word; and a text-cleaning gap where the 2022 version lost a
+    formula ("180 - x"), so the *stale* answer was the better one.
+  - Dropping the 3 noise items, the fix removes about 86% (exploratory;
+    the rule as fixed counts all 6).
+- **What it means:** the changed-facts check finds what matters most: edits
+  that change a stated fact go from 68% outdated to 0%, and the stale index
+  serves them with confidence (it still retrieves the edited passage 90% of
+  the time). What it leaves is new detail in articles it did not list, where
+  the old index cannot answer rather than answering wrongly. So the action
+  is: re-index the listed documents now (cheap, removes wrong answers), and
+  keep a scheduled full re-index for added content. Counting added numbers
+  ("14 August 1703") as a change would catch two of the three real misses;
+  not done, as it would also flag every added citation year.
+- **Caveats:** 60 unlisted items give a wide interval (50-92%); "outdated"
+  is judged against the full re-index's answer, not a hand-checked truth;
+  edits in articles new since 2017 (2 articles) are outside the test.
+- **Reproduce:** `python scripts/reindex_check.py` (`runs/longform/reindex_items.csv`,
+  `reindex_summary.csv`, `reindex_verdict.json`).
+- **Expectation:** the targeted fix would recover most of the full
+  re-index's benefit for about half the work (mostly: 77% for 64%).
+- **Verdict:** Supports D27/E's re-index-documents action for changed facts;
+  contradicts "the targeted fix is enough on its own" by the rule set in
+  advance. Agent E should pair it with a scheduled full re-index.
+
+## F25. Article length explains about a tenth of the embedding drift, and no severity band changes
+- **Date:** 2026-11-09
+- **Setup:** D33 (D6 check 5). For each later period, its drift sample
+  (1,398 articles) against 5 random baseline samples and 5 baseline
+  samples matched to its word counts; Agent B's comparison and its
+  ordinary-change yardstick (median MMD² 0.0047 over 12 within-baseline
+  month pairs). Rule fixed before results: length explains a large part if
+  matching lowers embedding drift by a third or more. No LLM.
+- **Result:**
+
+  | Period | Median words (period / random baseline) | Embedding drift, random baseline | Length-matched | Kept |
+  |---|---|---|---|---|
+  | 2018 | 25 / 23 | 0.87× | 0.79× | 90% |
+  | 2019 | 29 / 23 | 1.67× | 1.45× | 87% |
+  | 2020 | 30 / 23 | 2.58× | 2.27× | 88% |
+  | 2021 | 30 / 23 | 2.07× | 1.80× | 87% |
+  | 2022 | 31 / 23 | 2.29× | 2.08× | 91% |
+
+  - Matching lowers embedding drift by **11%** on average (9-13% per
+    year). **Length explains a large part: no** by the fixed rule.
+  - Word drift barely moves (0.3% on average).
+  - **No band changes.** On the multiple scale, "medium" starts at 2.02×
+    and "high" at 2.13×: 2020 stays high (2.27×), 2022 stays medium
+    (2.08×, a thin margin), 2018, 2019 and 2021 stay low. The ranking of
+    years is the same.
+- **What it means:** the drift numbers on the dashboard are a little
+  inflated by length, about a tenth, not enough to change any flag or
+  conclusion. D8's trigger (switch to length-matched samples) does not
+  fire, so the drift samples stay as they are. The main finding, that drift
+  scores do not predict harm, never depended on their size.
+- **Caveat:** 2022's margin over "medium" is small (2.08× vs 2.02×); with
+  length-matched samples, a slightly quieter year could fall to "low".
+- **Reproduce:** `python scripts/length_check.py` (`runs/length_check/draws.csv`,
+  `summary.csv`, `verdict.json`).
+- **Expectation:** a small drop, 10-20% (yes: 11%).
+- **Verdict:** Supports keeping the drift samples as they are (D6, D8).

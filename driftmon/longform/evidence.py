@@ -1,8 +1,9 @@
 """Evidence for Agent E that is produced outside the agent graph.
 
 - Long-form documents (D26, D27): the changed-facts check, the
-  outdated-answer test and the chunking experiment, saved by
-  ``scripts/longform_drift.py`` and ``scripts/outdated_answers.py``.
+  outdated-answer test, the chunking experiment and the applied targeted
+  re-index (D32), saved by ``scripts/longform_drift.py``,
+  ``scripts/outdated_answers.py`` and ``scripts/reindex_check.py``.
 - Hand-label checks (F19, F20): blind labels vs the LLM, saved by
   ``scripts/label_sheet.py score``.
 
@@ -30,8 +31,9 @@ def load_longform(cfg: Mapping[str, Any]) -> dict[str, Any]:
     for key, name in tables.items():
         if (d / name).exists():
             out[key] = pd.read_csv(d / name)
-    if (d / "outdated_verdict.json").exists():
-        out["outdated_verdict"] = json.loads((d / "outdated_verdict.json").read_text(encoding="utf-8"))
+    for key in ("outdated_verdict", "reindex_verdict"):
+        if (d / f"{key}.json").exists():
+            out[key] = json.loads((d / f"{key}.json").read_text(encoding="utf-8"))
     if "longform_summary" in out:
         out["articles"] = int(out["longform_summary"]["articles"].iloc[-1])
     if "fact_summary" in out:
@@ -70,7 +72,7 @@ def load_label_checks(cfg: Mapping[str, Any]) -> pd.DataFrame | None:
 
 
 SNAPSHOT_FILES = ("outdated_summary.csv", "outdated_items.csv", "outdated_verdict.json", "chunking_eval.csv",
-                  "summary.csv", "fact_changes_summary.csv")
+                  "summary.csv", "fact_changes_summary.csv", "reindex_verdict.json")
 
 
 def save_longform_snapshot(cfg: Mapping[str, Any], dest) -> list[str]:

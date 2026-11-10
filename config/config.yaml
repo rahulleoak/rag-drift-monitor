@@ -166,6 +166,8 @@ llm:
     wiki_answers:    {effort: low, max_tokens: 2000, expected_output: 400}
     answer_change:   {effort: low, max_tokens: 2000, expected_output: 300}
     explanations:    {effort: low, max_tokens: 2000, expected_output: 300}
+    rewording:       {effort: low, max_tokens: 2000, expected_output: 350}
+    meaning_check:   {effort: low, max_tokens: 2000, expected_output: 250}
 
 # D26: long-form documents where chunking applies (stakeholder request, 2026-11-06).
 # Wikipedia articles captured at the last revision before the end of each period
@@ -205,7 +207,14 @@ longform:
     top_k: 3                     # passages the answer step reads from each version's chunk index
     min_difference: 0.2          # flagged must change answers at least 20 points more often than the comparison group
     alpha: 0.05                  # and the difference must be significant (Fisher's exact test)
-  mmd_sample: 1500             # chunks per side for the archive-level MMD test
+  # D32: apply Agent E's targeted re-index and check it (scripts/reindex_check.py).
+  # Thresholds set on 2026-11-09, before any result.
+  reindex:
+    latest: "2022"               # the current version of every article (the full re-index)
+    per_stratum: {listed_number: 40, listed_wording: 40, unlisted: 60}
+    min_recovered: 0.8           # enough if it fixes 80%+ of the outdated answers the full re-index fixes
+    min_listed_agreement: 0.9    # check: in the re-indexed articles, targeted agrees with full 90%+ of the time
+  mmd_sample: 1500            # chunks per side for the archive-level MMD test
   mmd_permutations: 200
 
 drift:
@@ -218,6 +227,11 @@ drift:
   # (Jan 2016 vs Jan 2017, ...), each pair re-sampled null_draws times.
   null_draws: 5
   null_permutations: 50      # only to estimate the shuffled JSD average for "excess"
+  # D33 (D6 check 5): is part of the drift just article length? (scripts/length_check.py)
+  # Rule set on 2026-11-09, before any result.
+  length_check:
+    seeds: 5                 # random and length-matched baseline samples per later period
+    min_drop: 0.33           # length explains a large part if matching lowers embedding drift by a third or more
   # D12: emerging topics = clusters whose share of a period grows vs the baseline
   topics_k: 40               # number of clusters over all drift samples
   topic_min_ratio: 3.0       # period share at least 3x the baseline share
@@ -234,6 +248,19 @@ evaluation:
   # D7: the query stream = questions from pools drawn the same way in every
   # period; flagged/control pools are picked by document drift, so excluded here
   query_stream_pools: [random, oversample]
+  # D31: does a question in later wording still find an older article? (scripts/newer_wording.py)
+  # Thresholds set on 2026-11-09, before any result.
+  newer_wording:
+    question_periods: ["2016-17", "2018", "2019", "2020", "2021"]
+    query_period: "2022"         # later wording = the newest period's; searched on its refreshed index
+    per_group: 1000              # questions per drift status, at random; 1000 = all (first run: 50, 11 kept, too few; 2026-11-09)
+    min_z: 1.96                  # a word counts as newer if it is significantly more typical of the query period
+    min_rate_change: 1.2         #   and its rate rose at least 20% (the dashboard's rule, D12)
+    hit_k: 5                     # found = the source article is in the top 5 (what the answer step reads)
+    min_drop: 0.10               # wording drift hurts search: newer finds the article 10+ points less often
+    min_group_gap: 0.10          # drift level matters: the drop is 10+ points bigger in flagged than control
+    alpha: 0.05                  # both must also be significant (exact McNemar; permutation test)
+    permutations: 5000
 
 impact:
   min_retrieval_drop: null       # practical-significance thresholds, set before running (Q11)

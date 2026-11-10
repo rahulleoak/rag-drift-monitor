@@ -9,7 +9,7 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-09 (all agents built and run; Wikipedia results; the
+Last updated: 2026-11-10 (the evidence loop shown working, section 8f; before that: all agents, Wikipedia results, the
 newer-wording test and the applied re-index; next steps in section 16).
 
 The slide-by-slide brief (titles, bullets, speaker notes, screenshots) is
@@ -392,6 +392,37 @@ the 90 flagged articles, applied to a copy of the index.
 - Say "no sign of harm", not "proof": 18 is small. The names in a question
   carry search, and names rarely change in five years.
 
+### 8f. The evidence loop, shown working (D34, F26) ✅, backup slide B11
+
+- **Why it was needed:** the loop from Agent D back to Agent C is built and
+  tested, but on the real data every section's loss is 89-100 points with a
+  tight interval, so nothing is ever borderline. Even a 2-question minimum
+  per section gives none. A reviewer can fairly ask to see it fire.
+- **How:** a separate, labelled run that simulates a realistic operations
+  failure, a re-index whose ingestion batch failed: 85% of 2020 World News
+  articles (124 of 146) left out of the refreshed index. Chosen by a dry run
+  without the LLM; cost $0.58.
+- **What happened:**
+  1. Agent D: 2020 World News drops 15% (interval 0% to 30%): past the
+     threshold, but the interval reaches zero, so **borderline**.
+  2. The graph sends it back to Agent C, which grades ranks 6-10; Agent D
+     answers from the top 10: still 15%.
+  3. Conclusion, in code: **still unclear (escalate to a human)**.
+  4. Agent E escalates the section with those numbers, and suggests a model
+     evaluation ("re-indexing did not help").
+- **Talking point:** "On our data every result was clear-cut, which is itself
+  the finding. To show the loop works, I broke the refresh on purpose: the
+  system noticed it could not be sure, looked again with more context, still
+  could not, and handed it to a person. That is the behaviour you want from a
+  monitor."
+- **Honest limit it exposed:** a refresh that silently fails makes the
+  stale-vs-refreshed loss shrink, because both indexes fail. A partial
+  failure is caught by the loop; a total one would show no loss at all. Next
+  step 11 is a floor on the refreshed index's own quality.
+- **In the demo:** run picker (top right) -> "Evidence loop demo (simulated
+  failed re-index)" -> the yellow banner -> Impact -> "Evidence loop". It
+  never opens by default.
+
 ## 9. Recommendations with evidence (✅, D29, F22)
 
 One rule per action in the brief, in code; every rule reports, fired or not.
@@ -529,6 +560,10 @@ Honest moments that show judgement, good for a "what we learned" slide:
   recommendation.
 - **A check planned on day one, run at the end** (F25): whether shorter
   baseline articles inflate drift. About a tenth; no flag changes.
+- **Showing the loop found a bug** (F26): on the simulated failed re-index,
+  the borderline section was classed "drift that does not hurt", so Agent E
+  said its answers were unaffected. Borderline sections now have their own
+  class; the real results did not change.
 
 ## 12b. From prototype to production (README section and one slide)
 
@@ -612,6 +647,18 @@ Honest moments that show judgement, good for a "what we learned" slide:
   changed facts (68% -> 0%); it missed detail added to articles it did not
   list, so it reached 77% of a full re-index against an 80% bar set before
   the run. Hence "targeted now, full on a schedule" (F24).
+- **"Is this really agentic, or a pipeline?"** The agents depend on each
+  other's reports (C tests what B flagged and B's calm comparison sections;
+  D answers from C's results and relates the loss to B's scores; E's rules
+  read D's classes), and the graph decides what runs next: the full check or
+  a quick check after B, and a loop back to C when a result is borderline.
+  The loop did not fire on the real data; on a simulated failed re-index it
+  did (section 8f). The LLM writes, judges and explains; code decides, by
+  design and as agreed with the stakeholder. Next step 8 (the LLM proposes
+  what to investigate, code tests it) is the way to make it more visibly
+  agentic without giving up repeatability.
+- **"Your loops never fired. Do they work?"** Both routes are tested, and
+  section 8f shows the evidence loop on real data with a simulated failure.
 
 ## 15. Charts
 
@@ -640,7 +687,9 @@ in the left bar: Overview, Data Monitoring (A), Drift (B), Retrieval (C),
 Impact (D) and Recommendations (E). Every "in this run" sentence is built
 from the run's numbers. Suggested path: Overview -> Impact (drift score vs
 lost answers) -> Drift (one group in detail) -> Recommendations (expand the
-evidence on action 2).
+evidence on action 2). If asked about the agents: switch the run picker to
+"Evidence loop demo (simulated failed re-index)" and open Impact -> "Evidence
+loop" (section 8f).
 
 ## 16. Next steps (what we would do with more time)
 

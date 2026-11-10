@@ -228,7 +228,7 @@ right policy is to re-index on a schedule, not on drift alerts.
   - Relevance judge vs two people: 14/15 and 11/15 (people vs each other: 12/15).
   - Changed-facts check, precision vs two people: 17/20 and 16/20 (people: 17/20).
   - Answer judge vs one person: 11/15.
-- **Small text:** Blind hand labels, first pass. 202 automated tests. All LLM calls cost $17.20 in total (5,556 calls, cached); a full rerun costs nothing and takes about 2 minutes.
+- **Small text:** Blind hand labels, first pass. 202 automated tests. All LLM calls cost $17.80 in total (5,750 calls, cached); a full rerun costs nothing and takes about 2 minutes.
 - **Say:** "Where the judge and a person disagree, the judge is almost always
   the stricter one, so the losses are not inflated."
 
@@ -272,7 +272,7 @@ Fallback if anything fails: the README GIF, and the screenshots in these slides.
 | Why 2016–17 as the baseline? | Closest topic mix to the later years among the candidate windows (checked before choosing). |
 | What does "× ordinary change" mean? | Drift measured against change inside the baseline itself (the same month a year apart); 1.0 is normal, 2.5 is two and a half times that. At this size every comparison is "significant", so the multiple is what separates drift from noise. |
 | An early summary said 2020 was 5.7×; now it is 2.5×? | Same measurement, different yardstick: the early figure divided by one comparison (2017 vs 2016); the pipeline divides by the median of 12 same-month pairs inside the baseline. Rankings and conclusions are identical. |
-| How much did it cost? | $17.20 for the whole project (5,556 LLM calls, Batch API where possible). Reruns hit the cache and cost nothing. |
+| How much did it cost? | $17.80 for the whole project (5,750 LLM calls, Batch API where possible). Reruns hit the cache and cost nothing. |
 | Would it work on our data? | The dashboard reads any run; the pipeline needs a loader for the document format, dates and sections, and a question set. |
 | What if users ask in today's words, COVID instead of coronavirus? | Tested: only 5% of questions (18 of 370) had a natural newer wording; the article was still found for 17 of 18, sometimes a place lower. Names carry search, and names rarely change in five years. |
 | Isn't some of the drift just article length? | Checked with length-matched samples: about a tenth (11%); no severity flag changed. |
@@ -331,14 +331,14 @@ One image per slide, title as given:
 | Query drift | question vocabulary 3–6× ordinary from 2018 (rough scale: one comparison, 2017 vs 2016 questions) |
 | Recommendations | 5 recommended, 4 ruled out; 5 of 5 explanations passed the number check first time |
 | Judges vs people | relevance 14/15 and 11/15 (people 12/15); changed facts 17/20 and 16/20 (people 17/20); answers 11/15 |
-| LLM cost | $17.20 total, 5,556 calls; reruns $0 |
+| LLM cost | $17.80 total, 5,750 calls; reruns $0 |
 | Tests | 202 |
 
 ## Do not use (superseded)
 
 - 2020 at "5.7×", 2022 at "1.2× / 4.7×" (early yardstick; use 2.5× / 0.5× / 2.1×).
 - Correlation "up to 0.40" (it is 0.41).
-- "$15.60 / 4,558 calls" and "175 tests" (now $17.20 / 5,556 and 196).
+- "$15.60 / 4,558 calls" and "175 tests" (now $17.80 / 5,750 and 202).
 - "86%" for the applied fix (exploratory, after removing noise; the result is 77%).
 - Slide numbers from the first draft: old slides 6 and 7 are merged; chunking and the applied fix are new slides 9 and 11.
 - Any "tab" names (the dashboard now uses pages: Overview, Data Monitoring, Drift, Retrieval, Impact, Recommendations).

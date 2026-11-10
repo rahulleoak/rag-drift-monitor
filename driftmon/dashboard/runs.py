@@ -282,3 +282,29 @@ def term_shift(row: Any) -> pd.DataFrame:
     d = pd.DataFrame(list(shares))
     d["label"] = [("↑ " if x == "emerging" else "↓ ") + t for t, x in zip(d["term"], d["direction"])]
     return d
+
+
+ALL_OTHER = "All other sections"
+
+
+def section_shares(run: Run, min_share: float = 0.05) -> pd.DataFrame:
+    """Each year's share of articles for the sections that reach ``min_share`` in some year
+    (one line each), the rest summed as "All other sections". Columns: period, section,
+    share, articles, new (not in the baseline), rank (colour order: largest baseline
+    sections first, then new sections, then the rest)."""
+    d = section_mix(run, min_share=0.0)
+    if not len(d):
+        return d
+    d = d.assign(period=d["period"].astype(str))
+    peak = d.groupby("section")["share"].max()
+    keep = set(peak[peak >= min_share].index)
+    d["section"] = [s if s in keep else ALL_OTHER for s in d["section"]]
+    d.loc[d["section"] == ALL_OTHER, "new"] = False
+    d = d.groupby(["period", "section", "new"], as_index=False)[["articles", "share"]].sum()
+    base = d[d["period"] == run.baseline].set_index("section")["share"]
+    order = (sorted([s for s in keep if s in base.index], key=lambda s: -base[s])
+             + sorted([s for s in keep if s not in base.index], key=lambda s: -peak[s]) + [ALL_OTHER])
+    d["rank"] = d["section"].map({s: i for i, s in enumerate(order)})
+    periods = [run.baseline] + [str(p) for p in run.monitoring.periods]
+    d["period"] = pd.Categorical(d["period"], categories=periods, ordered=True)
+    return d.sort_values(["rank", "period"]).reset_index(drop=True)

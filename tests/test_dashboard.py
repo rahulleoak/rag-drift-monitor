@@ -73,18 +73,36 @@ def test_make_all_charts(run_dir, tmp_path):
     assert f"dark/{names[0][:-4]}" in run.charts  # the dashboard finds the dark versions
 
 
+PAGES = ["Overview", "Data Monitoring", "Drift", "Retrieval", "Impact", "Recommendations"]
+
+
+def _visit_all(at):
+    """Open every page from the left bar; collect what was shown and any exception."""
+    seen = {"metric": {}, "markdown": [], "caption": [], "info": [], "subheader": [], "exception": []}
+    assert at.sidebar.radio[0].options == PAGES
+    for name in PAGES:
+        at.sidebar.radio[0].set_value(name).run()
+        seen["exception"] += [e.message for e in at.exception]
+        seen["metric"].update({m.label: m.value for m in at.metric})
+        seen["markdown"] += [m.value for m in at.markdown]
+        seen["caption"] += [c.value for c in at.caption]
+        seen["info"] += [i.value for i in at.info]
+        seen["subheader"] += [s.value for s in at.subheader]
+    return seen
+
+
 def test_dashboard_renders_every_tab(run_dir, monkeypatch):
     from streamlit.testing.v1 import AppTest
     monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(run_dir.parent))
     at = AppTest.from_file(str(APP), default_timeout=120)
     at.run()
     assert not at.exception
-    assert [t.label for t in at.tabs] == ["Overview", "Data monitoring", "Drift", "Retrieval",
-                                          "Impact", "Recommendations"]
-    metrics = {m.label: m.value for m in at.metric}
-    assert metrics["Groups flagged for drift"] == "2"
-    assert "Questions tested" in metrics and "Found after re-indexing" in metrics
-    assert any("ran the full answer check" in c.value for c in at.caption)   # the routing decision, in words
+    seen = _visit_all(at)
+    assert not seen["exception"]
+    assert seen["metric"]["Groups flagged for drift"] == "2"
+    assert "Questions tested" in seen["metric"] and "Found after re-indexing" in seen["metric"]
+    assert any("ran the full answer check" in c for c in seen["caption"])   # the routing decision, in words
+    at.sidebar.radio[0].set_value("Drift").run()
     segment = next(s for s in at.selectbox if s.label == "Group")
     segment.select("2020|POLITICS|vs 2016-17").run()
     assert not at.exception
@@ -121,15 +139,16 @@ def test_dashboard_renders_the_demo_run_on_every_tab(monkeypatch):
     monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(DEMO))
     at = AppTest.from_file(str(APP), default_timeout=120)
     at.run()
-    assert not at.exception
-    labels = {m.label for m in at.metric}
+    seen = _visit_all(at)
+    assert not seen["exception"]
     assert {"Correct without re-indexing", "Correct after re-indexing", "Recommended actions",
-            "Questions answered", "Recommended", "Not needed", "Admits it doesn't know"} <= labels
-    text = " ".join(m.value for m in at.markdown)
-    assert "Checked, not recommended" in text and "Top recommendation" in text
-    assert "In this run:" in text                       # takeaways built from the run are shown
-    assert "(F11)" not in text and "D27:" not in text   # no internal document codes on screen
-
+            "Questions answered", "Recommended", "Not needed", "Admits it doesn't know"} <= set(seen["metric"])
+    text = " ".join(seen["markdown"])
+    assert "Top recommendation" in text and "Checked, not recommended" in seen["subheader"]
+    assert 'class="stmt"' in text                         # findings built from the run sit under the headings
+    assert '<span class="num">' in text                   # numbers are emphasised
+    assert "(F11)" not in text and "D27:" not in text     # no internal document codes on screen
+    assert "RAG (retrieval-augmented generation)" in text  # the subtitle spells out RAG
 
 def test_export_demo_copies_only_what_the_dashboard_reads(tmp_path):
     from scripts.export_demo import export
@@ -193,7 +212,8 @@ def _demo_copy(tmp_path):
 
 
 def test_dashboard_on_a_run_without_the_llm_or_static_charts(tmp_path, monkeypatch):
-    """A `--no-judge` run without make_charts: every tab renders and says why something is missing."""
+    """A `--no-judge` run without make_charts: every page renders; the drift charts are live, so they
+    still show; the pages without LLM results say why."""
     import json
     import shutil
     from streamlit.testing.v1 import AppTest
@@ -206,11 +226,11 @@ def test_dashboard_on_a_run_without_the_llm_or_static_charts(tmp_path, monkeypat
     monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(run.parent))
     at = AppTest.from_file(str(APP), default_timeout=120)
     at.run()
-    assert not at.exception
-    assert any("Skipped: this run did not use the LLM" in i.value for i in at.info)
-    assert any("Chart not drawn for this run" in c.value for c in at.caption)
-    assert any("Writes answers:** none" in m.value for m in at.sidebar.markdown)
-
+    seen = _visit_all(at)
+    assert not seen["exception"]
+    assert any("Skipped: this run did not use the LLM" in i for i in seen["info"])
+    assert {"Topics that grew", "Words that changed meaning"} <= set(seen["subheader"])   # live, no images needed
+    assert any("Writes: <b>none" in m for m in seen["markdown"])
 
 def test_settings_come_from_the_run(tmp_path):
     import json

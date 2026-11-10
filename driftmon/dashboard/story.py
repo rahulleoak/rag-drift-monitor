@@ -230,7 +230,7 @@ def answers_takeaway(run: Run) -> str:
     s = f"{h['years']}: {pct(h['stale'])} correct on the stale index vs {pct(h['refreshed'])} on the refreshed one."
     if "control_stale" in h:
         same = abs(h["control_stale"] - h["control_refreshed"]) < 0.005
-        s += (f" {run.baseline} (the control): {pct(h['control_stale'])} on both, so the two dots overlap."
+        s += (f" {run.baseline} (the control): {pct(h['control_stale'])} on both indexes."
               if same else f" {run.baseline} (the control): {pct(h['control_stale'])} stale vs "
               f"{pct(h['control_refreshed'])} refreshed.")
     if "invented" in h:
@@ -309,3 +309,81 @@ def flag_share_takeaway(run: Run) -> str:
     if len(rest):
         s += f"; other years {pct_range(rest['share'])}"
     return s + "."
+
+
+def severity_takeaway(run: Run) -> str:
+    """The year with the most flagged sections, and which ones moved most."""
+    seg = run.segments
+    if not len(seg):
+        return ""
+    f = seg[(seg["compared_with"] == run.baseline) & seg["flagged"]]
+    if not len(f):
+        return "No section was flagged against the baseline."
+    year = f["period"].astype(str).value_counts().idxmax()
+    top = f[f["period"].astype(str) == year].sort_values("times_ordinary_embedding", ascending=False)
+    names = ", ".join(c.title() for c in top["category"].head(4))
+    return (f"{year} has the most flagged sections ({len(top)}); the largest shifts are in {names}. "
+            f"{len(f)} section-years are flagged in all.")
+
+
+def section_trend_takeaway(run: Run) -> str:
+    """The biggest section moves from the baseline, and the new sections' peak."""
+    from driftmon.dashboard.runs import ALL_OTHER, section_shares
+    d = section_shares(run)
+    if not len(d):
+        return ""
+    d = d.assign(period=d["period"].astype(str))
+    last = str(run.monitoring.periods[-1])
+    wide = d.pivot_table(index="section", columns="period", values="share", observed=True)
+    out = []
+    old = wide[(wide.index != ALL_OTHER) & wide[run.baseline].notna()] if run.baseline in wide else wide.iloc[0:0]
+    if len(old) and last in old:
+        move = (old[last] - old[run.baseline]).dropna()
+        if len(move):
+            s = move.abs().idxmax()
+            out.append(f"{s.title()} went from {pct(old.loc[s, run.baseline])} of articles in the baseline to "
+                       f"{pct(old.loc[s, last])} in {last}.")
+    new = d[d["new"]]
+    if len(new):
+        peak = new.sort_values("share").iloc[-1]
+        out.append(f"{peak['section'].title()}, a section new since the baseline, peaked at {pct(peak['share'])} "
+                   f"of articles in {peak['period']}.")
+    return " ".join(out)
+
+
+def topics_takeaway(run: Run) -> str:
+    t = run.topics
+    if not len(t) or "docs_period" not in t:
+        return ""
+    top = t.sort_values("docs_period", ascending=False).iloc[0]
+    words = ", ".join(str(top["label"]).split(", ")[:3])
+    return (f"The largest is {top['period']}: {words}, with {int(top['docs_period'])} articles against "
+            f"{int(top['docs_baseline'])} in the baseline sample. Most topics existed before and grew.")
+
+
+def meaning_takeaway(run: Run) -> str:
+    s = run.term_shifts
+    if not len(s) or "times_ordinary" not in s:
+        return ""
+    s = s.dropna(subset=["times_ordinary"]).sort_values("times_ordinary", ascending=False)
+    if not len(s):
+        return ""
+    top = s.iloc[0]
+    before = ", ".join(str(top["context_before"]).split(", ")[:3])
+    after = ", ".join(str(top["context_after"]).split(", ")[:3])
+    return (f"\"{top['term']}\" in {top['period']} moved most, {top['times_ordinary']:.1f}× ordinary change: "
+            f"its neighbouring words went from {before} to {after}.")
+
+
+def query_drift_takeaway(run: Run) -> str:
+    q = run.drift.query_drift
+    if isinstance(q, str) or not q:
+        return ""
+    d = pd.DataFrame(q)
+    d = d[~d["period"].astype(str).str.contains("inside baseline")]
+    if not len(d) or "times_ordinary_embedding" not in d:
+        return ""
+    top = d.sort_values("times_ordinary_embedding").iloc[-1]
+    terms = str(top.get("emerging_terms") or "").split(", ")[:3]
+    s = f"The questions shift most in {top['period']} ({top['times_ordinary_embedding']:.1f}× the reference"
+    return s + (f"), with new words such as {', '.join(terms)}." if terms and terms[0] else ").")

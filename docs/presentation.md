@@ -1,5 +1,8 @@
 # Presentation Notes
 
+
+> **For the slides, use [`presentation/brief.md`](presentation/brief.md)** (2026-11-09): the curated outline, speaker notes, likely questions and the verified numbers, with the dashboard screenshots. This file is the working history and contains superseded figures.
+
 Raw material for the 15–20 minute stakeholder walkthrough: the thought
 process behind the project, the ideas worth showing, and the numbers that
 back them. Not the slides themselves. Sections follow a possible talk order;

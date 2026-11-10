@@ -1183,3 +1183,44 @@ date and reason, and add a new entry that supersedes it.
   year-on-year comparison hides gradual drift), so nothing else changes.
 - **If asked about 5.7×:** same measurement, smaller denominator (0.0021
   vs 0.0047); D11 already rejected the single-pair reference for the bands.
+
+## D31. Test questions in newer wording about older articles
+- **Date:** 2026-11-09
+- **Status:** Accepted (approved by the author 2026-11-09); thresholds set
+  before any result
+- **Context:** F15 found that how far a section drifted did not change how
+  much search lost: the drift that matters is new content the index lacks.
+  But every test question was written from its own article (F11), so it
+  shares the article's wording. The one case where a change of wording on
+  its own could hurt search is untested: an older article asked about in
+  later words ("COVID" for an article that says "coronavirus"). Parked as an
+  extension since 2026-11-06 (F15, requirements coverage).
+- **Options:**
+  (a) rewrite questions in later wording and compare with the original
+  wording: simple, but any rewording loses a little against the article's
+  own words, so the drop would mix "reworded" with "newer";
+  (b) two rewrites per question, one in the article's era and one that
+  changes only the words a later reader would say differently, and compare
+  the two: isolates the wording;
+  (c) substitute words by a list (coronavirus -> covid): clean, but only
+  covers the pairs we think of, and the swaps are often unnatural.
+- **Choice:** (b). Questions from 2016-17 to 2021, up to 50 per drift
+  status (flagged, control, other, baseline), at random. Sonnet writes both
+  versions from the question and the article's date only (not the article),
+  or says no natural newer wording exists (skipped). Code requires the newer
+  version to add a word significantly more typical of 2022 than of the
+  article's period (log-odds z >= 1.96 and the rate up 20%, as in D12).
+  Opus checks that both versions ask the same thing as the original, shown
+  in shuffled order. Search: the 2022 refreshed index (every article);
+  found = the source article in the top 5. No LLM in the scoring.
+- **Thresholds (config `evaluation.newer_wording`):** wording drift hurts
+  search if newer wording finds the article at least 10 points less often
+  than same-era wording, exact one-sided McNemar p < 0.05. Drift level
+  matters if that drop is at least 10 points bigger in flagged sections than
+  in control sections, one-sided permutation test p < 0.05.
+- **Limitations:** the "newer word" check is a floor, not proof: for
+  2016-17 it accepts ordinary words whose rate happened to rise (about
+  1,700 words qualify). The writer and the meaning check do the real
+  filtering. The questions name specific people and events, which carry
+  search; this tests wording around them, not unfamiliar names.
+- **Reproduce:** `python scripts/newer_wording.py` (`runs/wording/`).

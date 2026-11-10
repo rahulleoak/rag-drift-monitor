@@ -1031,3 +1031,75 @@ chart, and whether it supports or contradicts what we expected.
   be "scored as ordinary" only (no: a third were unscorable).
 - **Verdict:** Supports D29: rules decide, the LLM explains, the number
   check holds.
+
+## F23. Newer wording about older articles: rare in this archive, and it costs rank, not the article
+- **Date:** 2026-11-09
+- **Setup:** D31. All 370 answerable questions from 2016-17 to 2021. Sonnet
+  wrote a same-era rewording and a version in late-2022 wording (or said
+  none would differ); code required the newer version to add a word
+  significantly more typical of 2022 (log-odds z >= 1.96, rate up 20%);
+  Opus checked that both still ask the same thing. Searched on the 2022
+  refreshed index; found = source article in the top 5. Thresholds fixed
+  before results. A first run on 50 per drift status (199 questions) kept
+  11 (`runs/wording_first50/`), too few, so the sample was widened to all
+  questions with nothing else changed. Cost about $0.60 for both runs (batch).
+- **Result (a), how often newer wording exists:**
+
+  | Step | Questions |
+  |---|---|
+  | Sampled | 370 |
+  | Sonnet: a 2022 reader would ask it the same way | 230 (62%) |
+  | Newer version identical to the same-era one | 43 |
+  | No newer word by the data | 76 |
+  | Meaning changed (Opus) | 3 |
+  | **Kept** | **18 (5%)**: 12 from 2020, 5 from 2018, 1 from 2016-17, none from 2019 or 2021 |
+
+  11 of the 18 are "coronavirus" or "COVID-19" -> "COVID"; the rest are
+  "Russians" -> "Russia" (2), "anti-Islam" -> "far-right", "Rep.",
+  "league", "murder of George Floyd" and "platform".
+- **Result (b), search:**
+
+  | | Questions | Found, original | Found, same era | Found, newer | MRR same era | MRR newer |
+  |---|---|---|---|---|---|---|
+  | All | 18 | 94% | 94% | 89% | 0.89 | 0.78 |
+  | Flagged sections | 8 | 100% | 100% | 88% | 0.88 | 0.76 |
+  | Control sections | 5 | 80% | 80% | 80% | 0.80 | 0.70 |
+
+  - Newer wording lost the article once (1 of 18; drop 6 points, McNemar
+    p = 0.5): "COVID-19 cases" -> "COVID cases" with "health guidelines"
+    -> "public health guidance", rank 2 -> 14. **Wording drift hurts
+    search: no** by the fixed rule (needs 10+ points and p < 0.05).
+  - **Drift level matters: no** (flagged drop 13 points vs control 0, 8
+    and 5 questions, permutation p = 0.61).
+  - Rank moved in one direction only: worse for 5 of 18, better for none
+    (13 unchanged). Exploratory, not a pre-set rule (sign test p = 0.03):
+    later words push the article down a place or two, mostly 1st -> 2nd.
+- **Examples:** "What did President Trump repeat about the coronavirus
+  that drew angry reactions on Twitter in early July 2020?" -> "...which
+  statement about COVID did then-President Trump say again...": rank 1 ->
+  2. Sonnet's reasons for no newer wording: "Notre-Dame, fire damage and
+  reconstruction are described the same way in late 2022."
+- **What it means:** the questions name specific people, places and events,
+  and those names carry search; the words around them rarely change in five
+  years, and when they do (coronavirus -> COVID) the embedding model treats
+  them as close. This is the case where F15's "drift level does not predict
+  harm" was most likely to fail, and it did not. The drift that matters on
+  this archive stays new content the index lacks (F15) and changed facts in
+  edited documents (F21).
+- **Caveats:**
+  - 18 questions is a small sample; the result is "no sign of harm", not a
+    measured zero. The rule could not have passed with fewer than 5 losses.
+  - The "newer word" check rejected some real name and role changes
+    ("then-President Trump", "former Seattle Mayor", "Ye" for Kanye West):
+    2022 descriptions rarely use those exact words. It errs towards fewer
+    items, not easier ones.
+  - Sonnet wrote "X" for Twitter 4 times, a 2023 name; 3 failed the data
+    check, 1 was kept (rank 1 on all versions).
+  - A real query log could hold vaguer questions without names, where
+    wording would matter more; the simulated questions cannot show that (D16).
+- **Reproduce:** `python scripts/newer_wording.py` (`runs/wording/items.csv`,
+  `summary.csv`, `verdict.json`).
+- **Expectation:** a small drop of a few points (yes: 6 points in found,
+  0.11 in MRR); flagged no worse than control (cannot tell, too few).
+- **Verdict:** Supports F15 at the hardest point we could test; inconclusive
+  on flagged vs control.

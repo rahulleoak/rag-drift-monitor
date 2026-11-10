@@ -158,8 +158,10 @@ a measurement, not an opinion.
   take D's classification. Remove one and the next breaks.
 - Routing is decided in code: skip the expensive evaluation if nothing
   drifted (but still run a small check for silent degradation); go back for
-  more evidence when a result is borderline (D to C, built; it did not fire
-  because no section was borderline); go back to test a second model when
+  more evidence when a result is borderline (D to C: it did not fire on the
+  real data, where every result is clear-cut; shown working on a simulated
+  failed re-index, F26: 2020 World News went back to C, came back unclear and
+  was escalated to a person); go back to test a second model when
   re-indexing does not fix quality (designed; Agent E's rule shows it is not
   needed on this data, with the number).
 - **The LLM never makes the final decision.** It writes questions, answers,
@@ -448,7 +450,7 @@ as D5.
   (F2).
 - **Every number reproduces:** a confidence check re-ran everything from
   scratch; 14 of 14 documented numbers matched.
-- **Tests:** 196, covering the cleaning rules, the drift statistics, the
+- **Tests:** 202, covering the cleaning rules, the drift statistics, the
   LLM layer (with a fake API), every agent, the policy rules, the dashboard
   on any run (including one without LLM results) and every script. They run
   in about 30 seconds, with no models or keys.
@@ -669,11 +671,15 @@ Not done, in the order I would do them; each has the reason it would help.
 10. **Entity graph per period** for a few key entities (D21), and a
     **fine-tuning experiment** for the retraining action (D7): larger
     pieces of work, lower priority.
-11. **Length guard inside the pipeline.** The length check (D33, F25) runs
+11. **Check the refreshed index's own quality, not only the difference.**
+    F26 showed a refresh that silently failed makes the stale-vs-refreshed
+    loss shrink; a section where it failed completely would show no loss.
+    A floor on refreshed correctness per section would catch it.
+12. **Length guard inside the pipeline.** The length check (D33, F25) runs
     beside the pipeline today and changed nothing here. On other data (an
     archive moving from short summaries to full articles) length could
     raise false drift alerts. Design: Agent A already measures length per
     period; when the gap is large, Agent B runs the length-matched
     comparison and reports drift both ways.
-12. **Production:** scheduled runs with alerts, a shared vector database,
+13. **Production:** scheduled runs with alerts, a shared vector database,
     access control and audit (section 12b).

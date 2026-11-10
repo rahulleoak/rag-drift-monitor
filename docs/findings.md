@@ -1198,3 +1198,39 @@ chart, and whether it supports or contradicts what we expected.
   `summary.csv`, `verdict.json`).
 - **Expectation:** a small drop, 10-20% (yes: 11%).
 - **Verdict:** Supports keeping the drift samples as they are (D6, D8).
+
+## F26. The evidence loop on real data: a simulated failed re-index is sent back, found unclear and escalated
+- **Date:** 2026-11-10
+- **Setup:** D34. The full pipeline with 85% of 2020 World News articles
+  (124 of 146) left out of every refreshed index, as if an ingestion batch
+  had failed; everything else as in the demo run. Labelled run
+  `demo/runs/20261110-135233` ("Evidence loop demo (simulated failed
+  re-index)"). Cost $0.58 (batch), including a first run that found the bug
+  below.
+- **Result:**
+  - Agent D: 2020 World News drops 15% (interval 0% to 30%) on 20
+    questions: past the 10-point threshold, but the interval reaches zero,
+    so **borderline**. The only borderline section; every other section is
+    as in the demo run.
+  - The graph routed it back to Agent C, which graded ranks 6-10 for its 20
+    questions; Agent D answered them from the top 10: still 15% (interval 0%
+    to 30%). Conclusion in code: **still unclear (escalate to a human)**.
+  - Agent E: escalates the section with the loop's numbers, and suggests a
+    model evaluation for it ("re-indexing did not help": 15% correct on the
+    refreshed index). Both fit a section that fails on both indexes; a
+    person would find the missing articles.
+- **Bug found by the run:** a borderline section was classed "drift that
+  does not hurt" (not material, and flagged), so the first run's
+  "continue monitoring" listed 2020 World News as unaffected. Borderline
+  sections now have their own class; the rerun no longer lists it, and the
+  demo run is unchanged (compared file by file).
+- **What it means:** the loop works on real data, and the run shows a limit
+  of measuring harm as stale vs refreshed: a refresh that silently failed
+  makes the loss shrink, because both indexes fail. Here the loop caught it
+  and sent it to a person; a section where the refresh failed completely
+  would show no loss at all (a next step: check the refreshed index's own
+  quality, not only the difference).
+- **Reproduce:** `python scripts/run_pipeline.py --fault "2020|WORLD NEWS"
+  --fault-share 0.85 --label "Evidence loop demo (simulated failed re-index)"`.
+- **Verdict:** Supports D28 (the loop) and D34; found and fixed one
+  classification bug.

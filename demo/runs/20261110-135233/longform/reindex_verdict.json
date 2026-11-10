@@ -1,0 +1,38 @@
+{
+  "enough": false,
+  "recovered": 0.7684741017265516,
+  "recovered_low": 0.5036381332185509,
+  "recovered_high": 0.9214060795429652,
+  "outdated_stale": 0.128810829005578,
+  "outdated_targeted": 0.029823042892864013,
+  "listed_agreement": 1.0,
+  "items": 140,
+  "min_recovered": 0.8,
+  "min_listed_agreement": 0.9,
+  "passages_full": 8984,
+  "passages_targeted": 5705,
+  "targeted_share": 0.6350178094390027,
+  "listed_articles": 90,
+  "population": {
+    "listed_wording": 7084,
+    "unlisted": 3101,
+    "listed_number": 213
+  },
+  "by_stratum": {
+    "listed_number": {
+      "items": 40,
+      "outdated_stale": 0.675,
+      "outdated_targeted": 0.0
+    },
+    "listed_wording": {
+      "items": 40,
+      "outdated_stale": 0.125,
+      "outdated_targeted": 0.0
+    },
+    "unlisted": {
+      "items": 60,
+      "outdated_stale": 0.1,
+      "outdated_targeted": 0.1
+    }
+  }
+}

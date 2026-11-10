@@ -144,7 +144,7 @@ def route_sentence(run: Run) -> str:
     return s
 
 
-def _segment_name(segment_id: str) -> str:
+def segment_name(segment_id: str) -> str:
     """'2020|WORLD NEWS|vs 2016-17' -> '2020 WORLD NEWS'."""
     period, cat = segment_id.split("|")[:2]
     return f"{period} {cat}"
@@ -167,7 +167,7 @@ def evidence_loop_takeaway(run: Run) -> str:
         return ""
     parts = []
     for e in rows:
-        parts.append(f"{_segment_name(e['segment_id'])} ({e['questions']} questions): {pct(e['loss_top5'])} fewer "
+        parts.append(f"{segment_name(e['segment_id'])} ({e['questions']} questions): {pct(e['loss_top5'])} fewer "
                      f"correct answers on the stale index when answering from the {_top(run, 'answer_k')}, "
                      f"{pct(e['loss_top10'])} from the {_top(run, 'top_k')} (interval {pct(e['loss_top10_low'])} to "
                      f"{pct(e['loss_top10_high'])}). Conclusion: {e['conclusion']}.")

@@ -1,0 +1,6103 @@
+{
+  "whole_period": [
+    {
+      "segment_id": "2018|ALL|vs 2016-17",
+      "period": "2018",
+      "category": null,
+      "compared_with": "2016-17",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.0036987814584029666,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.035391030474350105,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.006886303424835205,
+      "novelty_mean": 0.2612790329773539,
+      "novel_share": 0.08226037195994278,
+      "new_term_rate": 0.02956938698758932,
+      "times_ordinary_embedding": 0.7865849210507195,
+      "times_ordinary_lexical": 0.5750990408677098,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "said",
+        "gun",
+        "lawyer",
+        "host",
+        "kim"
+      ],
+      "declining_terms": [
+        "clinton",
+        "hillary",
+        "care",
+        "health",
+        "college"
+      ],
+      "term_shares": [
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 3.888,
+          "per_1000_period": 7.381
+        },
+        {
+          "term": "gun",
+          "direction": "emerging",
+          "per_1000_reference": 0.311,
+          "per_1000_period": 1.598
+        },
+        {
+          "term": "lawyer",
+          "direction": "emerging",
+          "per_1000_reference": 0.052,
+          "per_1000_period": 1.175
+        },
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 0.311,
+          "per_1000_period": 1.316
+        },
+        {
+          "term": "kim",
+          "direction": "emerging",
+          "per_1000_reference": 0.104,
+          "per_1000_period": 0.987
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 3.526,
+          "per_1000_period": 0.799
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 2.281,
+          "per_1000_period": 0.329
+        },
+        {
+          "term": "care",
+          "direction": "declining",
+          "per_1000_reference": 1.555,
+          "per_1000_period": 0.141
+        },
+        {
+          "term": "health",
+          "direction": "declining",
+          "per_1000_reference": 1.504,
+          "per_1000_period": 0.282
+        },
+        {
+          "term": "college",
+          "direction": "declining",
+          "per_1000_reference": 0.985,
+          "per_1000_period": 0.188
+        }
+      ],
+      "examples": [
+        "Why Progressives Shouldn't Assume Republicans Will 'Move On' From ACA Repeal",
+        "Kim Jong Un Says He Has A 'Nuclear Button' On His Desk Ready For Use",
+        "Woman Agrees To Pay For Wrong Lottery Ticket, Then Wins $5 Million"
+      ]
+    },
+    {
+      "segment_id": "2019|ALL|vs 2016-17",
+      "period": "2019",
+      "category": null,
+      "compared_with": "2016-17",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.007105455840733854,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.06661212279685036,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.012364327907562256,
+      "novelty_mean": 0.2664671280182823,
+      "novel_share": 0.09513590844062947,
+      "new_term_rate": 0.0374258145262223,
+      "times_ordinary_embedding": 1.5110501889252494,
+      "times_ordinary_lexical": 1.082437199967804,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "said",
+        "host",
+        "border",
+        "president",
+        "late"
+      ],
+      "declining_terms": [
+        "clinton",
+        "hillary",
+        "care",
+        "like",
+        "things"
+      ],
+      "term_shares": [
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 3.888,
+          "per_1000_period": 7.953
+        },
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 0.311,
+          "per_1000_period": 2.422
+        },
+        {
+          "term": "border",
+          "direction": "emerging",
+          "per_1000_reference": 0.259,
+          "per_1000_period": 2.019
+        },
+        {
+          "term": "president",
+          "direction": "emerging",
+          "per_1000_reference": 4.096,
+          "per_1000_period": 7.106
+        },
+        {
+          "term": "late",
+          "direction": "emerging",
+          "per_1000_reference": 0.259,
+          "per_1000_period": 1.696
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 3.526,
+          "per_1000_period": 0.404
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 2.281,
+          "per_1000_period": 0.202
+        },
+        {
+          "term": "care",
+          "direction": "declining",
+          "per_1000_reference": 1.555,
+          "per_1000_period": 0.202
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 2.644,
+          "per_1000_period": 0.929
+        },
+        {
+          "term": "things",
+          "direction": "declining",
+          "per_1000_reference": 1.244,
+          "per_1000_period": 0.121
+        }
+      ],
+      "examples": [
+        "Manhunt Underway After 7-Year-Old Girl Killed In Suspected Random Shooting",
+        "Illinois Prosecutor Asks Possible Victims Of R. Kelly's Abuse To Come Forward",
+        "Trump Won't Answer Any More Questions From Mueller In Russia Investigation: Giuliani"
+      ]
+    },
+    {
+      "segment_id": "2019|ALL|vs 2018",
+      "period": "2019",
+      "category": null,
+      "compared_with": "2018",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.0036431985104378173,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.04794412283944993,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.007001817226409912,
+      "novelty_mean": 0.2664671280182823,
+      "novel_share": 0.09513590844062947,
+      "new_term_rate": 0.0374258145262223,
+      "times_ordinary_embedding": 0.7747646204385793,
+      "times_ordinary_lexical": 0.7790849458366227,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "president",
+        "sunday",
+        "border",
+        "police",
+        "presidential"
+      ],
+      "declining_terms": [
+        "gay",
+        "things",
+        "ryan",
+        "really",
+        "like"
+      ],
+      "term_shares": [
+        {
+          "term": "president",
+          "direction": "emerging",
+          "per_1000_reference": 3.667,
+          "per_1000_period": 7.106
+        },
+        {
+          "term": "sunday",
+          "direction": "emerging",
+          "per_1000_reference": 0.141,
+          "per_1000_period": 1.332
+        },
+        {
+          "term": "border",
+          "direction": "emerging",
+          "per_1000_reference": 0.658,
+          "per_1000_period": 2.019
+        },
+        {
+          "term": "police",
+          "direction": "emerging",
+          "per_1000_reference": 0.94,
+          "per_1000_period": 2.422
+        },
+        {
+          "term": "presidential",
+          "direction": "emerging",
+          "per_1000_reference": 0.329,
+          "per_1000_period": 1.453
+        },
+        {
+          "term": "gay",
+          "direction": "declining",
+          "per_1000_reference": 1.269,
+          "per_1000_period": 0.202
+        },
+        {
+          "term": "things",
+          "direction": "declining",
+          "per_1000_reference": 1.034,
+          "per_1000_period": 0.121
+        },
+        {
+          "term": "ryan",
+          "direction": "declining",
+          "per_1000_reference": 1.128,
+          "per_1000_period": 0.202
+        },
+        {
+          "term": "really",
+          "direction": "declining",
+          "per_1000_reference": 1.504,
+          "per_1000_period": 0.444
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 2.209,
+          "per_1000_period": 0.929
+        }
+      ],
+      "examples": [
+        "'Betrayed' Factory Boss Turns On Trump, Says Plant May Move To Mexico",
+        "All The Lies President Trump May Tell During His Address On The Border Wall",
+        "Stephen Colbert Gives Donald Trump’s Wall Speech An Uproarious Alternate Ending"
+      ]
+    },
+    {
+      "segment_id": "2020|ALL|vs 2016-17",
+      "period": "2020",
+      "category": null,
+      "compared_with": "2016-17",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.01192118080668425,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.07251630564259853,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.018081724643707275,
+      "novelty_mean": 0.274627998108857,
+      "novel_share": 0.08941344778254649,
+      "new_term_rate": 0.05461931383984234,
+      "times_ordinary_embedding": 2.53516493718605,
+      "times_ordinary_lexical": 1.178379302986202,
+      "embedding_band": "high",
+      "lexical_band": "low",
+      "severity": "high",
+      "kind": "meaning",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "biden",
+        "joe",
+        "face",
+        "said",
+        "coronavirus"
+      ],
+      "declining_terms": [
+        "clinton",
+        "hillary",
+        "women",
+        "donald",
+        "college"
+      ],
+      "term_shares": [
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.311,
+          "per_1000_period": 4.666
+        },
+        {
+          "term": "joe",
+          "direction": "emerging",
+          "per_1000_reference": 0.259,
+          "per_1000_period": 2.655
+        },
+        {
+          "term": "face",
+          "direction": "emerging",
+          "per_1000_reference": 0.674,
+          "per_1000_period": 2.534
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 3.888,
+          "per_1000_period": 6.958
+        },
+        {
+          "term": "coronavirus",
+          "direction": "emerging",
+          "per_1000_reference": 0.0,
+          "per_1000_period": 9.975
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 3.526,
+          "per_1000_period": 0.201
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 2.281,
+          "per_1000_period": 0.08
+        },
+        {
+          "term": "women",
+          "direction": "declining",
+          "per_1000_reference": 3.007,
+          "per_1000_period": 0.925
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 5.807,
+          "per_1000_period": 3.499
+        },
+        {
+          "term": "college",
+          "direction": "declining",
+          "per_1000_reference": 0.985,
+          "per_1000_period": 0.08
+        }
+      ],
+      "examples": [
+        "Biden Calls Sanders' Social Security Attacks \"A Lie\"",
+        "Joe Biden: Trump And His Allies 'Like' Russia Interfering In U.S. Elections",
+        "Joe Biden Accused Of Sexually Assaulting Senate Aide In 1993"
+      ]
+    },
+    {
+      "segment_id": "2020|ALL|vs 2019",
+      "period": "2020",
+      "category": null,
+      "compared_with": "2019",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.008815416122408437,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.071997007276526,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.012960970401763916,
+      "novelty_mean": 0.274627998108857,
+      "novel_share": 0.08941344778254649,
+      "new_term_rate": 0.05461931383984234,
+      "times_ordinary_embedding": 1.8746912929718818,
+      "times_ordinary_lexical": 1.1699407809016604,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "biden",
+        "election",
+        "joe",
+        "face",
+        "virus"
+      ],
+      "declining_terms": [
+        "impeachment",
+        "border",
+        "shooting",
+        "wall",
+        "victims"
+      ],
+      "term_shares": [
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.767,
+          "per_1000_period": 4.666
+        },
+        {
+          "term": "election",
+          "direction": "emerging",
+          "per_1000_reference": 0.525,
+          "per_1000_period": 2.574
+        },
+        {
+          "term": "joe",
+          "direction": "emerging",
+          "per_1000_reference": 0.646,
+          "per_1000_period": 2.655
+        },
+        {
+          "term": "face",
+          "direction": "emerging",
+          "per_1000_reference": 0.646,
+          "per_1000_period": 2.534
+        },
+        {
+          "term": "virus",
+          "direction": "emerging",
+          "per_1000_reference": 0.081,
+          "per_1000_period": 1.649
+        },
+        {
+          "term": "impeachment",
+          "direction": "declining",
+          "per_1000_reference": 2.14,
+          "per_1000_period": 0.241
+        },
+        {
+          "term": "border",
+          "direction": "declining",
+          "per_1000_reference": 2.019,
+          "per_1000_period": 0.201
+        },
+        {
+          "term": "shooting",
+          "direction": "declining",
+          "per_1000_reference": 2.221,
+          "per_1000_period": 0.483
+        },
+        {
+          "term": "wall",
+          "direction": "declining",
+          "per_1000_reference": 1.494,
+          "per_1000_period": 0.241
+        },
+        {
+          "term": "victims",
+          "direction": "declining",
+          "per_1000_reference": 1.211,
+          "per_1000_period": 0.201
+        }
+      ],
+      "examples": [
+        "Biden Calls Sanders' Social Security Attacks \"A Lie\"",
+        "Joe Biden: Trump And His Allies 'Like' Russia Interfering In U.S. Elections",
+        "Joe Biden Accused Of Sexually Assaulting Senate Aide In 1993"
+      ]
+    },
+    {
+      "segment_id": "2021|ALL|vs 2016-17",
+      "period": "2021",
+      "category": null,
+      "compared_with": "2016-17",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.009102271659138239,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.07676803081462685,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.014988064765930176,
+      "novelty_mean": 0.27850440502678375,
+      "novel_share": 0.10872675250357654,
+      "new_term_rate": 0.05107823075712262,
+      "times_ordinary_embedding": 1.9356941508722771,
+      "times_ordinary_lexical": 1.2474692118047297,
+      "embedding_band": "low",
+      "lexical_band": "medium",
+      "severity": "medium",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "biden",
+        "said",
+        "joe",
+        "vaccine",
+        "republican"
+      ],
+      "declining_terms": [
+        "trump",
+        "donald",
+        "clinton",
+        "hillary",
+        "obama"
+      ],
+      "term_shares": [
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.311,
+          "per_1000_period": 6.532
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 3.888,
+          "per_1000_period": 8.972
+        },
+        {
+          "term": "joe",
+          "direction": "emerging",
+          "per_1000_reference": 0.259,
+          "per_1000_period": 2.597
+        },
+        {
+          "term": "vaccine",
+          "direction": "emerging",
+          "per_1000_reference": 0.104,
+          "per_1000_period": 2.951
+        },
+        {
+          "term": "republican",
+          "direction": "emerging",
+          "per_1000_reference": 0.726,
+          "per_1000_period": 2.597
+        },
+        {
+          "term": "trump",
+          "direction": "declining",
+          "per_1000_reference": 16.124,
+          "per_1000_period": 8.854
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 5.807,
+          "per_1000_period": 1.771
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 3.526,
+          "per_1000_period": 0.039
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 2.281,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "obama",
+          "direction": "declining",
+          "per_1000_reference": 1.607,
+          "per_1000_period": 0.157
+        }
+      ],
+      "examples": [
+        "In Dueling New Year Messages, Trump Reflects, Biden Looks Ahead",
+        "GOP Fissures Over Trump's Electoral College Challenge Of Biden",
+        "U.S.-Backed Airstrikes Are Killing People In Yemen. This Is Their Impact."
+      ]
+    },
+    {
+      "segment_id": "2021|ALL|vs 2020",
+      "period": "2021",
+      "category": null,
+      "compared_with": "2020",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.004370044366456494,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.04736094368560953,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.0066964030265808105,
+      "novelty_mean": 0.27850440502678375,
+      "novel_share": 0.10872675250357654,
+      "new_term_rate": 0.05107823075712262,
+      "times_ordinary_embedding": 0.9293360642241089,
+      "times_ordinary_lexical": 0.7696083703446847,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "vaccine",
+        "capitol",
+        "democrats",
+        "gop",
+        "jan"
+      ],
+      "declining_terms": [
+        "coronavirus",
+        "trump",
+        "pandemic",
+        "face",
+        "outbreak"
+      ],
+      "term_shares": [
+        {
+          "term": "vaccine",
+          "direction": "emerging",
+          "per_1000_reference": 0.442,
+          "per_1000_period": 2.951
+        },
+        {
+          "term": "capitol",
+          "direction": "emerging",
+          "per_1000_reference": 0.08,
+          "per_1000_period": 2.361
+        },
+        {
+          "term": "democrats",
+          "direction": "emerging",
+          "per_1000_reference": 0.603,
+          "per_1000_period": 2.046
+        },
+        {
+          "term": "gop",
+          "direction": "emerging",
+          "per_1000_reference": 1.689,
+          "per_1000_period": 3.66
+        },
+        {
+          "term": "jan",
+          "direction": "emerging",
+          "per_1000_reference": 0.08,
+          "per_1000_period": 1.338
+        },
+        {
+          "term": "coronavirus",
+          "direction": "declining",
+          "per_1000_reference": 9.975,
+          "per_1000_period": 1.731
+        },
+        {
+          "term": "trump",
+          "direction": "declining",
+          "per_1000_reference": 19.185,
+          "per_1000_period": 8.854
+        },
+        {
+          "term": "pandemic",
+          "direction": "declining",
+          "per_1000_reference": 4.545,
+          "per_1000_period": 1.495
+        },
+        {
+          "term": "face",
+          "direction": "declining",
+          "per_1000_reference": 2.534,
+          "per_1000_period": 1.062
+        },
+        {
+          "term": "outbreak",
+          "direction": "declining",
+          "per_1000_reference": 1.126,
+          "per_1000_period": 0.118
+        }
+      ],
+      "examples": [
+        "Fauci: COVID-19 Vaccine Mandates For Travel And School 'Quite Possible' In Future",
+        "When Can You Get The COVID-19 Vaccine — And What Can You Do Now?",
+        "U.S. Pauses Plan To Give COVID-19 Vaccine To Guantanamo Prisoners"
+      ]
+    },
+    {
+      "segment_id": "2022|ALL|vs 2016-17",
+      "period": "2022",
+      "category": null,
+      "compared_with": "2016-17",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.009898815928361504,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.07689164213155819,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.01678222417831421,
+      "novelty_mean": 0.2804864961787184,
+      "novel_share": 0.10586552217453506,
+      "new_term_rate": 0.048428369552763244,
+      "times_ordinary_embedding": 2.105087697954378,
+      "times_ordinary_lexical": 1.2494778775275073,
+      "embedding_band": "medium",
+      "lexical_band": "medium",
+      "severity": "medium",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "russian",
+        "biden",
+        "russia",
+        "said",
+        "jan"
+      ],
+      "declining_terms": [
+        "trump",
+        "donald",
+        "clinton",
+        "hillary",
+        "obama"
+      ],
+      "term_shares": [
+        {
+          "term": "russian",
+          "direction": "emerging",
+          "per_1000_reference": 0.363,
+          "per_1000_period": 3.705
+        },
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.311,
+          "per_1000_period": 3.628
+        },
+        {
+          "term": "russia",
+          "direction": "emerging",
+          "per_1000_reference": 0.674,
+          "per_1000_period": 3.399
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 3.888,
+          "per_1000_period": 7.104
+        },
+        {
+          "term": "jan",
+          "direction": "emerging",
+          "per_1000_reference": 0.104,
+          "per_1000_period": 2.101
+        },
+        {
+          "term": "trump",
+          "direction": "declining",
+          "per_1000_reference": 16.124,
+          "per_1000_period": 6.111
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 5.807,
+          "per_1000_period": 1.451
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 3.526,
+          "per_1000_period": 0.038
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 2.281,
+          "per_1000_period": 0.038
+        },
+        {
+          "term": "obama",
+          "direction": "declining",
+          "per_1000_reference": 1.607,
+          "per_1000_period": 0.115
+        }
+      ],
+      "examples": [
+        "Stephen Colbert Uses ‘Russian Stooge’ Tucker Carlson’s Own Words Against Him",
+        "Russia At 70% Of Ukraine Military Buildup For Possible Invasion: American Officials",
+        "Mysterious 'Legal Consultation' Delays Medal Ceremony For Team Figure Skating"
+      ]
+    },
+    {
+      "segment_id": "2022|ALL|vs 2021",
+      "period": "2022",
+      "category": null,
+      "compared_with": "2021",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.002479884228139828,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.038199697005425276,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.004371941089630127,
+      "novelty_mean": 0.2804864961787184,
+      "novel_share": 0.10586552217453506,
+      "new_term_rate": 0.048428369552763244,
+      "times_ordinary_embedding": 0.5273735584931055,
+      "times_ordinary_lexical": 0.6207394589761692,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 1398,
+      "emerging_terms": [
+        "russian",
+        "russia",
+        "ukraine",
+        "war",
+        "court"
+      ],
+      "declining_terms": [
+        "covid-19",
+        "vaccine",
+        "biden",
+        "democrats",
+        "coronavirus"
+      ],
+      "term_shares": [
+        {
+          "term": "russian",
+          "direction": "emerging",
+          "per_1000_reference": 0.197,
+          "per_1000_period": 3.705
+        },
+        {
+          "term": "russia",
+          "direction": "emerging",
+          "per_1000_reference": 0.236,
+          "per_1000_period": 3.399
+        },
+        {
+          "term": "ukraine",
+          "direction": "emerging",
+          "per_1000_reference": 0.079,
+          "per_1000_period": 5.309
+        },
+        {
+          "term": "war",
+          "direction": "emerging",
+          "per_1000_reference": 0.394,
+          "per_1000_period": 2.062
+        },
+        {
+          "term": "court",
+          "direction": "emerging",
+          "per_1000_reference": 1.102,
+          "per_1000_period": 2.712
+        },
+        {
+          "term": "covid-19",
+          "direction": "declining",
+          "per_1000_reference": 4.683,
+          "per_1000_period": 1.031
+        },
+        {
+          "term": "vaccine",
+          "direction": "declining",
+          "per_1000_reference": 2.951,
+          "per_1000_period": 0.382
+        },
+        {
+          "term": "biden",
+          "direction": "declining",
+          "per_1000_reference": 6.532,
+          "per_1000_period": 3.628
+        },
+        {
+          "term": "democrats",
+          "direction": "declining",
+          "per_1000_reference": 2.046,
+          "per_1000_period": 0.497
+        },
+        {
+          "term": "coronavirus",
+          "direction": "declining",
+          "per_1000_reference": 1.731,
+          "per_1000_period": 0.306
+        }
+      ],
+      "examples": [
+        "Stephen Colbert Uses ‘Russian Stooge’ Tucker Carlson’s Own Words Against Him",
+        "Russia At 70% Of Ukraine Military Buildup For Possible Invasion: American Officials",
+        "Mysterious 'Legal Consultation' Delays Medal Ceremony For Team Figure Skating"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "segment_id": "2018|BLACK VOICES|vs 2016-17",
+      "period": "2018",
+      "category": "BLACK VOICES",
+      "compared_with": "2016-17",
+      "n_reference": 418,
+      "n_period": 418,
+      "mmd2": 0.004134252465596622,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.053652512274427855,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.008417844772338867,
+      "novelty_mean": 0.28052221288521323,
+      "novel_share": 0.1291866028708134,
+      "new_term_rate": 0.031373791792109015,
+      "times_ordinary_embedding": 0.37298906072662946,
+      "times_ordinary_lexical": 0.9733219702635874,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 175,
+      "emerging_terms": [
+        "panther",
+        "clark",
+        "king",
+        "luther",
+        "black"
+      ],
+      "declining_terms": [
+        "new",
+        "matter",
+        "american",
+        "chicago",
+        "lives"
+      ],
+      "term_shares": [
+        {
+          "term": "panther",
+          "direction": "emerging",
+          "per_1000_reference": 0.289,
+          "per_1000_period": 7.923
+        },
+        {
+          "term": "clark",
+          "direction": "emerging",
+          "per_1000_reference": 0.161,
+          "per_1000_period": 3.011
+        },
+        {
+          "term": "king",
+          "direction": "emerging",
+          "per_1000_reference": 1.222,
+          "per_1000_period": 4.912
+        },
+        {
+          "term": "luther",
+          "direction": "emerging",
+          "per_1000_reference": 0.354,
+          "per_1000_period": 2.377
+        },
+        {
+          "term": "black",
+          "direction": "emerging",
+          "per_1000_reference": 21.544,
+          "per_1000_period": 33.909
+        },
+        {
+          "term": "new",
+          "direction": "declining",
+          "per_1000_reference": 7.235,
+          "per_1000_period": 3.486
+        },
+        {
+          "term": "matter",
+          "direction": "declining",
+          "per_1000_reference": 2.347,
+          "per_1000_period": 0.792
+        },
+        {
+          "term": "american",
+          "direction": "declining",
+          "per_1000_reference": 1.543,
+          "per_1000_period": 0.158
+        },
+        {
+          "term": "chicago",
+          "direction": "declining",
+          "per_1000_reference": 1.64,
+          "per_1000_period": 0.475
+        },
+        {
+          "term": "lives",
+          "direction": "declining",
+          "per_1000_reference": 2.862,
+          "per_1000_period": 1.426
+        }
+      ],
+      "examples": [
+        "Kendrick Lamar, Top Dawg To Produce Album For 'Black Panther' Film",
+        "New York Man Raises Money For Hundreds Of Harlem Kids To See 'Black Panther'",
+        "'Black Panther' Premiere Gloriously Celebrates African Royalty"
+      ]
+    },
+    {
+      "segment_id": "2018|BUSINESS|vs 2016-17",
+      "period": "2018",
+      "category": "BUSINESS",
+      "compared_with": "2016-17",
+      "n_reference": 92,
+      "n_period": 92,
+      "mmd2": 0.0163109572970781,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.05497699275816603,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.036409080028533936,
+      "novelty_mean": 0.27302528140337573,
+      "novel_share": 0.10869565217391304,
+      "new_term_rate": 0.025477707006369428,
+      "times_ordinary_embedding": 1.2330832716533158,
+      "times_ordinary_lexical": 1.6757266881351318,
+      "embedding_band": "low",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 82,
+      "emerging_terms": [
+        "accused",
+        "sexual",
+        "steve",
+        "dow",
+        "facebook"
+      ],
+      "declining_terms": [
+        "business",
+        "ceo",
+        "work",
+        "big",
+        "people"
+      ],
+      "term_shares": [
+        {
+          "term": "accused",
+          "direction": "emerging",
+          "per_1000_reference": 0.348,
+          "per_1000_period": 5.662
+        },
+        {
+          "term": "sexual",
+          "direction": "emerging",
+          "per_1000_reference": 0.754,
+          "per_1000_period": 6.369
+        },
+        {
+          "term": "steve",
+          "direction": "emerging",
+          "per_1000_reference": 0.058,
+          "per_1000_period": 3.539
+        },
+        {
+          "term": "dow",
+          "direction": "emerging",
+          "per_1000_reference": 0.174,
+          "per_1000_period": 3.539
+        },
+        {
+          "term": "facebook",
+          "direction": "emerging",
+          "per_1000_reference": 0.87,
+          "per_1000_period": 5.662
+        },
+        {
+          "term": "business",
+          "direction": "declining",
+          "per_1000_reference": 4.582,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "ceo",
+          "direction": "declining",
+          "per_1000_reference": 3.77,
+          "per_1000_period": 1.415
+        },
+        {
+          "term": "work",
+          "direction": "declining",
+          "per_1000_reference": 3.074,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "big",
+          "direction": "declining",
+          "per_1000_reference": 2.958,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "people",
+          "direction": "declining",
+          "per_1000_reference": 5.336,
+          "per_1000_period": 1.415
+        }
+      ],
+      "examples": [
+        "RNC Finance Chair Steve Wynn Accused Of Decades Of Sexual Misconduct: Report",
+        "Steve Wynn Steps Down As RNC Finance Chair Amid Sexual Harassment Allegations",
+        "Monster Energy Vice President Accused Of Sexual Harassment Resigns"
+      ]
+    },
+    {
+      "segment_id": "2018|COMEDY|vs 2016-17",
+      "period": "2018",
+      "category": "COMEDY",
+      "compared_with": "2016-17",
+      "n_reference": 513,
+      "n_period": 513,
+      "mmd2": 0.012804663126946836,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.05332317875265313,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.015376508235931396,
+      "novelty_mean": 0.2250947085505108,
+      "novel_share": 0.021442495126705652,
+      "new_term_rate": 0.02633093525179856,
+      "times_ordinary_embedding": 1.5576845114041833,
+      "times_ordinary_lexical": 1.2171737423738935,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 105,
+      "emerging_terms": [
+        "host",
+        "late",
+        "kimmel",
+        "jimmy",
+        "fox"
+      ],
+      "declining_terms": [
+        "hillary",
+        "election",
+        "want",
+        "let",
+        "explains"
+      ],
+      "term_shares": [
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 3.086,
+          "per_1000_period": 11.079
+        },
+        {
+          "term": "late",
+          "direction": "emerging",
+          "per_1000_reference": 3.257,
+          "per_1000_period": 10.504
+        },
+        {
+          "term": "kimmel",
+          "direction": "emerging",
+          "per_1000_reference": 3.257,
+          "per_1000_period": 9.065
+        },
+        {
+          "term": "jimmy",
+          "direction": "emerging",
+          "per_1000_reference": 4.629,
+          "per_1000_period": 11.223
+        },
+        {
+          "term": "fox",
+          "direction": "emerging",
+          "per_1000_reference": 0.643,
+          "per_1000_period": 3.741
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 2.314,
+          "per_1000_period": 0.576
+        },
+        {
+          "term": "election",
+          "direction": "declining",
+          "per_1000_reference": 2.014,
+          "per_1000_period": 0.576
+        },
+        {
+          "term": "want",
+          "direction": "declining",
+          "per_1000_reference": 2.1,
+          "per_1000_period": 0.719
+        },
+        {
+          "term": "let",
+          "direction": "declining",
+          "per_1000_reference": 1.8,
+          "per_1000_period": 0.576
+        },
+        {
+          "term": "explains",
+          "direction": "declining",
+          "per_1000_reference": 1.2,
+          "per_1000_period": 0.144
+        }
+      ],
+      "examples": [
+        "Trump Declared Himself Mentally Stable And Stephen Colbert Isn’t Having It",
+        "Stephen Colbert Hits Trump With The Perfect 'Shithole' Comeback",
+        "Stephen Colbert: Trump Is Now A Character In A Racist Fairy Tale"
+      ]
+    },
+    {
+      "segment_id": "2018|CRIME|vs 2016-17",
+      "period": "2018",
+      "category": "CRIME",
+      "compared_with": "2016-17",
+      "n_reference": 199,
+      "n_period": 199,
+      "mmd2": 0.0050730390537033765,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.03416786619823975,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.01223081350326538,
+      "novelty_mean": 0.2910888281898882,
+      "novel_share": 0.18592964824120603,
+      "new_term_rate": 0.03394172270252962,
+      "times_ordinary_embedding": 2.383937462235425,
+      "times_ordinary_lexical": 1.750887712803964,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 68,
+      "emerging_terms": [
+        "cosby",
+        "sexual",
+        "school",
+        "cruz",
+        "guilty"
+      ],
+      "declining_terms": [
+        "police",
+        "allegedly",
+        "man",
+        "cops",
+        "mother"
+      ],
+      "term_shares": [
+        {
+          "term": "cosby",
+          "direction": "emerging",
+          "per_1000_reference": 0.688,
+          "per_1000_period": 5.123
+        },
+        {
+          "term": "sexual",
+          "direction": "emerging",
+          "per_1000_reference": 1.006,
+          "per_1000_period": 4.803
+        },
+        {
+          "term": "school",
+          "direction": "emerging",
+          "per_1000_reference": 2.436,
+          "per_1000_period": 7.685
+        },
+        {
+          "term": "cruz",
+          "direction": "emerging",
+          "per_1000_reference": 0.053,
+          "per_1000_period": 2.241
+        },
+        {
+          "term": "guilty",
+          "direction": "emerging",
+          "per_1000_reference": 1.218,
+          "per_1000_period": 4.803
+        },
+        {
+          "term": "police",
+          "direction": "declining",
+          "per_1000_reference": 19.066,
+          "per_1000_period": 15.69
+        },
+        {
+          "term": "allegedly",
+          "direction": "declining",
+          "per_1000_reference": 4.713,
+          "per_1000_period": 2.241
+        },
+        {
+          "term": "man",
+          "direction": "declining",
+          "per_1000_reference": 12.34,
+          "per_1000_period": 9.606
+        },
+        {
+          "term": "cops",
+          "direction": "declining",
+          "per_1000_reference": 3.707,
+          "per_1000_period": 1.601
+        },
+        {
+          "term": "mother",
+          "direction": "declining",
+          "per_1000_reference": 2.118,
+          "per_1000_period": 0.32
+        }
+      ],
+      "examples": [
+        "Cosby Judge Refuses To Recuse Himself Over His Wife's Work With Abuse Victims",
+        "Here's What To Know About The Bill Cosby Sexual Assault Retrial",
+        "Topless Protester Arrested Outside Bill Cosby Retrial"
+      ]
+    },
+    {
+      "segment_id": "2018|ENTERTAINMENT|vs 2016-17",
+      "period": "2018",
+      "category": "ENTERTAINMENT",
+      "compared_with": "2016-17",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.0013680690911281879,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.03283403734487428,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.002737283706665039,
+      "novelty_mean": 0.2760085397012244,
+      "novel_share": 0.1251788268955651,
+      "new_term_rate": 0.030364050659742462,
+      "times_ordinary_embedding": 0.27752251616221724,
+      "times_ordinary_lexical": 0.6028281911110775,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 191,
+      "emerging_terms": [
+        "said",
+        "jim",
+        "roseanne",
+        "avengers",
+        "week"
+      ],
+      "declining_terms": [
+        "clip",
+        "la",
+        "swift",
+        "taylor",
+        "live"
+      ],
+      "term_shares": [
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 2.64,
+          "per_1000_period": 5.249
+        },
+        {
+          "term": "jim",
+          "direction": "emerging",
+          "per_1000_reference": 0.158,
+          "per_1000_period": 1.153
+        },
+        {
+          "term": "roseanne",
+          "direction": "emerging",
+          "per_1000_reference": 0.036,
+          "per_1000_period": 1.273
+        },
+        {
+          "term": "avengers",
+          "direction": "emerging",
+          "per_1000_reference": 0.097,
+          "per_1000_period": 1.034
+        },
+        {
+          "term": "week",
+          "direction": "emerging",
+          "per_1000_reference": 0.803,
+          "per_1000_period": 2.227
+        },
+        {
+          "term": "clip",
+          "direction": "declining",
+          "per_1000_reference": 1.046,
+          "per_1000_period": 0.199
+        },
+        {
+          "term": "la",
+          "direction": "declining",
+          "per_1000_reference": 0.949,
+          "per_1000_period": 0.159
+        },
+        {
+          "term": "swift",
+          "direction": "declining",
+          "per_1000_reference": 1.813,
+          "per_1000_period": 0.835
+        },
+        {
+          "term": "taylor",
+          "direction": "declining",
+          "per_1000_reference": 1.886,
+          "per_1000_period": 0.915
+        },
+        {
+          "term": "live",
+          "direction": "declining",
+          "per_1000_reference": 1.521,
+          "per_1000_period": 0.636
+        }
+      ],
+      "examples": [
+        "Meryl Streep Recalls That Time Dustin Hoffman Slapped Her On Set",
+        "Debra Messing Blasts E! For Wage Inequality During E! Interview",
+        "Nicole Kidman Said The Sweetest Thing To Keith Urban In Her Golden Globes Speech"
+      ]
+    },
+    {
+      "segment_id": "2018|IMPACT|vs 2016-17",
+      "period": "2018",
+      "category": "IMPACT",
+      "compared_with": "2016-17",
+      "n_reference": 82,
+      "n_period": 82,
+      "mmd2": 0.01768956978547198,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.06375383821461555,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.03642326593399048,
+      "novelty_mean": 0.267246622864793,
+      "novel_share": 0.07317073170731707,
+      "new_term_rate": 0.02707749766573296,
+      "times_ordinary_embedding": 1.2039292229838257,
+      "times_ordinary_lexical": 2.7861444484002127,
+      "embedding_band": "low",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 37,
+      "emerging_terms": [
+        "pollution",
+        "economy",
+        "tech",
+        "plans",
+        "climate"
+      ],
+      "declining_terms": [
+        "help",
+        "homeless",
+        "food",
+        "children",
+        "girls"
+      ],
+      "term_shares": [
+        {
+          "term": "pollution",
+          "direction": "emerging",
+          "per_1000_reference": 0.294,
+          "per_1000_period": 5.602
+        },
+        {
+          "term": "economy",
+          "direction": "emerging",
+          "per_1000_reference": 0.098,
+          "per_1000_period": 3.735
+        },
+        {
+          "term": "tech",
+          "direction": "emerging",
+          "per_1000_reference": 0.098,
+          "per_1000_period": 3.735
+        },
+        {
+          "term": "plans",
+          "direction": "emerging",
+          "per_1000_reference": 0.294,
+          "per_1000_period": 3.735
+        },
+        {
+          "term": "climate",
+          "direction": "emerging",
+          "per_1000_reference": 1.47,
+          "per_1000_period": 7.47
+        },
+        {
+          "term": "help",
+          "direction": "declining",
+          "per_1000_reference": 7.055,
+          "per_1000_period": 0.934
+        },
+        {
+          "term": "homeless",
+          "direction": "declining",
+          "per_1000_reference": 6.369,
+          "per_1000_period": 1.867
+        },
+        {
+          "term": "food",
+          "direction": "declining",
+          "per_1000_reference": 5.096,
+          "per_1000_period": 1.867
+        },
+        {
+          "term": "children",
+          "direction": "declining",
+          "per_1000_reference": 4.508,
+          "per_1000_period": 0.934
+        },
+        {
+          "term": "girls",
+          "direction": "declining",
+          "per_1000_reference": 3.822,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "Air Pollution Exposed: Why You Might Be Breathing In Tire Waste",
+        "Ocean Plastic Pollution Isn’t Just Immoral, It’s Illegal",
+        "German Cities To Trial Ambitious Free Public Transport Plans"
+      ]
+    },
+    {
+      "segment_id": "2018|LATINO VOICES|vs 2016-17",
+      "period": "2018",
+      "category": "LATINO VOICES",
+      "compared_with": "2016-17",
+      "n_reference": 83,
+      "n_period": 83,
+      "mmd2": 0.006770211414027227,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.023311340632355515,
+      "jsd_q": 0.01020181858505212,
+      "centroid_shift": 0.02135157585144043,
+      "novelty_mean": 0.2744360293250486,
+      "novel_share": 0.08433734939759036,
+      "new_term_rate": 0.04048582995951417,
+      "times_ordinary_embedding": 0.6338489125979461,
+      "times_ordinary_lexical": 0.5461210011283513,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 61,
+      "emerging_terms": [
+        "camila",
+        "cabello",
+        "rapper",
+        "performance",
+        "song"
+      ],
+      "declining_terms": [
+        "latinos",
+        "latino",
+        "immigrants",
+        "undocumented",
+        "immigration"
+      ],
+      "term_shares": [
+        {
+          "term": "camila",
+          "direction": "emerging",
+          "per_1000_reference": 0.11,
+          "per_1000_period": 4.049
+        },
+        {
+          "term": "cabello",
+          "direction": "emerging",
+          "per_1000_reference": 0.11,
+          "per_1000_period": 4.049
+        },
+        {
+          "term": "rapper",
+          "direction": "emerging",
+          "per_1000_reference": 0.11,
+          "per_1000_period": 3.239
+        },
+        {
+          "term": "performance",
+          "direction": "emerging",
+          "per_1000_reference": 0.331,
+          "per_1000_period": 3.239
+        },
+        {
+          "term": "song",
+          "direction": "emerging",
+          "per_1000_reference": 0.662,
+          "per_1000_period": 4.049
+        },
+        {
+          "term": "latinos",
+          "direction": "declining",
+          "per_1000_reference": 7.831,
+          "per_1000_period": 2.429
+        },
+        {
+          "term": "latino",
+          "direction": "declining",
+          "per_1000_reference": 11.361,
+          "per_1000_period": 8.097
+        },
+        {
+          "term": "immigrants",
+          "direction": "declining",
+          "per_1000_reference": 4.191,
+          "per_1000_period": 2.429
+        },
+        {
+          "term": "undocumented",
+          "direction": "declining",
+          "per_1000_reference": 2.647,
+          "per_1000_period": 0.81
+        },
+        {
+          "term": "immigration",
+          "direction": "declining",
+          "per_1000_reference": 2.096,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "Camila Cabello Hits Pop Chart Milestone With 'Havana,' Ooh Na Na",
+        "Camila Cabello Gets Candid About Her Dramatic Split From Fifth Harmony",
+        "Camila Cabello's Vote For Standout 'Havana' Cover Goes To A Rubber Chicken"
+      ]
+    },
+    {
+      "segment_id": "2018|MEDIA|vs 2016-17",
+      "period": "2018",
+      "category": "MEDIA",
+      "compared_with": "2016-17",
+      "n_reference": 323,
+      "n_period": 323,
+      "mmd2": 0.004959221992313023,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.05000514144668333,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.008491694927215576,
+      "novelty_mean": 0.2568566018582867,
+      "novel_share": 0.06191950464396285,
+      "new_term_rate": 0.027517564402810304,
+      "times_ordinary_embedding": 0.3011367110372994,
+      "times_ordinary_lexical": 0.7726460847445991,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 73,
+      "emerging_terms": [
+        "michael",
+        "sinclair",
+        "laura",
+        "survivor",
+        "huffpost"
+      ],
+      "declining_terms": [
+        "media",
+        "donald",
+        "press",
+        "journalists",
+        "white"
+      ],
+      "term_shares": [
+        {
+          "term": "michael",
+          "direction": "emerging",
+          "per_1000_reference": 0.509,
+          "per_1000_period": 4.489
+        },
+        {
+          "term": "sinclair",
+          "direction": "emerging",
+          "per_1000_reference": 0.17,
+          "per_1000_period": 3.123
+        },
+        {
+          "term": "laura",
+          "direction": "emerging",
+          "per_1000_reference": 0.17,
+          "per_1000_period": 2.732
+        },
+        {
+          "term": "survivor",
+          "direction": "emerging",
+          "per_1000_reference": 0.113,
+          "per_1000_period": 2.342
+        },
+        {
+          "term": "huffpost",
+          "direction": "emerging",
+          "per_1000_reference": 0.453,
+          "per_1000_period": 2.732
+        },
+        {
+          "term": "media",
+          "direction": "declining",
+          "per_1000_reference": 10.015,
+          "per_1000_period": 4.098
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 9.902,
+          "per_1000_period": 4.489
+        },
+        {
+          "term": "press",
+          "direction": "declining",
+          "per_1000_reference": 4.47,
+          "per_1000_period": 1.561
+        },
+        {
+          "term": "journalists",
+          "direction": "declining",
+          "per_1000_reference": 3.338,
+          "per_1000_period": 0.976
+        },
+        {
+          "term": "white",
+          "direction": "declining",
+          "per_1000_reference": 3.904,
+          "per_1000_period": 1.171
+        }
+      ],
+      "examples": [
+        "Michael Wolff On Donald Trump Exposé: 'I Am Not A Hit Man'",
+        "Why Did The Trump Administration Let Michael Wolff In?",
+        "The Journalist And The Blunderer"
+      ]
+    },
+    {
+      "segment_id": "2018|POLITICS|vs 2016-17",
+      "period": "2018",
+      "category": "POLITICS",
+      "compared_with": "2016-17",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.005157230596027795,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.05540912287755698,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.006860017776489258,
+      "novelty_mean": 0.2422075489474639,
+      "novel_share": 0.02074391988555079,
+      "new_term_rate": 0.023067744929073312,
+      "times_ordinary_embedding": 0.38326634248275127,
+      "times_ordinary_lexical": 0.573421168802664,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 399,
+      "emerging_terms": [
+        "mueller",
+        "gun",
+        "pruitt",
+        "shutdown",
+        "school"
+      ],
+      "declining_terms": [
+        "donald",
+        "clinton",
+        "hillary",
+        "obama",
+        "sanders"
+      ],
+      "term_shares": [
+        {
+          "term": "mueller",
+          "direction": "emerging",
+          "per_1000_reference": 0.312,
+          "per_1000_period": 2.101
+        },
+        {
+          "term": "gun",
+          "direction": "emerging",
+          "per_1000_reference": 1.018,
+          "per_1000_period": 3.133
+        },
+        {
+          "term": "pruitt",
+          "direction": "emerging",
+          "per_1000_reference": 0.208,
+          "per_1000_period": 1.34
+        },
+        {
+          "term": "shutdown",
+          "direction": "emerging",
+          "per_1000_reference": 0.127,
+          "per_1000_period": 1.141
+        },
+        {
+          "term": "school",
+          "direction": "emerging",
+          "per_1000_reference": 0.586,
+          "per_1000_period": 2.028
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 13.293,
+          "per_1000_period": 4.817
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 6.382,
+          "per_1000_period": 0.869
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 4.375,
+          "per_1000_period": 0.398
+        },
+        {
+          "term": "obama",
+          "direction": "declining",
+          "per_1000_reference": 4.007,
+          "per_1000_period": 1.177
+        },
+        {
+          "term": "sanders",
+          "direction": "declining",
+          "per_1000_reference": 2.714,
+          "per_1000_period": 0.815
+        }
+      ],
+      "examples": [
+        "Carl Bernstein: Lawyers 'Telling Trump What He Wants To Hear' So He Won't Fire Mueller",
+        "It Is Vital To Push Back Hard Against Right-Wing Lies That Mueller Probe Of Trump Is A 'Coup'",
+        "Paul Manafort Sues Special Counsel Robert Mueller, DOJ Over Russia Probe"
+      ]
+    },
+    {
+      "segment_id": "2018|QUEER VOICES|vs 2016-17",
+      "period": "2018",
+      "category": "QUEER VOICES",
+      "compared_with": "2016-17",
+      "n_reference": 465,
+      "n_period": 465,
+      "mmd2": 0.007791591532700259,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.045970918141333084,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.010950446128845215,
+      "novelty_mean": 0.270041210292488,
+      "novel_share": 0.13548387096774195,
+      "new_term_rate": 0.036397110890808666,
+      "times_ordinary_embedding": 2.0880638220475736,
+      "times_ordinary_lexical": 1.182992870876454,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 222,
+      "emerging_terms": [
+        "adam",
+        "said",
+        "eye",
+        "pence",
+        "mike"
+      ],
+      "declining_terms": [
+        "lgbt",
+        "trans",
+        "family",
+        "orlando",
+        "transgender"
+      ],
+      "term_shares": [
+        {
+          "term": "adam",
+          "direction": "emerging",
+          "per_1000_reference": 0.111,
+          "per_1000_period": 2.691
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 3.259,
+          "per_1000_period": 7.364
+        },
+        {
+          "term": "eye",
+          "direction": "emerging",
+          "per_1000_reference": 0.139,
+          "per_1000_period": 1.841
+        },
+        {
+          "term": "pence",
+          "direction": "emerging",
+          "per_1000_reference": 0.279,
+          "per_1000_period": 1.983
+        },
+        {
+          "term": "mike",
+          "direction": "emerging",
+          "per_1000_reference": 0.306,
+          "per_1000_period": 1.983
+        },
+        {
+          "term": "lgbt",
+          "direction": "declining",
+          "per_1000_reference": 4.735,
+          "per_1000_period": 0.283
+        },
+        {
+          "term": "trans",
+          "direction": "declining",
+          "per_1000_reference": 8.299,
+          "per_1000_period": 4.532
+        },
+        {
+          "term": "family",
+          "direction": "declining",
+          "per_1000_reference": 3.231,
+          "per_1000_period": 0.991
+        },
+        {
+          "term": "orlando",
+          "direction": "declining",
+          "per_1000_reference": 2.395,
+          "per_1000_period": 0.283
+        },
+        {
+          "term": "transgender",
+          "direction": "declining",
+          "per_1000_reference": 6.601,
+          "per_1000_period": 3.965
+        }
+      ],
+      "examples": [
+        "Adam Rippon Will Be First Openly Gay U.S. Man To Compete In The Winter Olympics",
+        "Olympic Figure Skater Adam Rippon: 'My Mom Would Kick My A**' If I Talked Like Trump",
+        "Gay Olympian Adam Rippon: I Don't Think Mike Pence 'Has A Real Concept Of Reality'"
+      ]
+    },
+    {
+      "segment_id": "2018|RELIGION|vs 2016-17",
+      "period": "2018",
+      "category": "RELIGION",
+      "compared_with": "2016-17",
+      "n_reference": 74,
+      "n_period": 74,
+      "mmd2": 0.027689425737682405,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.087645759667071,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.04435145854949951,
+      "novelty_mean": 0.28340279169984767,
+      "novel_share": 0.13513513513513514,
+      "new_term_rate": 0.03682008368200837,
+      "times_ordinary_embedding": 1.1406086628046754,
+      "times_ordinary_lexical": 0.8511406184267654,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 58,
+      "emerging_terms": [
+        "bishop",
+        "said",
+        "abuse",
+        "graham",
+        "says"
+      ],
+      "declining_terms": [
+        "daily",
+        "muslim",
+        "need",
+        "help",
+        "spiritual"
+      ],
+      "term_shares": [
+        {
+          "term": "bishop",
+          "direction": "emerging",
+          "per_1000_reference": 0.294,
+          "per_1000_period": 9.205
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 2.939,
+          "per_1000_period": 12.552
+        },
+        {
+          "term": "abuse",
+          "direction": "emerging",
+          "per_1000_reference": 1.469,
+          "per_1000_period": 9.205
+        },
+        {
+          "term": "graham",
+          "direction": "emerging",
+          "per_1000_reference": 0.196,
+          "per_1000_period": 4.184
+        },
+        {
+          "term": "says",
+          "direction": "emerging",
+          "per_1000_reference": 2.155,
+          "per_1000_period": 7.531
+        },
+        {
+          "term": "daily",
+          "direction": "declining",
+          "per_1000_reference": 11.558,
+          "per_1000_period": 0.837
+        },
+        {
+          "term": "muslim",
+          "direction": "declining",
+          "per_1000_reference": 7.934,
+          "per_1000_period": 2.51
+        },
+        {
+          "term": "need",
+          "direction": "declining",
+          "per_1000_reference": 7.053,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "help",
+          "direction": "declining",
+          "per_1000_reference": 6.857,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "spiritual",
+          "direction": "declining",
+          "per_1000_reference": 6.955,
+          "per_1000_period": 2.51
+        }
+      ],
+      "examples": [
+        "Pope Accuses Clergy Sex Abuse Victims Of Slander",
+        "Clergy Abuse Advocates Fear Pope Francis Is Making It Harder For Victims To Speak Up",
+        "Pope Sends Vatican Investigator To Meet Controversial Chilean Bishop's Accusers"
+      ]
+    },
+    {
+      "segment_id": "2018|SPORTS|vs 2016-17",
+      "period": "2018",
+      "category": "SPORTS",
+      "compared_with": "2016-17",
+      "n_reference": 384,
+      "n_period": 384,
+      "mmd2": 0.02188157573860805,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.11129133339530356,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.03214210271835327,
+      "novelty_mean": 0.2816766578083237,
+      "novel_share": 0.13802083333333334,
+      "new_term_rate": 0.0719514372433494,
+      "times_ordinary_embedding": 3.6642759243595484,
+      "times_ordinary_lexical": 2.721568472002209,
+      "embedding_band": "low",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 59,
+      "emerging_terms": [
+        "olympics",
+        "winter",
+        "olympic",
+        "larry",
+        "gymnastics"
+      ],
+      "declining_terms": [
+        "nfl",
+        "football",
+        "nba",
+        "rio",
+        "league"
+      ],
+      "term_shares": [
+        {
+          "term": "olympics",
+          "direction": "emerging",
+          "per_1000_reference": 3.51,
+          "per_1000_period": 14.64
+        },
+        {
+          "term": "winter",
+          "direction": "emerging",
+          "per_1000_reference": 0.225,
+          "per_1000_period": 9.463
+        },
+        {
+          "term": "olympic",
+          "direction": "emerging",
+          "per_1000_reference": 5.31,
+          "per_1000_period": 16.426
+        },
+        {
+          "term": "larry",
+          "direction": "emerging",
+          "per_1000_reference": 0.135,
+          "per_1000_period": 5.356
+        },
+        {
+          "term": "gymnastics",
+          "direction": "emerging",
+          "per_1000_reference": 0.495,
+          "per_1000_period": 4.106
+        },
+        {
+          "term": "nfl",
+          "direction": "declining",
+          "per_1000_reference": 7.514,
+          "per_1000_period": 1.964
+        },
+        {
+          "term": "football",
+          "direction": "declining",
+          "per_1000_reference": 3.915,
+          "per_1000_period": 0.714
+        },
+        {
+          "term": "nba",
+          "direction": "declining",
+          "per_1000_reference": 4.86,
+          "per_1000_period": 1.607
+        },
+        {
+          "term": "rio",
+          "direction": "declining",
+          "per_1000_reference": 4.41,
+          "per_1000_period": 0.179
+        },
+        {
+          "term": "league",
+          "direction": "declining",
+          "per_1000_reference": 2.655,
+          "per_1000_period": 0.357
+        }
+      ],
+      "examples": [
+        "Hunky Tongan Flag-Bearer From Rio Qualifies For Winter Olympics",
+        "Outside Law Firm To Probe U.S. Olympics And Gymnastics Officials Over Larry Nassar Scandal",
+        "South Korea Reportedly Bans 36,000 Foreigners From Attending The Olympics"
+      ]
+    },
+    {
+      "segment_id": "2018|TECH|vs 2016-17",
+      "period": "2018",
+      "category": "TECH",
+      "compared_with": "2016-17",
+      "n_reference": 57,
+      "n_period": 57,
+      "mmd2": 0.01658271791755961,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.03929429644783977,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.03935837745666504,
+      "novelty_mean": 0.27065236840331763,
+      "novel_share": 0.017543859649122806,
+      "new_term_rate": 0.03333333333333333,
+      "times_ordinary_embedding": 1.897460805509313,
+      "times_ordinary_lexical": 2.22833903344745,
+      "embedding_band": "low",
+      "lexical_band": "medium",
+      "severity": "medium",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 24,
+      "emerging_terms": [
+        "said",
+        "privacy",
+        "users",
+        "killed",
+        "facebook"
+      ],
+      "declining_terms": [
+        "apple",
+        "iphone",
+        "new",
+        "google",
+        "twitter"
+      ],
+      "term_shares": [
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 2.518,
+          "per_1000_period": 10.345
+        },
+        {
+          "term": "privacy",
+          "direction": "emerging",
+          "per_1000_reference": 1.144,
+          "per_1000_period": 8.046
+        },
+        {
+          "term": "users",
+          "direction": "emerging",
+          "per_1000_reference": 1.946,
+          "per_1000_period": 10.345
+        },
+        {
+          "term": "killed",
+          "direction": "emerging",
+          "per_1000_reference": 0.343,
+          "per_1000_period": 3.448
+        },
+        {
+          "term": "facebook",
+          "direction": "emerging",
+          "per_1000_reference": 13.733,
+          "per_1000_period": 40.23
+        },
+        {
+          "term": "apple",
+          "direction": "declining",
+          "per_1000_reference": 13.962,
+          "per_1000_period": 6.897
+        },
+        {
+          "term": "iphone",
+          "direction": "declining",
+          "per_1000_reference": 7.782,
+          "per_1000_period": 3.448
+        },
+        {
+          "term": "new",
+          "direction": "declining",
+          "per_1000_reference": 11.673,
+          "per_1000_period": 4.598
+        },
+        {
+          "term": "google",
+          "direction": "declining",
+          "per_1000_reference": 8.125,
+          "per_1000_period": 5.747
+        },
+        {
+          "term": "twitter",
+          "direction": "declining",
+          "per_1000_reference": 4.692,
+          "per_1000_period": 1.149
+        }
+      ],
+      "examples": [
+        "Silicon Valley's Problematic Sex Parties On Blast In Upcoming Book",
+        "ATM Makers Issue Warning About Cyber Criminals Targeting Cash Machines",
+        "Facebook Pledges To Add More Local News To Newsfeeds"
+      ]
+    },
+    {
+      "segment_id": "2018|TRAVEL|vs 2016-17",
+      "period": "2018",
+      "category": "TRAVEL",
+      "compared_with": "2016-17",
+      "n_reference": 72,
+      "n_period": 72,
+      "mmd2": 0.010550667817263548,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.023170541241397835,
+      "jsd_q": 0.029940119760479042,
+      "centroid_shift": 0.02815091609954834,
+      "novelty_mean": 0.2803505270017518,
+      "novel_share": 0.09722222222222222,
+      "new_term_rate": 0.036275695284159616,
+      "times_ordinary_embedding": 0.8197683559646066,
+      "times_ordinary_lexical": 0.8758164520624828,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 48,
+      "emerging_terms": [
+        "trump",
+        "bags",
+        "places",
+        "tripadvisor",
+        "tourists"
+      ],
+      "declining_terms": [
+        "trip",
+        "like",
+        "italian",
+        "time",
+        "travelers"
+      ],
+      "term_shares": [
+        {
+          "term": "trump",
+          "direction": "emerging",
+          "per_1000_reference": 1.361,
+          "per_1000_period": 3.628
+        },
+        {
+          "term": "bags",
+          "direction": "emerging",
+          "per_1000_reference": 0.371,
+          "per_1000_period": 7.255
+        },
+        {
+          "term": "places",
+          "direction": "emerging",
+          "per_1000_reference": 1.237,
+          "per_1000_period": 9.674
+        },
+        {
+          "term": "tripadvisor",
+          "direction": "emerging",
+          "per_1000_reference": 0.247,
+          "per_1000_period": 4.837
+        },
+        {
+          "term": "tourists",
+          "direction": "emerging",
+          "per_1000_reference": 0.371,
+          "per_1000_period": 4.837
+        },
+        {
+          "term": "trip",
+          "direction": "declining",
+          "per_1000_reference": 5.073,
+          "per_1000_period": 2.418
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 6.682,
+          "per_1000_period": 2.418
+        },
+        {
+          "term": "italian",
+          "direction": "declining",
+          "per_1000_reference": 5.073,
+          "per_1000_period": 3.628
+        },
+        {
+          "term": "time",
+          "direction": "declining",
+          "per_1000_reference": 4.949,
+          "per_1000_period": 1.209
+        },
+        {
+          "term": "travelers",
+          "direction": "declining",
+          "per_1000_reference": 3.217,
+          "per_1000_period": 1.209
+        }
+      ],
+      "examples": [
+        "8 Lesser-Known U.S. Natural Treasures To Visit In 2018",
+        "Yelp Users Are Dragging Trump Hotels By Leaving ‘S**thole’ Reviews"
+      ]
+    },
+    {
+      "segment_id": "2018|WEIRD NEWS|vs 2016-17",
+      "period": "2018",
+      "category": "WEIRD NEWS",
+      "compared_with": "2016-17",
+      "n_reference": 225,
+      "n_period": 225,
+      "mmd2": 0.0027362460683570955,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.02353431399493966,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.009469389915466309,
+      "novelty_mean": 0.29600976705551146,
+      "novel_share": 0.25333333333333335,
+      "new_term_rate": 0.04620343839541547,
+      "times_ordinary_embedding": 2.1384170805001457,
+      "times_ordinary_lexical": 1.4938757212794076,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 69,
+      "emerging_terms": [
+        "reddit",
+        "thoughts",
+        "shower",
+        "profound",
+        "week"
+      ],
+      "declining_terms": [
+        "dog",
+        "watch",
+        "weird",
+        "christmas",
+        "water"
+      ],
+      "term_shares": [
+        {
+          "term": "reddit",
+          "direction": "emerging",
+          "per_1000_reference": 0.264,
+          "per_1000_period": 6.447
+        },
+        {
+          "term": "thoughts",
+          "direction": "emerging",
+          "per_1000_reference": 0.132,
+          "per_1000_period": 6.447
+        },
+        {
+          "term": "shower",
+          "direction": "emerging",
+          "per_1000_reference": 0.132,
+          "per_1000_period": 6.447
+        },
+        {
+          "term": "profound",
+          "direction": "emerging",
+          "per_1000_reference": 0.132,
+          "per_1000_period": 6.447
+        },
+        {
+          "term": "week",
+          "direction": "emerging",
+          "per_1000_reference": 1.254,
+          "per_1000_period": 6.805
+        },
+        {
+          "term": "dog",
+          "direction": "declining",
+          "per_1000_reference": 4.488,
+          "per_1000_period": 1.074
+        },
+        {
+          "term": "watch",
+          "direction": "declining",
+          "per_1000_reference": 4.62,
+          "per_1000_period": 2.149
+        },
+        {
+          "term": "weird",
+          "direction": "declining",
+          "per_1000_reference": 2.97,
+          "per_1000_period": 1.074
+        },
+        {
+          "term": "christmas",
+          "direction": "declining",
+          "per_1000_reference": 1.98,
+          "per_1000_period": 0.358
+        },
+        {
+          "term": "water",
+          "direction": "declining",
+          "per_1000_reference": 1.716,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "'The Truman Show' Would Have Made An Amazing 'Black Mirror' Episode",
+        "'The Best Liar You Know Is Not The Best Liar You Know'",
+        "'Reading Is Just Looking At A Dead Piece Of Wood For Hours And Hallucinating'"
+      ]
+    },
+    {
+      "segment_id": "2018|WOMEN|vs 2016-17",
+      "period": "2018",
+      "category": "WOMEN",
+      "compared_with": "2016-17",
+      "n_reference": 257,
+      "n_period": 257,
+      "mmd2": 0.010109307926974953,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.06954471298622972,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.015134811401367188,
+      "novelty_mean": 0.2518039194990225,
+      "novel_share": 0.042801556420233464,
+      "new_term_rate": 0.031406703615729746,
+      "times_ordinary_embedding": 1.078300389237959,
+      "times_ordinary_lexical": 1.6457921470504395,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 141,
+      "emerging_terms": [
+        "funniest",
+        "movement",
+        "tweets",
+        "abuse",
+        "nassar"
+      ],
+      "declining_terms": [
+        "abortion",
+        "just",
+        "hillary",
+        "like",
+        "clinton"
+      ],
+      "term_shares": [
+        {
+          "term": "funniest",
+          "direction": "emerging",
+          "per_1000_reference": 0.385,
+          "per_1000_period": 5.015
+        },
+        {
+          "term": "movement",
+          "direction": "emerging",
+          "per_1000_reference": 0.817,
+          "per_1000_period": 5.806
+        },
+        {
+          "term": "tweets",
+          "direction": "emerging",
+          "per_1000_reference": 0.962,
+          "per_1000_period": 5.806
+        },
+        {
+          "term": "abuse",
+          "direction": "emerging",
+          "per_1000_reference": 0.865,
+          "per_1000_period": 5.015
+        },
+        {
+          "term": "nassar",
+          "direction": "emerging",
+          "per_1000_reference": 0.048,
+          "per_1000_period": 6.334
+        },
+        {
+          "term": "abortion",
+          "direction": "declining",
+          "per_1000_reference": 3.798,
+          "per_1000_period": 1.056
+        },
+        {
+          "term": "just",
+          "direction": "declining",
+          "per_1000_reference": 5.673,
+          "per_1000_period": 2.111
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 2.644,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 4.808,
+          "per_1000_period": 1.847
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 2.788,
+          "per_1000_period": 0.264
+        }
+      ],
+      "examples": [
+        "The 20 Funniest Tweets From Women This Week",
+        "The 20 Funniest Tweets From Women This Week",
+        "The 20 Funniest Tweets From Women This Week"
+      ]
+    },
+    {
+      "segment_id": "2018|WORLD NEWS|vs 2016-17",
+      "period": "2018",
+      "category": "WORLD NEWS",
+      "compared_with": "2016-17",
+      "n_reference": 791,
+      "n_period": 791,
+      "mmd2": 0.004553781451877459,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.04736062113321132,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.007845818996429443,
+      "novelty_mean": 0.2698692170768863,
+      "novel_share": 0.13147914032869784,
+      "new_term_rate": 0.03427355814686417,
+      "times_ordinary_embedding": 0.4413357472009326,
+      "times_ordinary_lexical": 0.6978118305185621,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 146,
+      "emerging_terms": [
+        "kim",
+        "summit",
+        "jong",
+        "korean",
+        "cave"
+      ],
+      "declining_terms": [
+        "isis",
+        "turkey",
+        "refugees",
+        "islamic",
+        "refugee"
+      ],
+      "term_shares": [
+        {
+          "term": "kim",
+          "direction": "emerging",
+          "per_1000_reference": 0.68,
+          "per_1000_period": 3.467
+        },
+        {
+          "term": "summit",
+          "direction": "emerging",
+          "per_1000_reference": 0.334,
+          "per_1000_period": 2.127
+        },
+        {
+          "term": "jong",
+          "direction": "emerging",
+          "per_1000_reference": 0.48,
+          "per_1000_period": 2.442
+        },
+        {
+          "term": "korean",
+          "direction": "emerging",
+          "per_1000_reference": 1.081,
+          "per_1000_period": 3.467
+        },
+        {
+          "term": "cave",
+          "direction": "emerging",
+          "per_1000_reference": 0.027,
+          "per_1000_period": 1.418
+        },
+        {
+          "term": "isis",
+          "direction": "declining",
+          "per_1000_reference": 2.748,
+          "per_1000_period": 0.394
+        },
+        {
+          "term": "turkey",
+          "direction": "declining",
+          "per_1000_reference": 2.401,
+          "per_1000_period": 0.236
+        },
+        {
+          "term": "refugees",
+          "direction": "declining",
+          "per_1000_reference": 2.201,
+          "per_1000_period": 0.63
+        },
+        {
+          "term": "islamic",
+          "direction": "declining",
+          "per_1000_reference": 1.774,
+          "per_1000_period": 0.473
+        },
+        {
+          "term": "refugee",
+          "direction": "declining",
+          "per_1000_reference": 1.534,
+          "per_1000_period": 0.315
+        }
+      ],
+      "examples": [
+        "Kim Jong Un Says He Has A 'Nuclear Button' On His Desk Ready For Use",
+        "Kim Jong Un Reopens Long-Closed Border Hotline With South Korea",
+        "Danish Inventor Peter Madsen Charged With Murdering Reporter On His Submarine"
+      ]
+    },
+    {
+      "segment_id": "2019|COMEDY|vs 2016-17",
+      "period": "2019",
+      "category": "COMEDY",
+      "compared_with": "2016-17",
+      "n_reference": 105,
+      "n_period": 105,
+      "mmd2": 0.02984181682327247,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.07039202782561316,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.03904074430465698,
+      "novelty_mean": 0.2291007501738412,
+      "novel_share": 0.01904761904761905,
+      "new_term_rate": 0.02475532527345999,
+      "times_ordinary_embedding": 3.63025058893963,
+      "times_ordinary_lexical": 1.6067933297679815,
+      "embedding_band": "high",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 105,
+      "emerging_terms": [
+        "host",
+        "late",
+        "wall",
+        "shutdown",
+        "impeachment"
+      ],
+      "declining_terms": [
+        "like",
+        "twitter",
+        "maher",
+        "bee",
+        "samantha"
+      ],
+      "term_shares": [
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 3.086,
+          "per_1000_period": 21.301
+        },
+        {
+          "term": "late",
+          "direction": "emerging",
+          "per_1000_reference": 3.257,
+          "per_1000_period": 20.15
+        },
+        {
+          "term": "wall",
+          "direction": "emerging",
+          "per_1000_reference": 0.643,
+          "per_1000_period": 9.787
+        },
+        {
+          "term": "shutdown",
+          "direction": "emerging",
+          "per_1000_reference": 0.086,
+          "per_1000_period": 5.181
+        },
+        {
+          "term": "impeachment",
+          "direction": "emerging",
+          "per_1000_reference": 0.043,
+          "per_1000_period": 7.484
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 7.114,
+          "per_1000_period": 1.727
+        },
+        {
+          "term": "twitter",
+          "direction": "declining",
+          "per_1000_reference": 3.6,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "maher",
+          "direction": "declining",
+          "per_1000_reference": 3.643,
+          "per_1000_period": 1.151
+        },
+        {
+          "term": "bee",
+          "direction": "declining",
+          "per_1000_reference": 3.557,
+          "per_1000_period": 1.151
+        },
+        {
+          "term": "samantha",
+          "direction": "declining",
+          "per_1000_reference": 3.129,
+          "per_1000_period": 1.151
+        }
+      ],
+      "examples": [
+        "Stephen Colbert Gives Donald Trump’s Wall Speech An Uproarious Alternate Ending",
+        "Trevor Noah Breaks Down Why The Idea Of Trump Being A Russian Spy Is Preposterous",
+        "Seth Meyers Completely Destroys One Of Trump's Biggest Myths"
+      ]
+    },
+    {
+      "segment_id": "2019|ENTERTAINMENT|vs 2016-17",
+      "period": "2019",
+      "category": "ENTERTAINMENT",
+      "compared_with": "2016-17",
+      "n_reference": 191,
+      "n_period": 191,
+      "mmd2": 0.005015849305932463,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.05273469489865945,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.01378399133682251,
+      "novelty_mean": 0.2891950342043532,
+      "novel_share": 0.17277486910994763,
+      "new_term_rate": 0.042748091603053436,
+      "times_ordinary_embedding": 1.0175005992752575,
+      "times_ordinary_lexical": 0.9682013942009533,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 191,
+      "emerging_terms": [
+        "said",
+        "markle",
+        "meghan",
+        "duke",
+        "officials"
+      ],
+      "declining_terms": [
+        "like",
+        "just",
+        "love",
+        "kardashian",
+        "watch"
+      ],
+      "term_shares": [
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 2.64,
+          "per_1000_period": 7.939
+        },
+        {
+          "term": "markle",
+          "direction": "emerging",
+          "per_1000_reference": 0.024,
+          "per_1000_period": 1.832
+        },
+        {
+          "term": "meghan",
+          "direction": "emerging",
+          "per_1000_reference": 0.097,
+          "per_1000_period": 1.832
+        },
+        {
+          "term": "duke",
+          "direction": "emerging",
+          "per_1000_reference": 0.012,
+          "per_1000_period": 2.137
+        },
+        {
+          "term": "officials",
+          "direction": "emerging",
+          "per_1000_reference": 0.024,
+          "per_1000_period": 1.221
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 3.942,
+          "per_1000_period": 0.611
+        },
+        {
+          "term": "just",
+          "direction": "declining",
+          "per_1000_reference": 4.964,
+          "per_1000_period": 1.832
+        },
+        {
+          "term": "love",
+          "direction": "declining",
+          "per_1000_reference": 2.518,
+          "per_1000_period": 0.611
+        },
+        {
+          "term": "kardashian",
+          "direction": "declining",
+          "per_1000_reference": 2.032,
+          "per_1000_period": 0.305
+        },
+        {
+          "term": "watch",
+          "direction": "declining",
+          "per_1000_reference": 2.032,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "Alec Baldwin Pleads Guilty In Parking Tussle, Agrees To Anger Management",
+        "Rami Malek Says Bryan Singer’s Accusers Deserve ‘To Have Their Voice Heard’",
+        "21 Savage Speaks Out For The First Time Since Release"
+      ]
+    },
+    {
+      "segment_id": "2019|MEDIA|vs 2016-17",
+      "period": "2019",
+      "category": "MEDIA",
+      "compared_with": "2016-17",
+      "n_reference": 73,
+      "n_period": 73,
+      "mmd2": 0.017007793242875824,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.07438174170985812,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.02983856201171875,
+      "novelty_mean": 0.2428553137060714,
+      "novel_share": 0.0,
+      "new_term_rate": 0.02534562211981567,
+      "times_ordinary_embedding": 1.0327569379029227,
+      "times_ordinary_lexical": 1.1492970491820846,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 73,
+      "emerging_terms": [
+        "host",
+        "called",
+        "ingraham",
+        "delivers",
+        "laura"
+      ],
+      "declining_terms": [
+        "media",
+        "says",
+        "press",
+        "times",
+        "journalists"
+      ],
+      "term_shares": [
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 4.583,
+          "per_1000_period": 19.201
+        },
+        {
+          "term": "called",
+          "direction": "emerging",
+          "per_1000_reference": 1.075,
+          "per_1000_period": 7.68
+        },
+        {
+          "term": "ingraham",
+          "direction": "emerging",
+          "per_1000_reference": 0.057,
+          "per_1000_period": 4.608
+        },
+        {
+          "term": "delivers",
+          "direction": "emerging",
+          "per_1000_reference": 0.113,
+          "per_1000_period": 3.84
+        },
+        {
+          "term": "laura",
+          "direction": "emerging",
+          "per_1000_reference": 0.17,
+          "per_1000_period": 3.84
+        },
+        {
+          "term": "media",
+          "direction": "declining",
+          "per_1000_reference": 10.015,
+          "per_1000_period": 4.608
+        },
+        {
+          "term": "says",
+          "direction": "declining",
+          "per_1000_reference": 6.903,
+          "per_1000_period": 1.536
+        },
+        {
+          "term": "press",
+          "direction": "declining",
+          "per_1000_reference": 4.47,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "times",
+          "direction": "declining",
+          "per_1000_reference": 4.3,
+          "per_1000_period": 1.536
+        },
+        {
+          "term": "journalists",
+          "direction": "declining",
+          "per_1000_reference": 3.338,
+          "per_1000_period": 0.768
+        }
+      ],
+      "examples": [
+        "CNN’s Anderson Cooper Makes Striking Point About Donald Trump's ‘Good General’ Claim",
+        "Laura Ingraham: Democrats Oppose Wall So Immigrants Can Flip States",
+        "Chris Matthews Torches Senate: What Are They Doing Except D**king Around?"
+      ]
+    },
+    {
+      "segment_id": "2019|POLITICS|vs 2016-17",
+      "period": "2019",
+      "category": "POLITICS",
+      "compared_with": "2016-17",
+      "n_reference": 507,
+      "n_period": 507,
+      "mmd2": 0.009368560387658653,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.07419401894598737,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.012820005416870117,
+      "novelty_mean": 0.24694612980829422,
+      "novel_share": 0.015779092702169626,
+      "new_term_rate": 0.027916035490153646,
+      "times_ordinary_embedding": 0.696236828516513,
+      "times_ordinary_lexical": 0.7678233989769102,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 399,
+      "emerging_terms": [
+        "impeachment",
+        "ukraine",
+        "giuliani",
+        "mueller",
+        "biden"
+      ],
+      "declining_terms": [
+        "donald",
+        "clinton",
+        "hillary",
+        "obama",
+        "health"
+      ],
+      "term_shares": [
+        {
+          "term": "impeachment",
+          "direction": "emerging",
+          "per_1000_reference": 0.107,
+          "per_1000_period": 6.059
+        },
+        {
+          "term": "ukraine",
+          "direction": "emerging",
+          "per_1000_reference": 0.05,
+          "per_1000_period": 2.813
+        },
+        {
+          "term": "giuliani",
+          "direction": "emerging",
+          "per_1000_reference": 0.124,
+          "per_1000_period": 2.272
+        },
+        {
+          "term": "mueller",
+          "direction": "emerging",
+          "per_1000_reference": 0.312,
+          "per_1000_period": 2.921
+        },
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.365,
+          "per_1000_period": 2.705
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 13.293,
+          "per_1000_period": 5.518
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 6.382,
+          "per_1000_period": 1.082
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 4.375,
+          "per_1000_period": 0.866
+        },
+        {
+          "term": "obama",
+          "direction": "declining",
+          "per_1000_reference": 4.007,
+          "per_1000_period": 1.515
+        },
+        {
+          "term": "health",
+          "direction": "declining",
+          "per_1000_reference": 2.714,
+          "per_1000_period": 0.433
+        }
+      ],
+      "examples": [
+        "GOP Lawmakers To Trump: We Can Still Work With Democrats",
+        "House Democrats Remain Divided On Impeachment After Mueller Hearing",
+        "Here Are The Democratic Impeachment Holdouts"
+      ]
+    },
+    {
+      "segment_id": "2019|WORLD NEWS|vs 2016-17",
+      "period": "2019",
+      "category": "WORLD NEWS",
+      "compared_with": "2016-17",
+      "n_reference": 349,
+      "n_period": 349,
+      "mmd2": 0.009862961726192498,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.08247168947751671,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.017304599285125732,
+      "novelty_mean": 0.2702416207182373,
+      "novel_share": 0.13753581661891118,
+      "new_term_rate": 0.037620980330939746,
+      "times_ordinary_embedding": 0.9558819695329773,
+      "times_ordinary_lexical": 1.2151386367673294,
+      "embedding_band": "low",
+      "lexical_band": "medium",
+      "severity": "medium",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 146,
+      "emerging_terms": [
+        "hong",
+        "kong",
+        "protesters",
+        "johnson",
+        "sunday"
+      ],
+      "declining_terms": [
+        "syria",
+        "syrian",
+        "isis",
+        "war",
+        "turkey"
+      ],
+      "term_shares": [
+        {
+          "term": "hong",
+          "direction": "emerging",
+          "per_1000_reference": 0.213,
+          "per_1000_period": 7.181
+        },
+        {
+          "term": "kong",
+          "direction": "emerging",
+          "per_1000_reference": 0.173,
+          "per_1000_period": 7.025
+        },
+        {
+          "term": "protesters",
+          "direction": "emerging",
+          "per_1000_reference": 0.467,
+          "per_1000_period": 5.932
+        },
+        {
+          "term": "johnson",
+          "direction": "emerging",
+          "per_1000_reference": 0.173,
+          "per_1000_period": 3.434
+        },
+        {
+          "term": "sunday",
+          "direction": "emerging",
+          "per_1000_reference": 0.72,
+          "per_1000_period": 4.839
+        },
+        {
+          "term": "syria",
+          "direction": "declining",
+          "per_1000_reference": 3.508,
+          "per_1000_period": 0.624
+        },
+        {
+          "term": "syrian",
+          "direction": "declining",
+          "per_1000_reference": 2.788,
+          "per_1000_period": 0.312
+        },
+        {
+          "term": "isis",
+          "direction": "declining",
+          "per_1000_reference": 2.748,
+          "per_1000_period": 0.312
+        },
+        {
+          "term": "war",
+          "direction": "declining",
+          "per_1000_reference": 2.855,
+          "per_1000_period": 0.781
+        },
+        {
+          "term": "turkey",
+          "direction": "declining",
+          "per_1000_reference": 2.401,
+          "per_1000_period": 0.468
+        }
+      ],
+      "examples": [
+        "Thousands Of Protesters Take To Hong Kong Streets Against Extradition Law",
+        "Hong Kong To Push Ahead With Extradition Bill That Sparked Huge Protest",
+        "Police Turn Violent In Massive Protests In Hong Kong Over Controversial Extradition Bill"
+      ]
+    },
+    {
+      "segment_id": "2020|ENTERTAINMENT|vs 2016-17",
+      "period": "2020",
+      "category": "ENTERTAINMENT",
+      "compared_with": "2016-17",
+      "n_reference": 395,
+      "n_period": 395,
+      "mmd2": 0.009992081939043773,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.08518526202003618,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.01734977960586548,
+      "novelty_mean": 0.2910822383965118,
+      "novel_share": 0.1949367088607595,
+      "new_term_rate": 0.0553034600113443,
+      "times_ordinary_embedding": 2.0269646755455,
+      "times_ordinary_lexical": 1.5639891273035345,
+      "embedding_band": "low",
+      "lexical_band": "medium",
+      "severity": "medium",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 191,
+      "emerging_terms": [
+        "meghan",
+        "said",
+        "actor",
+        "president",
+        "markle"
+      ],
+      "declining_terms": [
+        "just",
+        "trailer",
+        "kardashian",
+        "like",
+        "movie"
+      ],
+      "term_shares": [
+        {
+          "term": "meghan",
+          "direction": "emerging",
+          "per_1000_reference": 0.097,
+          "per_1000_period": 2.836
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 2.64,
+          "per_1000_period": 8.083
+        },
+        {
+          "term": "actor",
+          "direction": "emerging",
+          "per_1000_reference": 2.53,
+          "per_1000_period": 8.225
+        },
+        {
+          "term": "president",
+          "direction": "emerging",
+          "per_1000_reference": 1.046,
+          "per_1000_period": 3.971
+        },
+        {
+          "term": "markle",
+          "direction": "emerging",
+          "per_1000_reference": 0.024,
+          "per_1000_period": 2.552
+        },
+        {
+          "term": "just",
+          "direction": "declining",
+          "per_1000_reference": 4.964,
+          "per_1000_period": 1.843
+        },
+        {
+          "term": "trailer",
+          "direction": "declining",
+          "per_1000_reference": 2.238,
+          "per_1000_period": 0.284
+        },
+        {
+          "term": "kardashian",
+          "direction": "declining",
+          "per_1000_reference": 2.032,
+          "per_1000_period": 0.284
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 3.942,
+          "per_1000_period": 1.702
+        },
+        {
+          "term": "movie",
+          "direction": "declining",
+          "per_1000_reference": 2.798,
+          "per_1000_period": 1.134
+        }
+      ],
+      "examples": [
+        "Meghan Markle, Prince Harry Are Officially Done With Their Sussex Royal Instagram",
+        "Meghan Markle And Prince Harry's Royal Exit Is Complete",
+        "Meghan Markle And Prince Harry Cut Off Tabloids In Savage Letter"
+      ]
+    },
+    {
+      "segment_id": "2020|FOOD & DRINK|vs 2016-17",
+      "period": "2020",
+      "category": "FOOD & DRINK",
+      "compared_with": "2016-17",
+      "n_reference": 54,
+      "n_period": 54,
+      "mmd2": 0.06445427018488759,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.12400633939468297,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.08185213804244995,
+      "novelty_mean": 0.27992259793811375,
+      "novel_share": 0.018518518518518517,
+      "new_term_rate": 0.07904191616766468,
+      "times_ordinary_embedding": 17.31900422838318,
+      "times_ordinary_lexical": 7.083350831946942,
+      "embedding_band": "high",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 54,
+      "emerging_terms": [
+        "trump",
+        "delivery",
+        "coronavirus",
+        "experts",
+        "pantry"
+      ],
+      "declining_terms": [
+        "summer",
+        "day",
+        "delicious",
+        "wine",
+        "meal"
+      ],
+      "term_shares": [
+        {
+          "term": "trump",
+          "direction": "emerging",
+          "per_1000_reference": 1.411,
+          "per_1000_period": 2.395
+        },
+        {
+          "term": "delivery",
+          "direction": "emerging",
+          "per_1000_reference": 0.188,
+          "per_1000_period": 9.581
+        },
+        {
+          "term": "coronavirus",
+          "direction": "emerging",
+          "per_1000_reference": 0.0,
+          "per_1000_period": 23.952
+        },
+        {
+          "term": "experts",
+          "direction": "emerging",
+          "per_1000_reference": 0.188,
+          "per_1000_period": 5.988
+        },
+        {
+          "term": "pantry",
+          "direction": "emerging",
+          "per_1000_reference": 0.188,
+          "per_1000_period": 5.988
+        },
+        {
+          "term": "summer",
+          "direction": "declining",
+          "per_1000_reference": 4.61,
+          "per_1000_period": 1.198
+        },
+        {
+          "term": "day",
+          "direction": "declining",
+          "per_1000_reference": 4.516,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "delicious",
+          "direction": "declining",
+          "per_1000_reference": 4.046,
+          "per_1000_period": 1.198
+        },
+        {
+          "term": "wine",
+          "direction": "declining",
+          "per_1000_reference": 3.67,
+          "per_1000_period": 1.198
+        },
+        {
+          "term": "meal",
+          "direction": "declining",
+          "per_1000_reference": 3.575,
+          "per_1000_period": 1.198
+        }
+      ],
+      "examples": [
+        "Eric Rivera On Trump And Goya: You Call Us Rapists, But Now You Like Our Canned Food?"
+      ]
+    },
+    {
+      "segment_id": "2020|PARENTING|vs 2016-17",
+      "period": "2020",
+      "category": "PARENTING",
+      "compared_with": "2016-17",
+      "n_reference": 58,
+      "n_period": 58,
+      "mmd2": 0.04026100655830134,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.07800517910183091,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.05845010280609131,
+      "novelty_mean": 0.2508796638455884,
+      "novel_share": 0.034482758620689655,
+      "new_term_rate": 0.04702970297029703,
+      "times_ordinary_embedding": 14.753926599178188,
+      "times_ordinary_lexical": 5.399283515360721,
+      "embedding_band": "high",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 58,
+      "emerging_terms": [
+        "funniest",
+        "tweets",
+        "week",
+        "teachers",
+        "privilege"
+      ],
+      "declining_terms": [
+        "mom",
+        "dad",
+        "baby",
+        "moms",
+        "daughter"
+      ],
+      "term_shares": [
+        {
+          "term": "funniest",
+          "direction": "emerging",
+          "per_1000_reference": 0.262,
+          "per_1000_period": 12.376
+        },
+        {
+          "term": "tweets",
+          "direction": "emerging",
+          "per_1000_reference": 0.654,
+          "per_1000_period": 13.614
+        },
+        {
+          "term": "week",
+          "direction": "emerging",
+          "per_1000_reference": 1.308,
+          "per_1000_period": 12.376
+        },
+        {
+          "term": "teachers",
+          "direction": "emerging",
+          "per_1000_reference": 0.349,
+          "per_1000_period": 6.188
+        },
+        {
+          "term": "privilege",
+          "direction": "emerging",
+          "per_1000_reference": 0.131,
+          "per_1000_period": 4.95
+        },
+        {
+          "term": "mom",
+          "direction": "declining",
+          "per_1000_reference": 13.165,
+          "per_1000_period": 4.95
+        },
+        {
+          "term": "dad",
+          "direction": "declining",
+          "per_1000_reference": 6.452,
+          "per_1000_period": 1.238
+        },
+        {
+          "term": "baby",
+          "direction": "declining",
+          "per_1000_reference": 7.28,
+          "per_1000_period": 3.713
+        },
+        {
+          "term": "moms",
+          "direction": "declining",
+          "per_1000_reference": 5.144,
+          "per_1000_period": 1.238
+        },
+        {
+          "term": "daughter",
+          "direction": "declining",
+          "per_1000_reference": 5.536,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "The Funniest Tweets From Parents This Week (April 11-17)",
+        "The Funniest Tweets From Parents This Week (April 25-May 1)",
+        "The Funniest Tweets From Parents This Week (May 2-8)"
+      ]
+    },
+    {
+      "segment_id": "2020|POLITICS|vs 2016-17",
+      "period": "2020",
+      "category": "POLITICS",
+      "compared_with": "2016-17",
+      "n_reference": 802,
+      "n_period": 802,
+      "mmd2": 0.01335721700993664,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.09872816548070823,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.016234993934631348,
+      "novelty_mean": 0.25609435471810604,
+      "novel_share": 0.02743142144638404,
+      "new_term_rate": 0.047841230203062364,
+      "times_ordinary_embedding": 0.9926590664939148,
+      "times_ordinary_lexical": 1.0217238083481937,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 399,
+      "emerging_terms": [
+        "biden",
+        "joe",
+        "fox",
+        "twitter",
+        "host"
+      ],
+      "declining_terms": [
+        "donald",
+        "clinton",
+        "hillary",
+        "obama",
+        "care"
+      ],
+      "term_shares": [
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.365,
+          "per_1000_period": 9.857
+        },
+        {
+          "term": "joe",
+          "direction": "emerging",
+          "per_1000_reference": 0.549,
+          "per_1000_period": 4.929
+        },
+        {
+          "term": "fox",
+          "direction": "emerging",
+          "per_1000_reference": 0.362,
+          "per_1000_period": 3.154
+        },
+        {
+          "term": "twitter",
+          "direction": "emerging",
+          "per_1000_reference": 0.734,
+          "per_1000_period": 3.877
+        },
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 0.164,
+          "per_1000_period": 2.103
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 13.293,
+          "per_1000_period": 6.374
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 6.382,
+          "per_1000_period": 0.394
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 4.375,
+          "per_1000_period": 0.197
+        },
+        {
+          "term": "obama",
+          "direction": "declining",
+          "per_1000_reference": 4.007,
+          "per_1000_period": 1.511
+        },
+        {
+          "term": "care",
+          "direction": "declining",
+          "per_1000_reference": 2.493,
+          "per_1000_period": 0.591
+        }
+      ],
+      "examples": [
+        "Biden Calls Sanders' Social Security Attacks \"A Lie\"",
+        "Joe Biden: Trump And His Allies 'Like' Russia Interfering In U.S. Elections",
+        "Joe Biden Accused Of Sexually Assaulting Senate Aide In 1993"
+      ]
+    },
+    {
+      "segment_id": "2020|STYLE & BEAUTY|vs 2016-17",
+      "period": "2020",
+      "category": "STYLE & BEAUTY",
+      "compared_with": "2016-17",
+      "n_reference": 75,
+      "n_period": 75,
+      "mmd2": 0.07643693820804676,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.13068595976061526,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.10978907346725464,
+      "novelty_mean": 0.304963542620341,
+      "novel_share": 0.21333333333333335,
+      "new_term_rate": 0.08325624421831637,
+      "times_ordinary_embedding": 16.570788799711305,
+      "times_ordinary_lexical": 4.393324507660691,
+      "embedding_band": "high",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 75,
+      "emerging_terms": [
+        "face",
+        "home",
+        "masks",
+        "experts",
+        "coronavirus"
+      ],
+      "declining_terms": [
+        "fashion",
+        "week",
+        "red",
+        "style",
+        "like"
+      ],
+      "term_shares": [
+        {
+          "term": "face",
+          "direction": "emerging",
+          "per_1000_reference": 1.187,
+          "per_1000_period": 22.202
+        },
+        {
+          "term": "home",
+          "direction": "emerging",
+          "per_1000_reference": 0.593,
+          "per_1000_period": 11.101
+        },
+        {
+          "term": "masks",
+          "direction": "emerging",
+          "per_1000_reference": 0.593,
+          "per_1000_period": 8.326
+        },
+        {
+          "term": "experts",
+          "direction": "emerging",
+          "per_1000_reference": 0.297,
+          "per_1000_period": 6.475
+        },
+        {
+          "term": "coronavirus",
+          "direction": "emerging",
+          "per_1000_reference": 0.0,
+          "per_1000_period": 24.052
+        },
+        {
+          "term": "fashion",
+          "direction": "declining",
+          "per_1000_reference": 8.306,
+          "per_1000_period": 5.55
+        },
+        {
+          "term": "week",
+          "direction": "declining",
+          "per_1000_reference": 4.746,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "red",
+          "direction": "declining",
+          "per_1000_reference": 4.45,
+          "per_1000_period": 0.925
+        },
+        {
+          "term": "style",
+          "direction": "declining",
+          "per_1000_reference": 5.933,
+          "per_1000_period": 3.7
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 7.416,
+          "per_1000_period": 3.7
+        }
+      ],
+      "examples": [
+        "The President Of Slovakia Has, Uh, Nailed Her Coronavirus Look",
+        "How To Make Coronavirus Face Masks, And How Effective They Are",
+        "How Often Do You Really Need To Wash Your Face?"
+      ]
+    },
+    {
+      "segment_id": "2020|WELLNESS|vs 2016-17",
+      "period": "2020",
+      "category": "WELLNESS",
+      "compared_with": "2016-17",
+      "n_reference": 67,
+      "n_period": 67,
+      "mmd2": 0.10291135830382381,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.13020294760514328,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.10656571388244629,
+      "novelty_mean": 0.28614200584924043,
+      "novel_share": 0.07462686567164178,
+      "new_term_rate": 0.09714889123548047,
+      "times_ordinary_embedding": 9.81444018675442,
+      "times_ordinary_lexical": 4.598617976382178,
+      "embedding_band": "high",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 67,
+      "emerging_terms": [
+        "pandemic",
+        "experts",
+        "face",
+        "coronavirus",
+        "covid-19"
+      ],
+      "declining_terms": [
+        "life",
+        "guide",
+        "cancer",
+        "sleep",
+        "zika"
+      ],
+      "term_shares": [
+        {
+          "term": "pandemic",
+          "direction": "emerging",
+          "per_1000_reference": 0.18,
+          "per_1000_period": 27.455
+        },
+        {
+          "term": "experts",
+          "direction": "emerging",
+          "per_1000_reference": 1.021,
+          "per_1000_period": 13.728
+        },
+        {
+          "term": "face",
+          "direction": "emerging",
+          "per_1000_reference": 0.93,
+          "per_1000_period": 10.56
+        },
+        {
+          "term": "coronavirus",
+          "direction": "emerging",
+          "per_1000_reference": 0.0,
+          "per_1000_period": 47.518
+        },
+        {
+          "term": "covid-19",
+          "direction": "emerging",
+          "per_1000_reference": 0.0,
+          "per_1000_period": 29.567
+        },
+        {
+          "term": "life",
+          "direction": "declining",
+          "per_1000_reference": 4.772,
+          "per_1000_period": 1.056
+        },
+        {
+          "term": "guide",
+          "direction": "declining",
+          "per_1000_reference": 3.572,
+          "per_1000_period": 1.056
+        },
+        {
+          "term": "cancer",
+          "direction": "declining",
+          "per_1000_reference": 4.412,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "sleep",
+          "direction": "declining",
+          "per_1000_reference": 4.202,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "zika",
+          "direction": "declining",
+          "per_1000_reference": 3.902,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "Medical Workers Wear Pics Of Themselves Smiling To Comfort COVID-19 Patients",
+        "How To Take Care Of Your Mental Health During The Coronavirus Pandemic",
+        "Coronavirus And Grief: Everything You Need To Know"
+      ]
+    },
+    {
+      "segment_id": "2020|WORLD NEWS|vs 2016-17",
+      "period": "2020",
+      "category": "WORLD NEWS",
+      "compared_with": "2016-17",
+      "n_reference": 146,
+      "n_period": 146,
+      "mmd2": 0.02704003839016622,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.09398886916619997,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.03919500112533569,
+      "novelty_mean": 0.28707510600351305,
+      "novel_share": 0.06164383561643835,
+      "new_term_rate": 0.06968773800456969,
+      "times_ordinary_embedding": 2.6206210538157917,
+      "times_ordinary_lexical": 1.3848328689938467,
+      "embedding_band": "high",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 146,
+      "emerging_terms": [
+        "cases",
+        "outbreak",
+        "iran",
+        "troops",
+        "virus"
+      ],
+      "declining_terms": [
+        "north",
+        "syria",
+        "syrian",
+        "korea",
+        "russia"
+      ],
+      "term_shares": [
+        {
+          "term": "cases",
+          "direction": "emerging",
+          "per_1000_reference": 0.12,
+          "per_1000_period": 4.189
+        },
+        {
+          "term": "outbreak",
+          "direction": "emerging",
+          "per_1000_reference": 0.16,
+          "per_1000_period": 4.189
+        },
+        {
+          "term": "iran",
+          "direction": "emerging",
+          "per_1000_reference": 2.241,
+          "per_1000_period": 11.424
+        },
+        {
+          "term": "troops",
+          "direction": "emerging",
+          "per_1000_reference": 0.534,
+          "per_1000_period": 4.95
+        },
+        {
+          "term": "virus",
+          "direction": "emerging",
+          "per_1000_reference": 0.013,
+          "per_1000_period": 6.474
+        },
+        {
+          "term": "north",
+          "direction": "declining",
+          "per_1000_reference": 4.722,
+          "per_1000_period": 0.381
+        },
+        {
+          "term": "syria",
+          "direction": "declining",
+          "per_1000_reference": 3.508,
+          "per_1000_period": 0.762
+        },
+        {
+          "term": "syrian",
+          "direction": "declining",
+          "per_1000_reference": 2.788,
+          "per_1000_period": 0.381
+        },
+        {
+          "term": "korea",
+          "direction": "declining",
+          "per_1000_reference": 4.482,
+          "per_1000_period": 2.285
+        },
+        {
+          "term": "russia",
+          "direction": "declining",
+          "per_1000_reference": 2.548,
+          "per_1000_period": 0.381
+        }
+      ],
+      "examples": [
+        "China Reports 17 New Cases Of Deadly SARS-Like Virus Ahead Of Lunar New Year Holiday",
+        "China Halts Transportation Out Of Wuhan To Stop Spread Of Coronavirus",
+        "China Reports Over 1,280 Coronavirus Cases, Death Toll At 41"
+      ]
+    },
+    {
+      "segment_id": "2021|ENTERTAINMENT|vs 2016-17",
+      "period": "2021",
+      "category": "ENTERTAINMENT",
+      "compared_with": "2016-17",
+      "n_reference": 341,
+      "n_period": 341,
+      "mmd2": 0.009428842093686107,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.0754331916432936,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.017139732837677002,
+      "novelty_mean": 0.2927365962011723,
+      "novel_share": 0.16129032258064516,
+      "new_term_rate": 0.05126091972968518,
+      "times_ordinary_embedding": 1.9127074789608056,
+      "times_ordinary_lexical": 1.3849425213972584,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 191,
+      "emerging_terms": [
+        "late",
+        "host",
+        "rapper",
+        "said",
+        "fox"
+      ],
+      "declining_terms": [
+        "just",
+        "movie",
+        "game",
+        "donald",
+        "trailer"
+      ],
+      "term_shares": [
+        {
+          "term": "late",
+          "direction": "emerging",
+          "per_1000_reference": 0.961,
+          "per_1000_period": 5.274
+        },
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 0.888,
+          "per_1000_period": 4.78
+        },
+        {
+          "term": "rapper",
+          "direction": "emerging",
+          "per_1000_reference": 0.426,
+          "per_1000_period": 2.967
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 2.64,
+          "per_1000_period": 7.417
+        },
+        {
+          "term": "fox",
+          "direction": "emerging",
+          "per_1000_reference": 0.292,
+          "per_1000_period": 2.308
+        },
+        {
+          "term": "just",
+          "direction": "declining",
+          "per_1000_reference": 4.964,
+          "per_1000_period": 1.648
+        },
+        {
+          "term": "movie",
+          "direction": "declining",
+          "per_1000_reference": 2.798,
+          "per_1000_period": 0.824
+        },
+        {
+          "term": "game",
+          "direction": "declining",
+          "per_1000_reference": 2.336,
+          "per_1000_period": 0.494
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 3.114,
+          "per_1000_period": 0.494
+        },
+        {
+          "term": "trailer",
+          "direction": "declining",
+          "per_1000_reference": 2.238,
+          "per_1000_period": 0.659
+        }
+      ],
+      "examples": [
+        "Chadwick Boseman's Widow Overcome With Emotion As She Accepts Award For Him",
+        "Rob Lowe Actually Believes That Prince Harry Is Sporting A Ponytail",
+        "Stephen Colbert Sprinkles One Last Joke On An Infamous Trump Topic Into His Monologue"
+      ]
+    },
+    {
+      "segment_id": "2021|POLITICS|vs 2016-17",
+      "period": "2021",
+      "category": "POLITICS",
+      "compared_with": "2016-17",
+      "n_reference": 823,
+      "n_period": 823,
+      "mmd2": 0.011852698784217242,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.10506747907913216,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.01542884111404419,
+      "novelty_mean": 0.26320372165190925,
+      "novel_share": 0.026731470230862697,
+      "new_term_rate": 0.04029699200406143,
+      "times_ordinary_embedding": 0.8808488251573638,
+      "times_ordinary_lexical": 1.0873284673688337,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 399,
+      "emerging_terms": [
+        "biden",
+        "capitol",
+        "joe",
+        "jan",
+        "fox"
+      ],
+      "declining_terms": [
+        "trump",
+        "donald",
+        "clinton",
+        "obama",
+        "campaign"
+      ],
+      "term_shares": [
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.365,
+          "per_1000_period": 12.882
+        },
+        {
+          "term": "capitol",
+          "direction": "emerging",
+          "per_1000_reference": 0.171,
+          "per_1000_period": 5.648
+        },
+        {
+          "term": "joe",
+          "direction": "emerging",
+          "per_1000_reference": 0.549,
+          "per_1000_period": 4.696
+        },
+        {
+          "term": "jan",
+          "direction": "emerging",
+          "per_1000_reference": 0.094,
+          "per_1000_period": 3.236
+        },
+        {
+          "term": "fox",
+          "direction": "emerging",
+          "per_1000_reference": 0.362,
+          "per_1000_period": 2.983
+        },
+        {
+          "term": "trump",
+          "direction": "declining",
+          "per_1000_reference": 36.188,
+          "per_1000_period": 19.736
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 13.293,
+          "per_1000_period": 4.252
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 6.382,
+          "per_1000_period": 0.063
+        },
+        {
+          "term": "obama",
+          "direction": "declining",
+          "per_1000_reference": 4.007,
+          "per_1000_period": 0.317
+        },
+        {
+          "term": "campaign",
+          "direction": "declining",
+          "per_1000_reference": 3.434,
+          "per_1000_period": 1.015
+        }
+      ],
+      "examples": [
+        "In Dueling New Year Messages, Trump Reflects, Biden Looks Ahead",
+        "GOP Fissures Over Trump's Electoral College Challenge Of Biden",
+        "Amy Klobuchar To Ted Cruz And Other GOP Senators Blocking Biden Certification: 'Please Get A Grip'"
+      ]
+    },
+    {
+      "segment_id": "2021|SPORTS|vs 2016-17",
+      "period": "2021",
+      "category": "SPORTS",
+      "compared_with": "2016-17",
+      "n_reference": 59,
+      "n_period": 59,
+      "mmd2": 0.015952011455513504,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.08898589530006662,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.03890514373779297,
+      "novelty_mean": 0.2931206640550646,
+      "novel_share": 0.2033898305084746,
+      "new_term_rate": 0.0777676120768527,
+      "times_ordinary_embedding": 2.671314544245166,
+      "times_ordinary_lexical": 2.176101226510876,
+      "embedding_band": "low",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "wording",
+      "significant": true,
+      "flagged": true,
+      "null_window": "quarter",
+      "null_n": 59,
+      "emerging_terms": [
+        "tokyo",
+        "health",
+        "mental",
+        "drops",
+        "french"
+      ],
+      "declining_terms": [
+        "nfl",
+        "game",
+        "nba",
+        "players",
+        "football"
+      ],
+      "term_shares": [
+        {
+          "term": "tokyo",
+          "direction": "emerging",
+          "per_1000_reference": 0.045,
+          "per_1000_period": 10.064
+        },
+        {
+          "term": "health",
+          "direction": "emerging",
+          "per_1000_reference": 0.45,
+          "per_1000_period": 5.489
+        },
+        {
+          "term": "mental",
+          "direction": "emerging",
+          "per_1000_reference": 0.045,
+          "per_1000_period": 4.575
+        },
+        {
+          "term": "drops",
+          "direction": "emerging",
+          "per_1000_reference": 0.09,
+          "per_1000_period": 3.66
+        },
+        {
+          "term": "french",
+          "direction": "emerging",
+          "per_1000_reference": 0.18,
+          "per_1000_period": 3.66
+        },
+        {
+          "term": "nfl",
+          "direction": "declining",
+          "per_1000_reference": 7.514,
+          "per_1000_period": 1.83
+        },
+        {
+          "term": "game",
+          "direction": "declining",
+          "per_1000_reference": 6.12,
+          "per_1000_period": 0.915
+        },
+        {
+          "term": "nba",
+          "direction": "declining",
+          "per_1000_reference": 4.86,
+          "per_1000_period": 1.83
+        },
+        {
+          "term": "players",
+          "direction": "declining",
+          "per_1000_reference": 3.69,
+          "per_1000_period": 0.915
+        },
+        {
+          "term": "football",
+          "direction": "declining",
+          "per_1000_reference": 3.915,
+          "per_1000_period": 1.83
+        }
+      ],
+      "examples": [
+        "10,000 Volunteers Drop Out Of Tokyo Olympics",
+        "Tokyo Olympics To Allow Limit Of 10,000 Local Fans In Venues",
+        "Serena Williams Says She Won't Play At Tokyo Olympics"
+      ]
+    },
+    {
+      "segment_id": "2021|WORLD NEWS|vs 2016-17",
+      "period": "2021",
+      "category": "WORLD NEWS",
+      "compared_with": "2016-17",
+      "n_reference": 198,
+      "n_period": 198,
+      "mmd2": 0.015402525188384586,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.0732240452031585,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.027431488037109375,
+      "novelty_mean": 0.2820810793024121,
+      "novel_share": 0.10606060606060606,
+      "new_term_rate": 0.06173526140155729,
+      "times_ordinary_embedding": 1.4927560829679931,
+      "times_ordinary_lexical": 1.0788837603601196,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 146,
+      "emerging_terms": [
+        "prince",
+        "olympic",
+        "duke",
+        "meghan",
+        "philip"
+      ],
+      "declining_terms": [
+        "korea",
+        "north",
+        "syria",
+        "trump",
+        "syrian"
+      ],
+      "term_shares": [
+        {
+          "term": "prince",
+          "direction": "emerging",
+          "per_1000_reference": 0.374,
+          "per_1000_period": 4.727
+        },
+        {
+          "term": "olympic",
+          "direction": "emerging",
+          "per_1000_reference": 0.173,
+          "per_1000_period": 3.059
+        },
+        {
+          "term": "duke",
+          "direction": "emerging",
+          "per_1000_reference": 0.027,
+          "per_1000_period": 3.337
+        },
+        {
+          "term": "meghan",
+          "direction": "emerging",
+          "per_1000_reference": 0.04,
+          "per_1000_period": 2.225
+        },
+        {
+          "term": "philip",
+          "direction": "emerging",
+          "per_1000_reference": 0.027,
+          "per_1000_period": 2.503
+        },
+        {
+          "term": "korea",
+          "direction": "declining",
+          "per_1000_reference": 4.482,
+          "per_1000_period": 0.556
+        },
+        {
+          "term": "north",
+          "direction": "declining",
+          "per_1000_reference": 4.722,
+          "per_1000_period": 1.112
+        },
+        {
+          "term": "syria",
+          "direction": "declining",
+          "per_1000_reference": 3.508,
+          "per_1000_period": 0.278
+        },
+        {
+          "term": "trump",
+          "direction": "declining",
+          "per_1000_reference": 7.537,
+          "per_1000_period": 0.278
+        },
+        {
+          "term": "syrian",
+          "direction": "declining",
+          "per_1000_reference": 2.788,
+          "per_1000_period": 0.278
+        }
+      ],
+      "examples": [
+        "Prince Charles And Camilla, Duchess Of Cornwall, Get COVID-19 Vaccine",
+        "Prince Philip Admitted To The Hospital As A 'Precautionary Measure'",
+        "Prince William Gives Update On Hospitalized Grandfather Prince Philip"
+      ]
+    },
+    {
+      "segment_id": "2022|ENTERTAINMENT|vs 2016-17",
+      "period": "2022",
+      "category": "ENTERTAINMENT",
+      "compared_with": "2016-17",
+      "n_reference": 235,
+      "n_period": 235,
+      "mmd2": 0.010334609938656314,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.06768045201148165,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.02060258388519287,
+      "novelty_mean": 0.2910924706053227,
+      "novel_share": 0.18723404255319148,
+      "new_term_rate": 0.04451176881845723,
+      "times_ordinary_embedding": 2.0964489091452023,
+      "times_ordinary_lexical": 1.2426033396721714,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 191,
+      "emerging_terms": [
+        "host",
+        "smith",
+        "actor",
+        "kimmel",
+        "said"
+      ],
+      "declining_terms": [
+        "got",
+        "season",
+        "watch",
+        "thrones",
+        "donald"
+      ],
+      "term_shares": [
+        {
+          "term": "host",
+          "direction": "emerging",
+          "per_1000_reference": 0.888,
+          "per_1000_period": 5.826
+        },
+        {
+          "term": "smith",
+          "direction": "emerging",
+          "per_1000_reference": 0.523,
+          "per_1000_period": 3.962
+        },
+        {
+          "term": "actor",
+          "direction": "emerging",
+          "per_1000_reference": 2.53,
+          "per_1000_period": 8.39
+        },
+        {
+          "term": "kimmel",
+          "direction": "emerging",
+          "per_1000_reference": 0.353,
+          "per_1000_period": 2.797
+        },
+        {
+          "term": "said",
+          "direction": "emerging",
+          "per_1000_reference": 2.64,
+          "per_1000_period": 7.457
+        },
+        {
+          "term": "got",
+          "direction": "declining",
+          "per_1000_reference": 2.166,
+          "per_1000_period": 0.466
+        },
+        {
+          "term": "season",
+          "direction": "declining",
+          "per_1000_reference": 3.029,
+          "per_1000_period": 1.398
+        },
+        {
+          "term": "watch",
+          "direction": "declining",
+          "per_1000_reference": 2.032,
+          "per_1000_period": 0.466
+        },
+        {
+          "term": "thrones",
+          "direction": "declining",
+          "per_1000_reference": 1.691,
+          "per_1000_period": 0.233
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 3.114,
+          "per_1000_period": 0.466
+        }
+      ],
+      "examples": [
+        "Andy Cohen Shares Why He And Anderson Cooper Will Never Date Each Other",
+        "John Oliver Is Suddenly Very Angry About 1 Key Point In The ‘Da Vinci Code'",
+        "Stephen Colbert Rips ‘Creepy’ Jim Jordan With Innuendo-Filled Reminder Of His Past"
+      ]
+    },
+    {
+      "segment_id": "2022|POLITICS|vs 2016-17",
+      "period": "2022",
+      "category": "POLITICS",
+      "compared_with": "2016-17",
+      "n_reference": 399,
+      "n_period": 399,
+      "mmd2": 0.011062594120200608,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.10407930300389678,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.016077935695648193,
+      "novelty_mean": 0.2640442458310522,
+      "novel_share": 0.03258145363408521,
+      "new_term_rate": 0.03896936290219203,
+      "times_ordinary_embedding": 0.8221311628155914,
+      "times_ordinary_lexical": 1.0771019730549558,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "month",
+      "null_n": 399,
+      "emerging_terms": [
+        "biden",
+        "jan",
+        "ukraine",
+        "abortion",
+        "capitol"
+      ],
+      "declining_terms": [
+        "trump",
+        "donald",
+        "clinton",
+        "obama",
+        "hillary"
+      ],
+      "term_shares": [
+        {
+          "term": "biden",
+          "direction": "emerging",
+          "per_1000_reference": 0.365,
+          "per_1000_period": 8.845
+        },
+        {
+          "term": "jan",
+          "direction": "emerging",
+          "per_1000_reference": 0.094,
+          "per_1000_period": 6.025
+        },
+        {
+          "term": "ukraine",
+          "direction": "emerging",
+          "per_1000_reference": 0.05,
+          "per_1000_period": 3.333
+        },
+        {
+          "term": "abortion",
+          "direction": "emerging",
+          "per_1000_reference": 0.456,
+          "per_1000_period": 4.358
+        },
+        {
+          "term": "capitol",
+          "direction": "emerging",
+          "per_1000_reference": 0.171,
+          "per_1000_period": 3.077
+        },
+        {
+          "term": "trump",
+          "direction": "declining",
+          "per_1000_reference": 36.188,
+          "per_1000_period": 17.177
+        },
+        {
+          "term": "donald",
+          "direction": "declining",
+          "per_1000_reference": 13.293,
+          "per_1000_period": 4.102
+        },
+        {
+          "term": "clinton",
+          "direction": "declining",
+          "per_1000_reference": 6.382,
+          "per_1000_period": 0.0
+        },
+        {
+          "term": "obama",
+          "direction": "declining",
+          "per_1000_reference": 4.007,
+          "per_1000_period": 0.128
+        },
+        {
+          "term": "hillary",
+          "direction": "declining",
+          "per_1000_reference": 4.375,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "A Year Later, GOP Lawmakers Still Won't Say If Joe Biden Is Actually President",
+        "Critics Sum Up Laura Ingraham's Latest Joe Biden Attack In 1 Mocking Word",
+        "Dick Durbin To GOP: Our Turn To Confirm Judicial Nominees Without Your Consent"
+      ]
+    },
+    {
+      "segment_id": "2022|SPORTS|vs 2016-17",
+      "period": "2022",
+      "category": "SPORTS",
+      "compared_with": "2016-17",
+      "n_reference": 73,
+      "n_period": 73,
+      "mmd2": 0.019412028171989615,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.0661280517530648,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.039664387702941895,
+      "novelty_mean": 0.2915493274388248,
+      "novel_share": 0.1643835616438356,
+      "new_term_rate": 0.07095830285296269,
+      "times_ordinary_embedding": 3.250726927682206,
+      "times_ordinary_lexical": 1.6171252089038795,
+      "embedding_band": "low",
+      "lexical_band": "low",
+      "severity": "low",
+      "kind": "none",
+      "significant": true,
+      "flagged": false,
+      "null_window": "quarter",
+      "null_n": 59,
+      "emerging_terms": [
+        "winter",
+        "major",
+        "paralympics",
+        "tuesday",
+        "mlb"
+      ],
+      "declining_terms": [
+        "game",
+        "nba",
+        "football",
+        "just",
+        "like"
+      ],
+      "term_shares": [
+        {
+          "term": "winter",
+          "direction": "emerging",
+          "per_1000_reference": 0.225,
+          "per_1000_period": 9.51
+        },
+        {
+          "term": "major",
+          "direction": "emerging",
+          "per_1000_reference": 1.17,
+          "per_1000_period": 7.315
+        },
+        {
+          "term": "paralympics",
+          "direction": "emerging",
+          "per_1000_reference": 0.135,
+          "per_1000_period": 2.926
+        },
+        {
+          "term": "tuesday",
+          "direction": "emerging",
+          "per_1000_reference": 0.225,
+          "per_1000_period": 2.926
+        },
+        {
+          "term": "mlb",
+          "direction": "emerging",
+          "per_1000_reference": 0.765,
+          "per_1000_period": 5.121
+        },
+        {
+          "term": "game",
+          "direction": "declining",
+          "per_1000_reference": 6.12,
+          "per_1000_period": 2.195
+        },
+        {
+          "term": "nba",
+          "direction": "declining",
+          "per_1000_reference": 4.86,
+          "per_1000_period": 0.732
+        },
+        {
+          "term": "football",
+          "direction": "declining",
+          "per_1000_reference": 3.915,
+          "per_1000_period": 0.732
+        },
+        {
+          "term": "just",
+          "direction": "declining",
+          "per_1000_reference": 5.535,
+          "per_1000_period": 1.463
+        },
+        {
+          "term": "like",
+          "direction": "declining",
+          "per_1000_reference": 3.825,
+          "per_1000_period": 0.0
+        }
+      ],
+      "examples": [
+        "Winter Olympics Mascots Through The Years",
+        "Meet The First Nonbinary U.S. Athlete To Compete In Winter Olympics",
+        "Nathan Chen Brings His A-Game In First Skate At Beijing Winter Olympics"
+      ]
+    },
+    {
+      "segment_id": "2022|WORLD NEWS|vs 2016-17",
+      "period": "2022",
+      "category": "WORLD NEWS",
+      "compared_with": "2016-17",
+      "n_reference": 200,
+      "n_period": 200,
+      "mmd2": 0.03150296254561602,
+      "mmd_q": 0.001996007984031936,
+      "jsd_excess": 0.11321839370023312,
+      "jsd_q": 0.0020867356196697514,
+      "centroid_shift": 0.04647505283355713,
+      "novelty_mean": 0.2803149157762527,
+      "novel_share": 0.065,
+      "new_term_rate": 0.059429477020602216,
+      "times_ordinary_embedding": 3.0531512460661183,
+      "times_ordinary_lexical": 1.6681608616177774,
+      "embedding_band": "high",
+      "lexical_band": "high",
+      "severity": "high",
+      "kind": "both",
+      "significant": true,
+      "flagged": true,
+      "null_window": "month",
+      "null_n": 146,
+      "emerging_terms": [
+        "ukraine",
+        "russian",
+        "russia",
+        "ukrainian",
+        "invasion"
+      ],
+      "declining_terms": [
+        "trump",
+        "syria",
+        "north",
+        "attack",
+        "syrian"
+      ],
+      "term_shares": [
+        {
+          "term": "ukraine",
+          "direction": "emerging",
+          "per_1000_reference": 0.253,
+          "per_1000_period": 24.564
+        },
+        {
+          "term": "russian",
+          "direction": "emerging",
+          "per_1000_reference": 1.628,
+          "per_1000_period": 17.433
+        },
+        {
+          "term": "russia",
+          "direction": "emerging",
+          "per_1000_reference": 2.548,
+          "per_1000_period": 14.263
+        },
+        {
+          "term": "ukrainian",
+          "direction": "emerging",
+          "per_1000_reference": 0.067,
+          "per_1000_period": 7.132
+        },
+        {
+          "term": "invasion",
+          "direction": "emerging",
+          "per_1000_reference": 0.093,
+          "per_1000_period": 4.754
+        },
+        {
+          "term": "trump",
+          "direction": "declining",
+          "per_1000_reference": 7.537,
+          "per_1000_period": 0.264
+        },
+        {
+          "term": "syria",
+          "direction": "declining",
+          "per_1000_reference": 3.508,
+          "per_1000_period": 0.528
+        },
+        {
+          "term": "north",
+          "direction": "declining",
+          "per_1000_reference": 4.722,
+          "per_1000_period": 2.113
+        },
+        {
+          "term": "attack",
+          "direction": "declining",
+          "per_1000_reference": 4.656,
+          "per_1000_period": 2.113
+        },
+        {
+          "term": "syrian",
+          "direction": "declining",
+          "per_1000_reference": 2.788,
+          "per_1000_period": 0.264
+        }
+      ],
+      "examples": [
+        "U.S. And Russia Square Off At UN Security Council",
+        "Russia At 70% Of Ukraine Military Buildup For Possible Invasion: American Officials",
+        "Ukrainian President Calls For Meeting With Putin Amid Increasing Violence"
+      ]
+    }
+  ],
+  "drifted_segments": [
+    "2020|FOOD & DRINK|vs 2016-17",
+    "2020|STYLE & BEAUTY|vs 2016-17",
+    "2020|PARENTING|vs 2016-17",
+    "2020|WELLNESS|vs 2016-17",
+    "2018|SPORTS|vs 2016-17",
+    "2019|COMEDY|vs 2016-17",
+    "2022|WORLD NEWS|vs 2016-17",
+    "2018|IMPACT|vs 2016-17",
+    "2021|SPORTS|vs 2016-17",
+    "2020|WORLD NEWS|vs 2016-17",
+    "2020|ALL|vs 2016-17",
+    "2018|TECH|vs 2016-17",
+    "2022|ALL|vs 2016-17",
+    "2020|ENTERTAINMENT|vs 2016-17",
+    "2021|ALL|vs 2016-17",
+    "2018|BUSINESS|vs 2016-17",
+    "2019|WORLD NEWS|vs 2016-17"
+  ],
+  "control_segments": [
+    "2018|POLITICS|vs 2016-17",
+    "2018|ENTERTAINMENT|vs 2016-17",
+    "2018|LATINO VOICES|vs 2016-17",
+    "2018|WORLD NEWS|vs 2016-17",
+    "2019|POLITICS|vs 2016-17",
+    "2018|MEDIA|vs 2016-17",
+    "2018|TRAVEL|vs 2016-17",
+    "2018|BLACK VOICES|vs 2016-17",
+    "2019|ENTERTAINMENT|vs 2016-17",
+    "2020|POLITICS|vs 2016-17",
+    "2022|POLITICS|vs 2016-17",
+    "2021|POLITICS|vs 2016-17",
+    "2018|RELIGION|vs 2016-17",
+    "2019|MEDIA|vs 2016-17",
+    "2021|WORLD NEWS|vs 2016-17",
+    "2018|COMEDY|vs 2016-17",
+    "2018|WOMEN|vs 2016-17",
+    "2021|ENTERTAINMENT|vs 2016-17",
+    "2018|QUEER VOICES|vs 2016-17",
+    "2022|ENTERTAINMENT|vs 2016-17",
+    "2018|WEIRD NEWS|vs 2016-17",
+    "2018|CRIME|vs 2016-17",
+    "2022|SPORTS|vs 2016-17"
+  ],
+  "reference": {
+    "ordinary_year": {
+      "period": "2017 (inside baseline)",
+      "compared_with": "2016",
+      "n_reference": 1398,
+      "n_period": 1398,
+      "mmd2": 0.0020737929718198655,
+      "mmd_p": 0.001996007984031936,
+      "centroid_shift": 0.003766775131225586,
+      "dispersion_reference": 0.557890695164275,
+      "dispersion_period": 0.5448404280375995,
+      "jsd": 0.31736066322251877,
+      "jsd_excess": 0.031202043373087074,
+      "jsd_p": 0.001996007984031936,
+      "new_term_rate": null,
+      "novelty_mean": 0.23917058890469597,
+      "novel_share": 0.05007153075822604
+    },
+    "whole_period_null": {
+      "window": "month",
+      "n": 1398,
+      "pairs": 12,
+      "thresholds": {
+        "mmd2": {
+          "medium": 0.009482042905247028,
+          "high": 0.01000265297032254
+        },
+        "jsd_excess": {
+          "medium": 0.07638839559342674,
+          "high": 0.08430428292275122
+        }
+      },
+      "typical": {
+        "mmd2": 0.004702329474435052,
+        "jsd_excess": 0.061539018428812015
+      }
+    },
+    "alpha": 0.05,
+    "percentiles": {
+      "medium": 95,
+      "high": 99
+    }
+  },
+  "any_flagged": true,
+  "topics": [
+    {
+      "period": "2019",
+      "topic": 6,
+      "label": "protesters, protests, police, kong, hong, protest",
+      "docs_period": 38,
+      "share_period": 0.027181688125894134,
+      "docs_baseline": 10,
+      "share_baseline": 0.00715307582260372,
+      "ratio": 3.545454545454546,
+      "p_value": 0.000026803123633889643,
+      "sections": 2,
+      "top_sections": "WORLD NEWS 79%, U.S. NEWS 11%, POLITICS 8%",
+      "examples": "Hundreds Of Federal Workers And Supporters Protest Shutdown In Senate Building | Thousands Strike In Spain To Demand Equal Pay, End To Gender Discrimination | Maduro Flaunts Venezuelan Military Support After Guaidó Calls For Uprising",
+      "q_value": 0.0003153308662810546,
+      "emerging": true
+    },
+    {
+      "period": "2020",
+      "topic": 12,
+      "label": "coronavirus, covid-19, trump, pandemic, covid, cdc",
+      "docs_period": 117,
+      "share_period": 0.08369098712446352,
+      "docs_baseline": 0,
+      "share_baseline": 0.0,
+      "ratio": 118.0,
+      "p_value": 4.778218893346036e-37,
+      "sections": 1,
+      "top_sections": "POLITICS 90%, ENTERTAINMENT 4%, U.S. NEWS 3%",
+      "examples": "U.S. Surgeon General Dodges Coronavirus Question, Praises Trump's Health In Interview | Bolsonaro Blames The Media As Coronavirus Worsens In Brazil | Trump's Old Tweet About Responsibility Comes Back To Haunt Him Amid Pandemic",
+      "q_value": 9.556437786692071e-35,
+      "emerging": true
+    },
+    {
+      "period": "2020",
+      "topic": 13,
+      "label": "coronavirus, pandemic, covid-19, mask, face, experts",
+      "docs_period": 104,
+      "share_period": 0.07439198855507868,
+      "docs_baseline": 0,
+      "share_baseline": 0.0,
+      "ratio": 104.99999999999999,
+      "p_value": 6.741495909474722e-33,
+      "sections": 3,
+      "top_sections": "WELLNESS 29%, STYLE & BEAUTY 19%, FOOD & DRINK 12%",
+      "examples": "Coronavirus Crisis Forces Greta Thunberg To Take Climate Strike Online | Coronavirus Forces Mosques To Reassess Weekly Prayers And Ramadan Plans | HuffPost Her Stories: Let's Talk About Menopause",
+      "q_value": 6.741495909474721e-31,
+      "emerging": true
+    },
+    {
+      "period": "2020",
+      "topic": 9,
+      "label": "coronavirus, covid-19, virus, cases, china, outbreak",
+      "docs_period": 89,
+      "share_period": 0.06366237482117311,
+      "docs_baseline": 5,
+      "share_baseline": 0.00357653791130186,
+      "ratio": 15.000000000000002,
+      "p_value": 8.056862777460381e-22,
+      "sections": 3,
+      "top_sections": "WORLD NEWS 38%, U.S. NEWS 30%, POLITICS 13%",
+      "examples": "6,000 Dead From Measles Outbreak In Congo, WHO Says | U.S. To Screen Airline Passengers From China For New Illness | China Reports 17 New Cases Of Deadly SARS-Like Virus Ahead Of Lunar New Year Holiday",
+      "q_value": 4.02843138873019e-20,
+      "emerging": true
+    },
+    {
+      "period": "2020",
+      "topic": 11,
+      "label": "tweets, week, parents, cats, women, dogs",
+      "docs_period": 25,
+      "share_period": 0.0178826895565093,
+      "docs_baseline": 1,
+      "share_baseline": 0.000715307582260372,
+      "ratio": 12.999999999999998,
+      "p_value": 3.6407103038192306e-7,
+      "sections": 4,
+      "top_sections": "PARENTING 36%, WOMEN 32%, WELLNESS 12%",
+      "examples": "The Funniest Tweets From Parents This Week (April 11-17) | 27 Spot-On Tweets About Not Wearing Real Clothes During Lockdown | The Funniest Tweets From Parents This Week (April 25-May 1)",
+      "q_value": 6.619473279671328e-6,
+      "emerging": true
+    },
+    {
+      "period": "2020",
+      "topic": 1,
+      "label": "biden, joe, president, president-elect, vice, obama",
+      "docs_period": 57,
+      "share_period": 0.0407725321888412,
+      "docs_baseline": 13,
+      "share_baseline": 0.009298998569384835,
+      "ratio": 4.142857142857142,
+      "p_value": 3.621352483247363e-8,
+      "sections": 1,
+      "top_sections": "POLITICS 91%, STYLE & BEAUTY 4%, ENTERTAINMENT 4%",
+      "examples": "Joe Biden: Trump And His Allies 'Like' Russia Interfering In U.S. Elections | White House Press Secretary: Golf Is Not OK While U.S. Mourns (Trump Exempt) | Joe Biden Mocked In Trump Campaign Ad For Kneeling — In A Church",
+      "q_value": 8.047449962771918e-7,
+      "emerging": true
+    },
+    {
+      "period": "2021",
+      "topic": 12,
+      "label": "coronavirus, covid-19, trump, pandemic, covid, cdc",
+      "docs_period": 40,
+      "share_period": 0.02861230329041488,
+      "docs_baseline": 0,
+      "share_baseline": 0.0,
+      "ratio": 41.0,
+      "p_value": 6.85337876552917e-13,
+      "sections": 3,
+      "top_sections": "POLITICS 62%, ENTERTAINMENT 18%, U.S. NEWS 15%",
+      "examples": "Ken Burns Says U.S. Is 'Beset By 3 Viruses': COVID-19, Racism And Misinformation | Trump Peddled Misleading COVID-19 Charts To The Public: Dr. Birx | U.S. 'Anti-Science' Movement Sacrificed 'Tens Of Thousands' Of Lives To COVID: Medical Expert",
+      "q_value": 2.2844595885097232e-11,
+      "emerging": true
+    },
+    {
+      "period": "2021",
+      "topic": 13,
+      "label": "coronavirus, pandemic, covid-19, mask, face, experts",
+      "docs_period": 16,
+      "share_period": 0.011444921316165951,
+      "docs_baseline": 0,
+      "share_baseline": 0.0,
+      "ratio": 17.0,
+      "p_value": 0.000014614259668077003,
+      "sections": 4,
+      "top_sections": "PARENTING 31%, U.S. NEWS 25%, WELLNESS 19%",
+      "examples": "When Can You Get The COVID-19 Vaccine — And What Can You Do Now? | For Parkland Seniors, High School Years Bookended By Tragedy | Asian Americans Grieve, Organize In Wake Of Atlanta Attacks",
+      "q_value": 0.00020877513811538574,
+      "emerging": true
+    },
+    {
+      "period": "2021",
+      "topic": 11,
+      "label": "tweets, week, parents, cats, women, dogs",
+      "docs_period": 18,
+      "share_period": 0.012875536480686695,
+      "docs_baseline": 1,
+      "share_baseline": 0.000715307582260372,
+      "ratio": 9.5,
+      "p_value": 0.000036313695327364537,
+      "sections": 3,
+      "top_sections": "PARENTING 44%, WOMEN 33%, COMEDY 22%",
+      "examples": "36 Of The Funniest Tweets About Cats And Dogs This Week (Dec. 26-Jan. 1) | 40 Funny Tweets That Sum Up Fitness For Parents | 36 Of The Funniest Tweets About Cats And Dogs This Week (March 27-April 2)",
+      "q_value": 0.0003822494244985741,
+      "emerging": true
+    },
+    {
+      "period": "2021",
+      "topic": 37,
+      "label": "vaccine, covid-19, vaccination, mandate, vaccines, vaccinated",
+      "docs_period": 79,
+      "share_period": 0.056509298998569386,
+      "docs_baseline": 8,
+      "share_baseline": 0.005722460658082976,
+      "ratio": 8.88888888888889,
+      "p_value": 1.6694700244959818e-16,
+      "sections": 3,
+      "top_sections": "POLITICS 43%, U.S. NEWS 29%, WORLD NEWS 11%",
+      "examples": "Fauci: COVID-19 Vaccine Mandates For Travel And School 'Quite Possible' In Future | Biden Administration Says It Will Buy 200 Million More COVID-19 Shots | Johnson & Johnson 1-Dose Shot Prevents COVID-19, But Less Than Some Others",
+      "q_value": 6.677880097983927e-15,
+      "emerging": true
+    },
+    {
+      "period": "2021",
+      "topic": 9,
+      "label": "coronavirus, covid-19, virus, cases, china, outbreak",
+      "docs_period": 49,
+      "share_period": 0.035050071530758224,
+      "docs_baseline": 5,
+      "share_baseline": 0.00357653791130186,
+      "ratio": 8.333333333333334,
+      "p_value": 1.375799694903896e-10,
+      "sections": 3,
+      "top_sections": "WORLD NEWS 35%, U.S. NEWS 24%, POLITICS 22%",
+      "examples": "U.S. Hits Record Coronavirus Deaths In A Single Day — Again | British Teen Emerging From 10-Month Coma With No Knowledge Of COVID-19 Pandemic | Wisconsin Mom Finally Meets Baby Girl Delivered During COVID-19 Coma",
+      "q_value": 3.4394992372597404e-9,
+      "emerging": true
+    },
+    {
+      "period": "2021",
+      "topic": 1,
+      "label": "biden, joe, president, president-elect, vice, obama",
+      "docs_period": 68,
+      "share_period": 0.04864091559370529,
+      "docs_baseline": 13,
+      "share_baseline": 0.009298998569384835,
+      "ratio": 4.928571428571429,
+      "p_value": 1.0973184755745815e-10,
+      "sections": 1,
+      "top_sections": "POLITICS 87%, U.S. NEWS 6%, WORLD NEWS 3%",
+      "examples": "In Dueling New Year Messages, Trump Reflects, Biden Looks Ahead | U.S.-Backed Airstrikes Are Killing People In Yemen. This Is Their Impact. | Biden, Trump Warn Of High Stakes For Georgia Senate Runoffs",
+      "q_value": 3.1351956444988043e-9,
+      "emerging": true
+    },
+    {
+      "period": "2021",
+      "topic": 20,
+      "label": "prince, harry, meghan, queen, duke, kate",
+      "docs_period": 30,
+      "share_period": 0.02145922746781116,
+      "docs_baseline": 8,
+      "share_baseline": 0.005722460658082976,
+      "ratio": 3.444444444444444,
+      "p_value": 0.00021653223751943635,
+      "sections": 2,
+      "top_sections": "WORLD NEWS 47%, ENTERTAINMENT 43%, U.S. NEWS 7%",
+      "examples": "Rob Lowe Actually Believes That Prince Harry Is Sporting A Ponytail | Ex-Royal Staff Will Shed Light On Meghan Markle Letter, Lawyer Says | Prince Harry Breaks Silence On Report He And Meghan Markle Are Quitting Social Media",
+      "q_value": 0.0017322579001554908,
+      "emerging": true
+    },
+    {
+      "period": "2022",
+      "topic": 32,
+      "label": "ukraine, russia, russian, war, putin, ukrainian",
+      "docs_period": 135,
+      "share_period": 0.09656652360515021,
+      "docs_baseline": 8,
+      "share_baseline": 0.005722460658082976,
+      "ratio": 15.11111111111111,
+      "p_value": 1.6527623224322252e-32,
+      "sections": 2,
+      "top_sections": "WORLD NEWS 71%, POLITICS 16%, U.S. NEWS 6%",
+      "examples": "CIA Says Most 'Havana Syndrome' Cases Likely Not Caused By Foreign Powers | U.S. And Russia Square Off At UN Security Council | Russia At 70% Of Ukraine Military Buildup For Possible Invasion: American Officials",
+      "q_value": 1.1018415482881501e-30,
+      "emerging": true
+    },
+    {
+      "period": "2022",
+      "topic": 11,
+      "label": "tweets, week, parents, cats, women, dogs",
+      "docs_period": 19,
+      "share_period": 0.013590844062947067,
+      "docs_baseline": 1,
+      "share_baseline": 0.000715307582260372,
+      "ratio": 10.0,
+      "p_value": 0.000018947916882681754,
+      "sections": 3,
+      "top_sections": "PARENTING 42%, COMEDY 32%, WOMEN 26%",
+      "examples": "25 Of The Funniest Tweets About Cats And Dogs This Week (Jan. 8-14) | 21 Of The Funniest Tweets About Cats And Dogs This Week (Jan. 15-21) | The Funniest Tweets From Parents This Week (May 7-13)",
+      "q_value": 0.00025263889176909007,
+      "emerging": true
+    },
+    {
+      "period": "2022",
+      "topic": 37,
+      "label": "vaccine, covid-19, vaccination, mandate, vaccines, vaccinated",
+      "docs_period": 33,
+      "share_period": 0.023605150214592276,
+      "docs_baseline": 8,
+      "share_baseline": 0.005722460658082976,
+      "ratio": 3.7777777777777777,
+      "p_value": 0.00005020255614701945,
+      "sections": 2,
+      "top_sections": "U.S. NEWS 48%, POLITICS 39%, ENTERTAINMENT 6%",
+      "examples": "Marine Corps Boots 206 Service Members Who Refused COVID Vaccines | Snow Leopard Dies After Contracting COVID-19, Illinois Zoo Says | Unvaccinated Glenn Beck Gets COVID Again, Says It's 'Getting Into My Lungs'",
+      "q_value": 0.0004781195823525662,
+      "emerging": true
+    },
+    {
+      "period": "2022",
+      "topic": 9,
+      "label": "coronavirus, covid-19, virus, cases, china, outbreak",
+      "docs_period": 19,
+      "share_period": 0.013590844062947067,
+      "docs_baseline": 5,
+      "share_baseline": 0.00357653791130186,
+      "ratio": 3.3333333333333335,
+      "p_value": 0.0031944551455748544,
+      "sections": 2,
+      "top_sections": "WORLD NEWS 58%, U.S. NEWS 32%, POLITICS 5%",
+      "examples": "Beijing District Orders Mass Virus Testing Ahead Of Olympics | Canada, Finland Mask Up To Play Russian Team Decimated By COVID | Queen Elizabeth Tests Positive For COVID-19",
+      "q_value": 0.016812921818815024,
+      "emerging": true
+    }
+  ],
+  "term_shifts": [
+    {
+      "term": "mask",
+      "period": "2020",
+      "docs_baseline": 27,
+      "docs_period": 37,
+      "centroid_shift": 0.13170462846755981,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": null,
+      "ordinary_n": 0,
+      "times_ordinary": null,
+      "context_before": "home, wore, said, free, attorney, general",
+      "context_after": "face, coronavirus, wearing, covid-19, make, wear",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "mask",
+      "period": "2021",
+      "docs_baseline": 27,
+      "docs_period": 21,
+      "centroid_shift": 0.11284226179122925,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": null,
+      "ordinary_n": 0,
+      "times_ordinary": null,
+      "context_before": "man, wore, home, trump, oxygen, wears",
+      "context_after": "covid-19, san, health, wear, francisco, state",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "virus",
+      "period": "2020",
+      "docs_baseline": 86,
+      "docs_period": 46,
+      "centroid_shift": 0.12168926000595093,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.034576809406280516,
+      "ordinary_n": 25,
+      "times_ordinary": 3.519389501098599,
+      "context_before": "zika, florida, congress, local, need, officials",
+      "context_after": "china, coronavirus, covid-19, trump, killed, new",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "vaccine",
+      "period": "2021",
+      "docs_baseline": 34,
+      "docs_period": 76,
+      "centroid_shift": 0.0505756139755249,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.03982859253883362,
+      "ordinary_n": 23,
+      "times_ordinary": 1.269831815578538,
+      "context_before": "zika, just, health, drug, big, trump",
+      "context_after": "covid-19, said, coronavirus, johnson, biden, republican",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "outbreak",
+      "period": "2020",
+      "docs_baseline": 49,
+      "docs_period": 32,
+      "centroid_shift": 0.07412660121917725,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.03291572332382202,
+      "ordinary_n": 25,
+      "times_ordinary": 2.2520119181318363,
+      "context_before": "ebola, officials, zika, million, say, second",
+      "context_after": "coronavirus, covid-19, china, amid, new, pandemic",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "cases",
+      "period": "2018",
+      "docs_baseline": 132,
+      "docs_period": 25,
+      "centroid_shift": 0.04023998975753784,
+      "p_value": 0.007984031936127744,
+      "ordinary_shift": 0.040389397740364076,
+      "ordinary_n": 25,
+      "times_ordinary": 0.996300811817332,
+      "context_before": "zika, supreme, assault, rape, fraud, just",
+      "context_after": "free, attorney, district, judges, white, comes",
+      "q_value": 0.008568229394868798
+    },
+    {
+      "term": "cases",
+      "period": "2020",
+      "docs_baseline": 132,
+      "docs_period": 37,
+      "centroid_shift": 0.09814924001693726,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.03348162770271301,
+      "ordinary_n": 37,
+      "times_ordinary": 2.9314357380834335,
+      "context_before": "sexual, zika, assault, supreme, rights, police",
+      "context_after": "coronavirus, covid-19, china, president, spread, trump",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "cases",
+      "period": "2021",
+      "docs_baseline": 132,
+      "docs_period": 23,
+      "centroid_shift": 0.07589125633239746,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.04052749574184418,
+      "ordinary_n": 23,
+      "times_ordinary": 1.8725868683280276,
+      "context_before": "sexual, zika, assault, rights, supreme, court",
+      "context_after": "covid-19, coronavirus, amid, deaths, rising, europe",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "test",
+      "period": "2018",
+      "docs_baseline": 211,
+      "docs_period": 35,
+      "centroid_shift": 0.03041142225265503,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.026726147532463072,
+      "ordinary_n": 35,
+      "times_ordinary": 1.1378902333647458,
+      "context_before": "north, korea, missile, south, iran, nuclear",
+      "context_after": "russian, olympics, site, climate, department, winter",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "test",
+      "period": "2020",
+      "docs_baseline": 211,
+      "docs_period": 24,
+      "centroid_shift": 0.07790672779083252,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.032422369718551634,
+      "ordinary_n": 24,
+      "times_ordinary": 2.4028696380652077,
+      "context_before": "north, korea, nuclear, missile, iran, kim",
+      "context_after": "positive, coronavirus, california, covid-19, president, state",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "home",
+      "period": "2018",
+      "docs_baseline": 669,
+      "docs_period": 90,
+      "centroid_shift": 0.013585567474365234,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.01173746883869171,
+      "ordinary_n": 90,
+      "times_ordinary": 1.1574529109360785,
+      "context_before": "dog, family, refugees, son, inside, york",
+      "context_after": "men, used, candidate, hospital, kim, gay",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "home",
+      "period": "2019",
+      "docs_baseline": 669,
+      "docs_period": 34,
+      "centroid_shift": 0.036849915981292725,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.021641701459884644,
+      "ordinary_n": 34,
+      "times_ordinary": 1.702727304024512,
+      "context_before": "new, dog, help, america, refugees, make",
+      "context_after": "says, officer, center, black, west, hopes",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "home",
+      "period": "2020",
+      "docs_baseline": 669,
+      "docs_period": 59,
+      "centroid_shift": 0.06418770551681519,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.013997191190719604,
+      "ordinary_n": 59,
+      "times_ordinary": 4.585756145088082,
+      "context_before": "america, world, state, woman, refugees, inside",
+      "context_after": "hair, coronavirus, covid-19, spread, products, clothes",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "home",
+      "period": "2021",
+      "docs_baseline": 669,
+      "docs_period": 44,
+      "centroid_shift": 0.03148370981216431,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.016903096437454225,
+      "ordinary_n": 44,
+      "times_ordinary": 1.862600141261814,
+      "context_before": "state, dog, america, just, years, refugees",
+      "context_after": "having, covid-19, window, essentials, products, mike",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "home",
+      "period": "2022",
+      "docs_baseline": 669,
+      "docs_period": 32,
+      "centroid_shift": 0.033181071281433105,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.02293744683265686,
+      "ordinary_n": 32,
+      "times_ordinary": 1.446589566986681,
+      "context_before": "help, america, refugees, inside, world, woman",
+      "context_after": "park, owner, raid, florida, did, bannon",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "biden",
+      "period": "2019",
+      "docs_baseline": 122,
+      "docs_period": 24,
+      "centroid_shift": 0.04408210515975952,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.020927518606185913,
+      "ordinary_n": 24,
+      "times_ordinary": 2.1064181563661064,
+      "context_before": "joe, cancer, sexual, america, vice, clinton",
+      "context_after": "allegations, democratic, ukraine, response, trial, debate",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "biden",
+      "period": "2020",
+      "docs_baseline": 122,
+      "docs_period": 132,
+      "centroid_shift": 0.027927100658416748,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.01683552861213684,
+      "ordinary_n": 40,
+      "times_ordinary": 1.658819351730003,
+      "context_before": "vice, joe, obama, sexual, clinton, cancer",
+      "context_after": "trump, debate, presidential, democratic, president-elect, twitter",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "biden",
+      "period": "2021",
+      "docs_baseline": 122,
+      "docs_period": 201,
+      "centroid_shift": 0.03635811805725098,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.016835543513298034,
+      "ordinary_n": 40,
+      "times_ordinary": 2.159604650038918,
+      "context_before": "joe, vice, obama, clinton, sexual, cancer",
+      "context_after": "administration, climate, house, covid-19, deal, federal",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "biden",
+      "period": "2022",
+      "docs_baseline": 122,
+      "docs_period": 72,
+      "centroid_shift": 0.048508405685424805,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.01683553457260132,
+      "ordinary_n": 40,
+      "times_ordinary": 2.8813106870018204,
+      "context_before": "joe, vice, obama, sexual, cancer, america",
+      "context_after": "russian, administration, russia, court, ukraine, plan",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "ukraine",
+      "period": "2019",
+      "docs_baseline": 31,
+      "docs_period": 27,
+      "centroid_shift": 0.09517717361450195,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.04302135705947876,
+      "ordinary_n": 12,
+      "times_ordinary": 2.2123238344833167,
+      "context_before": "russia, putin, russian, paul, syria, shot",
+      "context_after": "trump, republicans, president, house, biden, aid",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "ukraine",
+      "period": "2022",
+      "docs_baseline": 31,
+      "docs_period": 105,
+      "centroid_shift": 0.043756723403930664,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.04302136898040772,
+      "ordinary_n": 12,
+      "times_ordinary": 1.0170927713587596,
+      "context_before": "trump, campaign, donald, paul, syria, political",
+      "context_after": "russian, war, russia, biden, oil, said",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "russia",
+      "period": "2018",
+      "docs_baseline": 625,
+      "docs_period": 143,
+      "centroid_shift": 0.00886237621307373,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.031004947423934937,
+      "ordinary_n": 143,
+      "times_ordinary": 0.2858374856082558,
+      "context_before": "syria, ties, putin, michael, security, donald",
+      "context_after": "mueller, robert, probe, spy, memo, olympic",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "russia",
+      "period": "2019",
+      "docs_baseline": 625,
+      "docs_period": 20,
+      "centroid_shift": 0.029799580574035645,
+      "p_value": 0.00998003992015968,
+      "ordinary_shift": 0.045756077766418456,
+      "ordinary_n": 20,
+      "times_ordinary": 0.6512704328845754,
+      "context_before": "trump, putin, election, campaign, syria, probe",
+      "context_after": "global, cohen, chris, nuclear, mueller, christie",
+      "q_value": 0.0102121338717913
+    },
+    {
+      "term": "russia",
+      "period": "2022",
+      "docs_baseline": 625,
+      "docs_period": 77,
+      "centroid_shift": 0.08452582359313965,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.0336313396692276,
+      "ordinary_n": 77,
+      "times_ordinary": 2.513305280862186,
+      "context_before": "trump, donald, election, campaign, sanctions, syria",
+      "context_after": "ukraine, ukrainian, war, biden, europe, aid",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "capitol",
+      "period": "2021",
+      "docs_baseline": 62,
+      "docs_period": 76,
+      "centroid_shift": 0.04584705829620361,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.03502565026283264,
+      "ordinary_n": 39,
+      "times_ordinary": 1.3089566632501346,
+      "context_before": "hill, care, water, building, harassment, want",
+      "context_after": "attack, said, jan, violence, riot, republicans",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "capitol",
+      "period": "2022",
+      "docs_baseline": 62,
+      "docs_period": 27,
+      "centroid_shift": 0.06487518548965454,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.040208634734153745,
+      "ordinary_n": 27,
+      "times_ordinary": 1.6134640213125342,
+      "context_before": "hill, congress, care, arrested, water, lawmakers",
+      "context_after": "attack, jan, trial, riot, committee, election",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "abortion",
+      "period": "2018",
+      "docs_baseline": 206,
+      "docs_period": 36,
+      "centroid_shift": 0.02517080307006836,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.017505663633346557,
+      "ordinary_n": 36,
+      "times_ordinary": 1.4378662584445225,
+      "context_before": "women, supreme, texas, ruling, court, access",
+      "context_after": "ireland, aclu, ban, amendment, vote, country",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "abortion",
+      "period": "2021",
+      "docs_baseline": 206,
+      "docs_period": 21,
+      "centroid_shift": 0.041672706604003906,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.02500133216381073,
+      "ordinary_n": 21,
+      "times_ordinary": 1.666819445098405,
+      "context_before": "women, access, ruling, health, rights, judge",
+      "context_after": "texas, justices, ban, effect, war, challenges",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "abortion",
+      "period": "2022",
+      "docs_baseline": 206,
+      "docs_period": 36,
+      "centroid_shift": 0.020452439785003662,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.017498987913131713,
+      "ordinary_n": 36,
+      "times_ordinary": 1.1687784394465235,
+      "context_before": "women, texas, law, ruling, clinics, judge",
+      "context_after": "roe, biden, wade, overturn, told, following",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "impeachment",
+      "period": "2019",
+      "docs_baseline": 49,
+      "docs_period": 65,
+      "centroid_shift": 0.04906576871871948,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.0921812117099762,
+      "ordinary_n": 28,
+      "times_ordinary": 0.5322751546496475,
+      "context_before": "vote, congress, brazil, state, voted, thousands",
+      "context_after": "house, host, democrats, democratic, republican, trump",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "police",
+      "period": "2018",
+      "docs_baseline": 1173,
+      "docs_period": 166,
+      "centroid_shift": 0.007250845432281494,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.006839969754219055,
+      "ordinary_n": 166,
+      "times_ordinary": 1.0600698091989371,
+      "context_before": "officer, shooting, officers, authorities, protesters, lives",
+      "context_after": "clark, suspected, bomber, austin, received, apartment",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "police",
+      "period": "2019",
+      "docs_baseline": 1173,
+      "docs_period": 78,
+      "centroid_shift": 0.0178033709526062,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.01042506992816925,
+      "ordinary_n": 78,
+      "times_ordinary": 1.7077459504132704,
+      "context_before": "officer, say, cops, man, video, brutality",
+      "context_after": "hong, kong, protesters, church, streets, clashes",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "police",
+      "period": "2020",
+      "docs_baseline": 1173,
+      "docs_period": 59,
+      "centroid_shift": 0.021297335624694824,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.013343685865402221,
+      "ordinary_n": 59,
+      "times_ordinary": 1.5960609264577328,
+      "context_before": "say, officers, officer, man, woman, suspect",
+      "context_after": "trump, george, house, disabled, coronavirus, protester",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "police",
+      "period": "2021",
+      "docs_baseline": 1173,
+      "docs_period": 79,
+      "centroid_shift": 0.015744149684906006,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.010638651251792908,
+      "ordinary_n": 79,
+      "times_ordinary": 1.4799009115232233,
+      "context_before": "man, say, officers, suspect, cops, killed",
+      "context_after": "capitol, trial, lawmakers, george, including, paid",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "police",
+      "period": "2022",
+      "docs_baseline": 1173,
+      "docs_period": 58,
+      "centroid_shift": 0.020991504192352295,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.01380026638507843,
+      "ordinary_n": 58,
+      "times_ordinary": 1.521094130113996,
+      "context_before": "shot, officer, officers, suspect, attack, cops",
+      "context_after": "taylor, south, minneapolis, went, baby, school",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "climate",
+      "period": "2018",
+      "docs_baseline": 702,
+      "docs_period": 70,
+      "centroid_shift": 0.007705867290496826,
+      "p_value": 0.00998003992015968,
+      "ordinary_shift": 0.010427498817443847,
+      "ordinary_n": 70,
+      "times_ordinary": 0.7389947892015978,
+      "context_before": "change, paris, donald, agreement, trump, obama",
+      "context_after": "museum, shows, york, defense, history, state",
+      "q_value": 0.0102121338717913
+    },
+    {
+      "term": "climate",
+      "period": "2019",
+      "docs_baseline": 702,
+      "docs_period": 21,
+      "centroid_shift": 0.029161512851715088,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.019857314229011536,
+      "ordinary_n": 21,
+      "times_ordinary": 1.4685527214506238,
+      "context_before": "change, paris, trump, agreement, obama, donald",
+      "context_after": "women, activist, threatening, rest, place, gun",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "climate",
+      "period": "2021",
+      "docs_baseline": 702,
+      "docs_period": 34,
+      "centroid_shift": 0.023582279682159424,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.015106728672981263,
+      "ordinary_n": 34,
+      "times_ordinary": 1.5610447630754687,
+      "context_before": "change, trump, paris, donald, agreement, obama",
+      "context_after": "biden, social, trees, proposal, friday, life",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "border",
+      "period": "2018",
+      "docs_baseline": 178,
+      "docs_period": 71,
+      "centroid_shift": 0.01778995990753174,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.035214298963546754,
+      "ordinary_n": 71,
+      "times_ordinary": 0.5051913691636345,
+      "context_before": "mexico, pay, refugees, build, donald, syrian",
+      "context_after": "national, migrant, troops, house, shutdown, white",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "border",
+      "period": "2019",
+      "docs_baseline": 178,
+      "docs_period": 48,
+      "centroid_shift": 0.015089035034179688,
+      "p_value": 0.041916167664670656,
+      "ordinary_shift": 0.03735970556735992,
+      "ordinary_n": 48,
+      "times_ordinary": 0.4038852770660627,
+      "context_before": "mexico, wall, pay, build, said, refugees",
+      "context_after": "national, emergency, migrant, paso, el, migrants",
+      "q_value": 0.041916167664670656
+    },
+    {
+      "term": "election",
+      "period": "2018",
+      "docs_baseline": 1221,
+      "docs_period": 110,
+      "centroid_shift": 0.0198860764503479,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.012872228026390075,
+      "ordinary_n": 110,
+      "times_ordinary": 1.5448822386907954,
+      "context_before": "clinton, donald, presidential, hillary, trump, day",
+      "context_after": "house, district, sanctions, russia, pennsylvania, reportedly",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "election",
+      "period": "2020",
+      "docs_baseline": 1221,
+      "docs_period": 71,
+      "centroid_shift": 0.026244401931762695,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.014147153496742249,
+      "ordinary_n": 71,
+      "times_ordinary": 1.8551012355811474,
+      "context_before": "clinton, donald, hillary, voters, presidential, special",
+      "context_after": "biden, joe, fox, attorney, claims, mail-in",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "election",
+      "period": "2021",
+      "docs_baseline": 1221,
+      "docs_period": 59,
+      "centroid_shift": 0.03261101245880127,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.016265439987182616,
+      "ordinary_n": 59,
+      "times_ordinary": 2.0049265488360093,
+      "context_before": "clinton, presidential, hillary, donald, russian, special",
+      "context_after": "lawmakers, gop, jan, house, stolen, cheney",
+      "q_value": 0.0021956087824351296
+    },
+    {
+      "term": "election",
+      "period": "2022",
+      "docs_baseline": 1221,
+      "docs_period": 34,
+      "centroid_shift": 0.03794485330581665,
+      "p_value": 0.001996007984031936,
+      "ordinary_shift": 0.021103721857070924,
+      "ordinary_n": 34,
+      "times_ordinary": 1.7980171252637605,
+      "context_before": "clinton, presidential, hillary, donald, voters, russian",
+      "context_after": "jan, probe, georgia, jury, arizona, grand",
+      "q_value": 0.0021956087824351296
+    }
+  ],
+  "metric_correlations": [
+    {
+      "measure": "mmd2",
+      "mmd2": 1.0,
+      "centroid_shift": 0.931448018799125,
+      "jsd_excess": 0.6752289117575562,
+      "novelty_mean": 0.06879507333279314,
+      "novel_share": -0.2613240418118467,
+      "new_term_rate": 0.40636901385625157
+    },
+    {
+      "measure": "centroid_shift",
+      "mmd2": 0.931448018799125,
+      "centroid_shift": 1.0,
+      "jsd_excess": 0.5627582853901629,
+      "novelty_mean": 0.2801231666801718,
+      "novel_share": -0.07916700429462767,
+      "new_term_rate": 0.4990681468276477
+    },
+    {
+      "measure": "jsd_excess",
+      "mmd2": 0.6752289117575562,
+      "centroid_shift": 0.5627582853901629,
+      "jsd_excess": 1.0,
+      "novelty_mean": 0.13442994895065233,
+      "novel_share": -0.11076898144396728,
+      "new_term_rate": 0.6068389919779597
+    },
+    {
+      "measure": "novelty_mean",
+      "mmd2": 0.06879507333279314,
+      "centroid_shift": 0.2801231666801718,
+      "jsd_excess": 0.13442994895065233,
+      "novelty_mean": 1.0,
+      "novel_share": 0.7970991005591119,
+      "new_term_rate": 0.6820354914512601
+    },
+    {
+      "measure": "novel_share",
+      "mmd2": -0.2613240418118467,
+      "centroid_shift": -0.07916700429462767,
+      "jsd_excess": -0.11076898144396728,
+      "novelty_mean": 0.7970991005591119,
+      "novel_share": 1.0,
+      "new_term_rate": 0.4005348026902196
+    },
+    {
+      "measure": "new_term_rate",
+      "mmd2": 0.40636901385625157,
+      "centroid_shift": 0.4990681468276477,
+      "jsd_excess": 0.6068389919779597,
+      "novelty_mean": 0.6820354914512601,
+      "novel_share": 0.4005348026902196,
+      "new_term_rate": 1.0
+    }
+  ],
+  "query_drift": [
+    {
+      "period": "2017 (inside baseline)",
+      "compared_with": "2016",
+      "n_reference": 27,
+      "n_period": 25,
+      "mmd2": 0.012283468900729622,
+      "mmd_p": 0.00998003992015968,
+      "centroid_shift": 0.07542663812637329,
+      "jsd": 0.8166130421572213,
+      "jsd_excess": 0.019552262962092448,
+      "jsd_p": 0.2275449101796407,
+      "new_term_rate": 0.013043478260869565,
+      "emerging_terms": null,
+      "examples": null,
+      "mmd_q": null,
+      "jsd_q": null,
+      "times_ordinary_embedding": 1.0,
+      "times_ordinary_lexical": 1.0,
+      "significant": false
+    },
+    {
+      "period": "2018",
+      "compared_with": "2016-17",
+      "n_reference": 52,
+      "n_period": 39,
+      "mmd2": 0.007764915704985498,
+      "mmd_p": 0.007984031936127744,
+      "centroid_shift": 0.0452306866645813,
+      "jsd": 0.8344873571823064,
+      "jsd_excess": 0.06101691512529972,
+      "jsd_p": 0.001996007984031936,
+      "new_term_rate": 0.03170028818443804,
+      "emerging_terms": "immigration, olympics, winter, attack, people",
+      "examples": [
+        "What does Trump say he would be open to pursuing on immigration if Congress funds his border wall?",
+        "As of January 2018, is it clear what Trump thinks a broader immigration package should include?",
+        "What political reaction to immigration was Norway reported to be experiencing in January 2018, similar to the situation in the United States?"
+      ],
+      "mmd_q": 0.007984031936127744,
+      "jsd_q": 0.001996007984031936,
+      "times_ordinary_embedding": 0.6321435555166564,
+      "times_ordinary_lexical": 3.12070859744461,
+      "significant": true
+    },
+    {
+      "period": "2019",
+      "compared_with": "2016-17",
+      "n_reference": 52,
+      "n_period": 51,
+      "mmd2": 0.013086222041781226,
+      "mmd_p": 0.001996007984031936,
+      "centroid_shift": 0.05139034986495972,
+      "jsd": 0.8185788822316844,
+      "jsd_excess": 0.07314870626984737,
+      "jsd_p": 0.001996007984031936,
+      "new_term_rate": 0.03389830508474576,
+      "emerging_terms": "people, epstein, golden, jeffrey, paso",
+      "examples": [
+        "What did U.S. women's soccer co-captain Megan Rapinoe say President Trump's message was doing to people?",
+        "How many color options does the Amazon sandal that resembles a $128 Free People shoe come in?",
+        "Which Missouri town was hit by a tornado that killed at least three people on Wednesday, May 22, 2019?"
+      ],
+      "mmd_q": 0.00249500998003992,
+      "jsd_q": 0.001996007984031936,
+      "times_ordinary_embedding": 1.0653523159898195,
+      "times_ordinary_lexical": 3.7411887519959546,
+      "significant": true
+    },
+    {
+      "period": "2020",
+      "compared_with": "2016-17",
+      "n_reference": 52,
+      "n_period": 55,
+      "mmd2": 0.021263928733356585,
+      "mmd_p": 0.001996007984031936,
+      "centroid_shift": 0.05671423673629761,
+      "jsd": 0.8214343967313128,
+      "jsd_excess": 0.1060014712650833,
+      "jsd_p": 0.001996007984031936,
+      "new_term_rate": 0.0631163708086785,
+      "emerging_terms": "coronavirus, deaths, early, people, january",
+      "examples": [
+        "Which two major companies recently withdrew from the 2020 South by Southwest festival over coronavirus worries?",
+        "According to Johns Hopkins data, roughly how many coronavirus deaths had the U.S. recorded as of April 11, 2020?",
+        "What step did China take with the national holiday in late January 2020 to try to limit the spread of the coronavirus?"
+      ],
+      "mmd_q": 0.00249500998003992,
+      "jsd_q": 0.001996007984031936,
+      "times_ordinary_embedding": 1.73110127971208,
+      "times_ordinary_lexical": 5.42144259570347,
+      "significant": true
+    },
+    {
+      "period": "2021",
+      "compared_with": "2016-17",
+      "n_reference": 52,
+      "n_period": 55,
+      "mmd2": 0.019387865998650722,
+      "mmd_p": 0.001996007984031936,
+      "centroid_shift": 0.05952411890029907,
+      "jsd": 0.8510318126324397,
+      "jsd_excess": 0.11865278404307522,
+      "jsd_p": 0.001996007984031936,
+      "new_term_rate": 0.06517690875232775,
+      "emerging_terms": "administration, federal, capitol, caused, covid",
+      "examples": [
+        "How large was the revised infrastructure package the Biden administration offered to Republicans in May 2021?",
+        "What was the price tag of President Biden's original infrastructure proposal before the administration scaled it back?",
+        "How many former Trump administration officials did a new investigation find broke the law by mixing campaigning with official government work?"
+      ],
+      "mmd_q": 0.00249500998003992,
+      "jsd_q": 0.001996007984031936,
+      "times_ordinary_embedding": 1.5783705853237524,
+      "times_ordinary_lexical": 6.068493671198928,
+      "significant": true
+    },
+    {
+      "period": "2022",
+      "compared_with": "2016-17",
+      "n_reference": 52,
+      "n_period": 45,
+      "mmd2": 0.01877165531976277,
+      "mmd_p": 0.001996007984031936,
+      "centroid_shift": 0.06197839975357056,
+      "jsd": 0.8606267220487891,
+      "jsd_excess": 0.09249451735963798,
+      "jsd_p": 0.001996007984031936,
+      "new_term_rate": 0.035545023696682464,
+      "emerging_terms": "school, new, chris, murphy, people",
+      "examples": [
+        "What word did the brother of a boy killed in the Uvalde school shooting use to describe the police response?",
+        "In which region of the U.S. have some school districts reinstated mask requirements or recommendations as coronavirus cases climbed in May 2022?",
+        "What reasons did Gov. Phil Murphy give for ending New Jersey's school mask requirement?"
+      ],
+      "mmd_q": 0.00249500998003992,
+      "jsd_q": 0.001996007984031936,
+      "times_ordinary_embedding": 1.5282047336520517,
+      "times_ordinary_lexical": 4.7306297761524885,
+      "significant": true
+    }
+  ]
+}

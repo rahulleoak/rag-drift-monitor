@@ -1,0 +1,383 @@
+{
+  "recommendations": [
+    {
+      "action": "Update or re-index the knowledge base",
+      "key": "reindex",
+      "status": "recommended",
+      "rule": "a section loses at least the material share of correct answers on the stale index, and the refreshed index answers it well",
+      "finding": "Re-index the archive on a schedule, with every new batch of articles, not only when drift is flagged. Without it, questions about new events lose almost every answer: in 18 sections correct answers drop by 89-100 percentage points.",
+      "scope": [
+        "2019 WORLD NEWS",
+        "2020 POLITICS",
+        "2019 U.S. NEWS",
+        "2021 POLITICS",
+        "2021 U.S. NEWS",
+        "2022 POLITICS",
+        "2018 POLITICS",
+        "2019 POLITICS",
+        "2022 U.S. NEWS",
+        "2018 SPORTS",
+        "2018 WORLD NEWS",
+        "2021 WORLD NEWS",
+        "2018 BUSINESS",
+        "2020 ENTERTAINMENT",
+        "2022 WORLD NEWS",
+        "2021 SPORTS",
+        "2018 QUEER VOICES",
+        "2020 U.S. NEWS"
+      ],
+      "priority": 1,
+      "evidence": [
+        {
+          "source": "Agent D: answers by period",
+          "claim": "Questions about 2018 to 2022: 0-1% answered correctly from the stale index vs 76-100% from the refreshed index (374 questions)."
+        },
+        {
+          "source": "Agent D: sections",
+          "claim": "18 of 19 sections with enough questions lose a material share of answers (correct answers drop by 89-100 percentage points), and the refreshed index answers 89-100% of their questions correctly."
+        },
+        {
+          "source": "Agent D: historical control",
+          "claim": "Questions about the baseline (2016-17): 100% correct on the stale index and 100% on the refreshed one, so re-indexing does not hurt older questions."
+        },
+        {
+          "source": "Agent D: how the stale index fails",
+          "claim": "It fails silently: when nothing relevant is found it declines (99% of those cases); 1 of 374 stale answers added a claim not in the articles."
+        },
+        {
+          "source": "Agent D: which drift matters",
+          "claim": "12 of the 18 sections that lose answers were not flagged by drift detection (for example 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS)."
+        },
+        {
+          "source": "Agent D: drift scores vs loss",
+          "claim": "No drift measure predicts the size of the loss across sections (Spearman -0.25 to 0.34, all p > 0.05)."
+        },
+        {
+          "source": "Agent D: example",
+          "claim": "\"How many children and teachers in Uvalde are being mourned through a series of funerals and burials after the Texas school shooting?\" Stale index: \"The archive does not say. None of the articles cover the Uvalde school shooting or its funerals; they concern other Texas shootings, such as the 2017 ...\" Refreshed index: \"The Uvalde community is mourning 19 children and two teachers killed in the shooting, with visitations, funerals and burials taking place over roughly two and ...\""
+        }
+      ],
+      "explanation": "Re-index the archive on a schedule, with every new batch of articles, rather than only when drift is flagged. Questions about 2018 to 2022 were answered correctly 0-1% of the time from the stale index vs 76-100% from the refreshed one, and 12 of the 18 sections that lose answers were not flagged by drift detection, while no drift measure predicted the size of the loss. Without scheduled re-indexing, questions about new events keep losing almost every answer, and the stale index fails silently by declining rather than warning anyone.",
+      "explanation_check": "LLM, numbers checked (attempt 1)"
+    },
+    {
+      "action": "Re-index specific documents (changed facts)",
+      "key": "reindex_documents",
+      "status": "recommended",
+      "rule": "the changed-facts check flags documents, and the outdated-answer test shows flagged edits change answers",
+      "finding": "Re-index the 90 articles whose numbers or dates changed, and check the flagged sentences: on an edited archive the stale index gives outdated answers with confidence, and drift scores do not see it. Applied to a copy of the index, it removed 77% of the outdated answers a full re-index removes (the rule asks 80%); what it missed was detail added to other articles, so pair it with a scheduled full re-index.",
+      "scope": [
+        "Germany",
+        "Israel",
+        "Hong Kong",
+        "Delhi",
+        "Ukraine",
+        "Mumbai",
+        "Climate change",
+        "Jerusalem",
+        "Malaria",
+        "Virus",
+        "Myanmar",
+        "Wheat",
+        "Catholic Church",
+        "Alcoholic beverage",
+        "Spanish language",
+        "French language",
+        "Eastern Orthodox Church",
+        "HIV/AIDS",
+        "Sumer",
+        "Han dynasty",
+        "The Beatles",
+        "Pandemic",
+        "Joe Biden",
+        "Classical music",
+        "Neolithic Revolution",
+        "Modernism",
+        "Post-classical history",
+        "Great Depression",
+        "Mao Zedong",
+        "Shia Islam",
+        "Tuberculosis",
+        "Bone",
+        "Brexit",
+        "Anesthesia",
+        "Geography",
+        "Planet",
+        "Old age",
+        "Television",
+        "Dmitri Mendeleev",
+        "Swimming",
+        "Town",
+        "Short story",
+        "Arctic",
+        "Ali",
+        "Artificial intelligence",
+        "Technology",
+        "Qin Shi Huang",
+        "History of life",
+        "History of music",
+        "Rock music",
+        "Decolonization",
+        "E (mathematical constant)",
+        "Dog",
+        "Canal",
+        "Cryptocurrency",
+        "Bird",
+        "Aircraft",
+        "Achaemenid Empire",
+        "Coronavirus",
+        "Computer science",
+        "Cereal",
+        "Charles Darwin",
+        "Bronze Age",
+        "Byzantine Empire",
+        "COVID-19 pandemic",
+        "Carbon",
+        "Bread",
+        "Alan Turing",
+        "Arctic Ocean",
+        "Dance",
+        "Electric motor",
+        "Fraction",
+        "Exercise",
+        "Geometry",
+        "Mughal Empire",
+        "Money",
+        "Justice",
+        "Infection",
+        "Intellectual disability",
+        "Number theory",
+        "Polynesia",
+        "Number",
+        "Real number",
+        "Remote work",
+        "Pop music",
+        "Quran",
+        "Silicon",
+        "Shinto",
+        "Spaceflight",
+        "The arts"
+      ],
+      "priority": 2,
+      "evidence": [
+        {
+          "source": "Wikipedia: changed-facts check",
+          "claim": "391 changed numbers or dates in 90 of 165 articles since the index was built (2018 to 2022)."
+        },
+        {
+          "source": "Wikipedia: outdated-answer test",
+          "claim": "Questions on flagged edits got a different answer from the old and the new version 50% of the time, vs 2% for edits that kept their numbers (Fisher p = 1.5e-10)."
+        },
+        {
+          "source": "Wikipedia: changed facts vs drift scores",
+          "claim": "95% of articles with a changed fact had a \"low\" drift score, so drift alerts alone would miss them."
+        },
+        {
+          "source": "Wikipedia: outdated-answer test",
+          "claim": "The old index still retrieves the edited passage 92% of the time, so it serves the outdated fact with confidence."
+        },
+        {
+          "source": "Hand labels",
+          "claim": "Blind hand labels put the check's precision at 80% and 85% (author (first pass), second labeller)."
+        },
+        {
+          "source": "Wikipedia: example",
+          "claim": "Sumer: \"2525 BC on a stele called the Stele of the Vultures.\" became \"2450 BC on a stele called the Stele of the Vultures.\"."
+        },
+        {
+          "source": "Wikipedia: targeted re-index applied",
+          "claim": "Re-indexing only these articles took outdated answers from 13% to 3% (edits that changed a fact: 68% to 0%), re-embedding 64% of the passages a full re-index would."
+        }
+      ],
+      "explanation": "Re-index the 90 articles whose numbers or dates changed and check the flagged sentences, and pair this with a scheduled full re-index. Of the 165 articles checked, 90 had changed facts, questions on flagged edits got a different answer from the old and new version 50% of the time, and the old index still retrieves the edited passage 92% of the time, while 95% of these articles had a \"low\" drift score. If this is not done, the assistant will keep giving outdated answers with confidence and drift alerts will not catch them.",
+      "explanation_check": "LLM, numbers checked (attempt 1)"
+    },
+    {
+      "action": "Trigger model evaluation",
+      "key": "model_evaluation",
+      "status": "recommended",
+      "rule": "a section stays poor on the refreshed index, and its top 5 rarely holds an answer although the source article is in the index",
+      "finding": "Evaluate a second embedding model on 1 section(s) where re-indexing did not help.",
+      "scope": [
+        "2020 WORLD NEWS"
+      ],
+      "priority": 3,
+      "evidence": [
+        {
+          "source": "Agent D: sections",
+          "claim": "2020 WORLD NEWS: 15% correct and an answer in the top 5 for 15% of questions on the refreshed index."
+        }
+      ],
+      "explanation": "Run an evaluation of a second embedding model on the 2020 WORLD NEWS section, where re-indexing did not help. On the refreshed index, only 15% of answers were correct and an answer appeared in the top 5 for just 15% of questions. If this is not done, journalists will keep getting mostly incorrect answers from this section.",
+      "explanation_check": "LLM, numbers checked (attempt 1)"
+    },
+    {
+      "action": "Escalate cases for human review",
+      "key": "escalate",
+      "status": "recommended",
+      "rule": "a section loses answers without a drift flag, the evidence loop is unclear, or the judge disagrees with the hand labels",
+      "finding": "Send these to a person: 12 sections lost answers without a drift flag; the evidence loop was unclear. Lesson for the reviewer: new events in a familiar section do not shift the section's overall profile, so drift alerts miss them; and a section that did not exist in the baseline cannot be scored for drift until it has a baseline of its own. On a news archive, rely on scheduled re-indexing, and use drift scores to explain what changed.",
+      "scope": [
+        "2020 POLITICS",
+        "2019 U.S. NEWS",
+        "2021 POLITICS",
+        "2022 POLITICS",
+        "2021 U.S. NEWS",
+        "2018 POLITICS",
+        "2019 POLITICS",
+        "2018 WORLD NEWS",
+        "2022 U.S. NEWS",
+        "2021 WORLD NEWS",
+        "2020 U.S. NEWS",
+        "2018 QUEER VOICES",
+        "2020 WORLD NEWS"
+      ],
+      "priority": 4,
+      "evidence": [
+        {
+          "source": "Agent D: harm without drift",
+          "claim": "In 12 sections correct answers drop by 89-100 percentage points, but drift detection did not flag them: 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS, 2022 POLITICS, 2021 U.S. NEWS and others."
+        },
+        {
+          "source": "Agent B: drift scores",
+          "claim": "8 of them were scored: embedding drift 0.4-2.1x ordinary change, severity low."
+        },
+        {
+          "source": "Agent A: data monitoring",
+          "claim": "4 of them could not be scored for drift (not in baseline): 2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS. Agent A reports these as new sections."
+        },
+        {
+          "source": "Agent D: evidence loop",
+          "claim": "2020 WORLD NEWS: loss 15% with the top 5 and 15% with the top 10, interval 0% to 30%."
+        }
+      ],
+      "explanation": "Send these cases to a person for review: 12 sections lost correct answers by 89-100 percentage points, yet drift detection did not flag them, and the evidence loop for 2020 WORLD NEWS was unclear (loss 15% with the top 5 and 15% with the top 10, interval 0% to 30%). Of the 12, 8 were scored with embedding drift 0.4-2.1x ordinary change and severity low, and 4 (2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS) are not in the baseline and could not be scored. Without a human review, these answer losses will keep going unflagged because the drift alerts do not catch them.",
+      "explanation_check": "LLM, numbers checked (attempt 1)"
+    },
+    {
+      "action": "Improve document chunking or embedding strategies",
+      "key": "chunking",
+      "status": "recommended",
+      "rule": "a typical document is far longer than the embedding model reads, and chunks follow real edits clearly better than the first 512 tokens",
+      "finding": "For long documents, keep section-aware chunks (about 256 tokens) and measure drift per chunk and per document against its own earlier version; the first 512 tokens or one averaged vector hide most edits. Chunks of 128 tokens tracked edits best and are worth testing for retrieval. News articles are short, so this does not apply to the archive.",
+      "scope": [
+        "long-form documents (Wikipedia set)"
+      ],
+      "priority": 5,
+      "evidence": [
+        {
+          "source": "Wikipedia: long documents",
+          "claim": "92% of a typical Wikipedia article's text lies past the 512 tokens the embedding model reads (median 8541 tokens, 2022)."
+        },
+        {
+          "source": "Wikipedia: chunking experiment",
+          "claim": "How well each way of reading an article follows its real edits (Spearman): first 512 tokens 0.51, one averaged vector 0.78, chunks of 128 tokens 0.89, chunks of 256 tokens 0.87."
+        },
+        {
+          "source": "Agent A: data monitoring",
+          "claim": "News articles are short (median 30 words per article), well within the model's limit."
+        }
+      ],
+      "explanation": "For long documents such as the Wikipedia set, keep section-aware chunks of about 256 tokens and measure drift per chunk and per document against its own earlier version; chunks of 128 tokens are also worth testing for retrieval. The evidence is that 92% of a typical article's text lies past the 512 tokens the model reads, and in the experiment the first 512 tokens tracked real edits at only 0.51 and one averaged vector at 0.78, versus 0.89 for chunks of 128 tokens and 0.87 for chunks of 256 tokens. If this is not done, most edits to long documents will stay hidden from drift monitoring, and this does not apply to the news archive, where articles are short (median 30 words).",
+      "explanation_check": "LLM, numbers checked (attempt 1)"
+    },
+    {
+      "action": "Continue monitoring without intervention",
+      "key": "monitor",
+      "status": "recommended",
+      "rule": "drift is detected but answers do not suffer",
+      "finding": "Keep monitoring, without intervention, where drift does not hurt answers: questions about older events are unaffected even as newer articles join their results. Compare each new batch with the baseline, not only with the previous year, or gradual drift goes unnoticed.",
+      "scope": [
+        "questions about the baseline (2016-17)"
+      ],
+      "priority": 6,
+      "evidence": [
+        {
+          "source": "Agent D: historical control",
+          "claim": "Questions about 2016-17: 100% correct before and 100% after re-indexing."
+        },
+        {
+          "source": "Agent C: ranking change",
+          "claim": "By 2022, newer articles make up 14% of the top 10 for those questions."
+        },
+        {
+          "source": "Agent B: drift, whole periods",
+          "claim": "2022 vs 2021 is 0.5x ordinary change in embedding drift (low), but 2022 vs 2016-17 is 2.1x (medium)."
+        }
+      ],
+      "explanation": "Keep monitoring without intervention for questions about 2016-17, because answers there are unaffected: they were 100% correct before and 100% after re-indexing, even though newer articles make up 14% of the top 10 by 2022. Keep comparing each new batch with the baseline, not only with the previous year, since 2022 vs 2021 drift is 0.5x (low) while 2022 vs 2016-17 is 2.1x (medium). If that baseline comparison is skipped, gradual drift goes unnoticed.",
+      "explanation_check": "LLM, numbers checked (attempt 1)"
+    },
+    {
+      "action": "Update retrieval configurations",
+      "key": "retrieval_config",
+      "status": "not needed",
+      "rule": "the evidence loop finds answers just outside the top 5 (ranks 6-10)",
+      "finding": "Not needed: the refreshed index already puts an answer in the top 5, and no section had answers just outside it.",
+      "scope": [],
+      "priority": 0,
+      "evidence": [
+        {
+          "source": "Agent C: judged retrieval",
+          "claim": "On the refreshed index the top 5 holds an answering article for 76-100% of new questions."
+        },
+        {
+          "source": "Agent D: evidence loop",
+          "claim": "1 sections were borderline, so the loop back to Agent C ran."
+        }
+      ],
+      "explanation": "Not needed: the refreshed index already puts an answer in the top 5, and no section had answers just outside it.",
+      "explanation_check": "rule text (not recommended)"
+    },
+    {
+      "action": "Improve prompts or retrieval strategies",
+      "key": "prompts",
+      "status": "not needed",
+      "rule": "retrieval finds answering articles but the answers are wrong, or answers add claims the articles do not make",
+      "finding": "Not needed: where the right articles are found, the answers are correct and stay within them.",
+      "scope": [],
+      "priority": 0,
+      "evidence": [
+        {
+          "source": "Agent D: answers by period",
+          "claim": "On the refreshed index 76-100% of new questions are answered correctly."
+        },
+        {
+          "source": "Agent D: grounding",
+          "claim": "3 of 846 answers added a claim not in the retrieved articles (0.4%)."
+        }
+      ],
+      "explanation": "Not needed: where the right articles are found, the answers are correct and stay within them.",
+      "explanation_check": "rule text (not recommended)"
+    },
+    {
+      "action": "Recommend retraining",
+      "key": "retraining",
+      "status": "not checked",
+      "rule": "a model evaluation shows quality stays poor with a second embedding model and a fresh index",
+      "finding": "Decide after the model evaluation: retrain only if the second model is also poor.",
+      "scope": [],
+      "priority": 0,
+      "evidence": [
+        {
+          "source": "Agent E: model evaluation rule",
+          "claim": "Model evaluation: recommended."
+        }
+      ],
+      "explanation": "Decide after the model evaluation: retrain only if the second model is also poor.",
+      "explanation_check": "rule text (not recommended)"
+    }
+  ],
+  "summary": {
+    "recommended": 6,
+    "not needed": 2,
+    "not checked": 1
+  },
+  "explanations": {
+    "requests": 6,
+    "rejected_drafts": 0,
+    "fallbacks": 0,
+    "cost_usd": 0.0
+  },
+  "notes": []
+}

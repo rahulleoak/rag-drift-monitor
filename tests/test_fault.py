@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from driftmon.dashboard import story
-from driftmon.dashboard.runs import list_runs, load_run, run_label
+from driftmon.dashboard.runs import default_run, list_runs, load_run, run_label
 from driftmon.rag import fault as ft
 from driftmon.rag.index import build_study_indexes
 
@@ -53,7 +53,7 @@ def test_dropped_articles_leave_every_refreshed_index_but_not_the_stale_one():
 
 @pytest.fixture(scope="module")
 def run():
-    return load_run(DEMO, list_runs(DEMO)[0])
+    return load_run(DEMO, default_run(DEMO, list_runs(DEMO)))
 
 
 def test_story_names_the_loop_and_the_failure(run):
@@ -104,7 +104,6 @@ def test_a_borderline_section_is_not_called_harmless():
 
 
 def test_the_picker_opens_on_the_newest_normal_run(tmp_path):
-    from driftmon.dashboard.runs import default_run
     for rid, fault in (("20261110-100000", FAULT), ("20261109-100000", None)):
         (tmp_path / rid).mkdir()
         (tmp_path / rid / "run_info.json").write_text(json.dumps({"fault_injection": fault}), encoding="utf-8")

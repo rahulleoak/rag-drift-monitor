@@ -568,7 +568,9 @@ def impact() -> None:
                 f"agent then answers from the {top('top_k')} and concludes in code: harm confirmed, answers just "
                 "outside the top results (a retrieval setting), or unclear (a person should look). Agent E acts on "
                 "the conclusion.", story.evidence_loop_takeaway(run))
-        table(pd.DataFrame(imp.evidence),
+        loop = pd.DataFrame(imp.evidence)
+        loop["segment_id"] = loop["segment_id"].map(story.segment_name)
+        table(loop,
               {"segment_id": "Section", "questions": "Questions", "loss_top5": f"Drop, {top('answer_k')}",
                "loss_top10": f"Drop, {top('top_k')}", "loss_top10_low": "Interval low",
                "loss_top10_high": "Interval high", "conclusion": "Conclusion"},

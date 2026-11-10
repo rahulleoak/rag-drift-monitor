@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from driftmon.dashboard.runs import list_runs, load_run, severity_grid, stale_vs_refreshed
+from driftmon.dashboard.runs import default_run, list_runs, load_run, severity_grid, stale_vs_refreshed
 from driftmon.schemas import RetrievalReport
 from driftmon.graph import build_graph
 from scripts.make_charts import latest_run, make_all
@@ -124,8 +124,14 @@ DEMO = Path(__file__).resolve().parents[1] / "demo" / "runs"
 def test_the_bundled_demo_run_loads_with_every_agent():
     from driftmon.dashboard.runs import answers_stale_vs_refreshed, harm_vs_drift
     runs = list_runs(DEMO)
-    assert len(runs) == 1, "demo/runs should hold exactly one run (scripts/export_demo.py)"
-    run = load_run(DEMO, runs[0])
+    normal = [r for r in runs if not load_run(DEMO, r).info.get("fault_injection")]
+    assert len(normal) == 1, "demo/runs should hold one normal run, plus only labelled simulated failures (D34)"
+    for r in runs:
+        loaded = load_run(DEMO, r)
+        assert loaded.recommendations is not None
+        assert not loaded.info.get("fault_injection") or loaded.info.get("label")
+    run = load_run(DEMO, default_run(DEMO, runs))
+    assert run.run_id == normal[0]
     assert run.impact is not None and run.recommendations is not None and run.retrieval is not None
     assert "outdated_summary" in run.longform and "outdated_verdict" in run.longform
     long = answers_stale_vs_refreshed(run)
@@ -152,7 +158,7 @@ def test_dashboard_renders_the_demo_run_on_every_tab(monkeypatch):
 
 def test_export_demo_copies_only_what_the_dashboard_reads(tmp_path):
     from scripts.export_demo import export
-    src = DEMO / list_runs(DEMO)[0]
+    src = DEMO / default_run(DEMO, list_runs(DEMO))
     copied = export(src, tmp_path / "demo")
     out = tmp_path / "demo" / src.name
     assert (out / "impact.json").exists() and (out / "recommendations.json").exists()
@@ -174,7 +180,7 @@ def test_run_models_come_from_the_run_and_fall_back_to_the_config(tmp_path):
     from driftmon.dashboard.runs import run_models
     config = {"llm": {"generator_model": "claude-sonnet-5-5", "judge_model": "claude-opus-5-5"},
               "embeddings": {"model": "BAAI/bge-small-en-v1.5"}}
-    src = DEMO / list_runs(DEMO)[0]
+    src = DEMO / default_run(DEMO, list_runs(DEMO))
     run_path = tmp_path / src.name
     shutil.copytree(src, run_path)
     (run_path / "run_info.json").unlink(missing_ok=True)          # an older run: no provenance file
@@ -205,7 +211,7 @@ def test_run_labels_say_when_and_which_agents(tmp_path):
 
 def _demo_copy(tmp_path):
     import shutil
-    src = DEMO / list_runs(DEMO)[0]
+    src = DEMO / default_run(DEMO, list_runs(DEMO))
     dst = tmp_path / "runs" / src.name
     shutil.copytree(src, dst)
     return dst
@@ -250,7 +256,7 @@ def test_settings_come_from_the_run(tmp_path):
 
 def test_listed_words_move_the_way_their_label_says():
     """Emerging words are used more in the year than in the baseline, fading words less (D12 revision)."""
-    run = load_run(DEMO, list_runs(DEMO)[0])
+    run = load_run(DEMO, default_run(DEMO, list_runs(DEMO)))
     rows = [t for s in run.drift.whole_period + run.drift.segments for t in s.term_shares]
     assert rows, "the demo run should carry term_shares"
     for t in rows:

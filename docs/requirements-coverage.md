@@ -141,5 +141,5 @@ dashboard), as agreed with the author on 2026-11-08.**
 | Measurable retrieval and answer quality | Retrieval metrics and judged answer quality, with confidence intervals; judge checked against blind hand labels | **Done** (F15, F19, F20) |
 | Evidence-based impact assessment | Stale vs refreshed experiment; historical control set; the outdated-answer test; an applied fix re-checked | **Done** (F20, F21, F24) |
 | Intelligent recommendations and decision-making | One rule per action, each recommended with evidence or ruled out with a number | **Done** (F22). The model-evaluation loop is designed, not built (no section needs it) |
-| Sound engineering practices | Tested pure modules, one config file, disk caches, a cost ledger, thresholds fixed before results, documented decisions | **Done** (202 tests; D1–D33) |
+| Sound engineering practices | Tested pure modules, one config file, disk caches, a cost ledger, thresholds fixed before results, documented decisions | **Done** (202 tests; D1–D34) |
 | Translate research into practice | MMD (Gretton et al.), Fightin' Words (Monroe et al.), TREC pooling, ideas from the author's paper (D5) | **Done** |

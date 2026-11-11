@@ -57,6 +57,8 @@ chunk long documents; keep monitoring older questions. Full text:
 Five LangGraph agents, each reading the reports of the ones before it.
 Routing is decided in code: after B, a full evaluation or a small regression
 check; after D, a borderline section goes back to C once for more evidence.
+UML views of the code (packages, classes, the sequence of one run) are in
+[`docs/uml.md`](docs/uml.md).
 
 <details>
 <summary><b>Show the agent flow diagram</b></summary>
@@ -342,8 +344,9 @@ Every threshold, path and model lives in
 | If you want to know… | Read |
 |---|---|
 | How the system fits together | [`docs/architecture.md`](docs/architecture.md) |
-| Why each choice was made, with the options considered | [`docs/decisions.md`](docs/decisions.md) (D1–D30) |
-| Every result, with numbers and the command that reproduces it | [`docs/findings.md`](docs/findings.md) (F1–F22) |
+| UML: packages, classes, the sequence of one run | [`docs/uml.md`](docs/uml.md) |
+| Why each choice was made, with the options considered | [`docs/decisions.md`](docs/decisions.md) (D1–D34) |
+| Every result, with numbers and the command that reproduces it | [`docs/findings.md`](docs/findings.md) (F1–F26) |
 | How each requirement in the brief is covered | [`docs/requirements-coverage.md`](docs/requirements-coverage.md) |
 | Questions asked of the stakeholder, and the answers | [`docs/questions.md`](docs/questions.md) |
 | What happened day by day, including dead ends | [`docs/journal.md`](docs/journal.md) |

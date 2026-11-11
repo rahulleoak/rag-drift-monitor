@@ -2,7 +2,9 @@
 
 How the system is put together: the agents, what each one consumes and
 produces, and how data flows between them. Keep this file and its Mermaid
-diagram up to date whenever the agent design or data flow changes.
+diagram up to date whenever the agent design or data flow changes. UML views
+of the code (packages, classes, the sequence of one run) are in
+[`uml.md`](uml.md).
 
 **Status (2026-11-09):** all five agents run in LangGraph
 (A → B → route → C → D → E, with the loop from D back to C), with typed

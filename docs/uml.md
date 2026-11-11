@@ -9,66 +9,77 @@ see [`architecture.md`](architecture.md) and [`decisions.md`](decisions.md).
 2. [Classes](#2-classes): the reports the agents pass to each other, and the core classes.
 3. [Sequence of one run](#3-sequence-of-one-run): what happens, in order, including the evidence loop.
 
+Dark-theme PNG exports for slides are in [`uml/`](uml/) (`1_packages.png`,
+`2_classes.png`, `3_sequence.png`). They were exported with the Mermaid CLI
+(`npx @mermaid-js/mermaid-cli`, dark theme, background `#0D1725`, scale 2);
+re-export them after editing a diagram here.
+
 ## 1. Packages and dependencies
 
-An arrow means "imports from". Every package also reads `config.py`, and
-every agent reads the study periods from `data/` (both omitted for clarity).
-`data/`, `drift/` and `evaluation/` share helpers in both directions (for
-example the drift statistics are reused to measure query drift). The rule the layout enforces: statistics and
-decisions (`drift/`, `evaluation/`, `policy.py`) are plain Python;
-the LLM is reached only through `llm/`, and only to write, judge and explain.
+A layered view: each layer uses the layers below it, never the ones above.
+The rule the layout enforces: statistics and decisions (`drift/`,
+`evaluation/`, `policy.py`) are plain, tested Python; the LLM is reached only
+through `llm/`, and only to write, judge and explain. The exact imports are in
+the table under the diagram.
 
 ```mermaid
-flowchart TB
-    subgraph ENTRY["Entry points"]
-        SCRIPTS["scripts/<br/>run_pipeline, export_demo,<br/>experiments (wording, reindex, length)"]
-        APP["app/streamlit_app.py<br/>dashboard"]
+flowchart LR
+    subgraph L1["Entry points"]
+        SCRIPTS["scripts/<br/>run_pipeline, export_demo,<br/>experiments"]
+        APP["app/<br/>Streamlit dashboard"]
     end
-    subgraph ORCH["Orchestration"]
-        GRAPH["graph.py<br/>LangGraph: nodes, routes, loop"]
+    subgraph L2["Orchestration"]
+        GRAPH["graph.py<br/>LangGraph: nodes, routes, evidence loop"]
     end
-    subgraph AGENTS["agents/ (thin LangGraph nodes)"]
-        A["data_monitoring (A)"]
-        B["drift_detection (B)"]
-        C["retrieval_eval (C)"]
-        D["impact_assessment (D)"]
-        E["recommendation (E)"]
+    subgraph L3["Agents (thin LangGraph nodes)"]
+        AG["A. data_monitoring<br/>B. drift_detection<br/>C. retrieval_eval<br/>D. impact_assessment<br/>E. recommendation"]
     end
-    subgraph LOGIC["Tested logic (no LLM decisions)"]
-        DATA["data/<br/>records, cleaning, periods,<br/>monitoring, queries, simulate"]
-        DRIFT["drift/<br/>embedding, lexical, severity,<br/>topics, relations, facts, length"]
-        EVAL["evaluation/<br/>retrieval, answers, outdated,<br/>reindex, wording, labels, stats"]
-        POLICY["policy.py<br/>one rule per action"]
+    subgraph L4["Tested logic: statistics, metrics, rules"]
+        DATA["data/"]
+        DRIFT["drift/"]
+        EVAL["evaluation/"]
+        POLICY["policy.py"]
+        DASH["dashboard/"]
     end
-    subgraph INFRA["Infrastructure"]
-        RAG["rag/<br/>embeddings, index (FAISS), fault"]
-        LLM["llm/<br/>client (cache, batch, budget), prompts"]
-        LONG["longform/<br/>Wikipedia, chunking, evidence"]
+    subgraph L5["Infrastructure"]
+        RAG["rag/<br/>embeddings, FAISS index"]
+        LLM["llm/<br/>client, prompts"]
+        LONG["longform/<br/>Wikipedia, chunking"]
     end
-    SCHEMAS["schemas.py<br/>typed reports + PipelineState"]
-    DASH["dashboard/<br/>runs, story, live charts"]
+    subgraph L6["Shared by all"]
+        SCHEMAS["schemas.py<br/>typed reports, PipelineState"]
+        CONFIG["config.py<br/>config/config.yaml"]
+    end
 
-    SCRIPTS --> GRAPH
-    SCRIPTS --> DATA & DRIFT & EVAL & RAG & LLM & LONG & DASH
-    APP --> DASH
-    APP --> POLICY
-    GRAPH --> A & B & C & D & E
-    A --> DATA & DRIFT
-    B --> DRIFT & DATA
-    C --> EVAL & RAG
-    D --> EVAL & LLM
-    E --> POLICY & LLM
-    DATA --> DRIFT & EVAL & RAG & LLM
-    DRIFT --> DATA & EVAL & RAG
-    EVAL --> DATA & DRIFT & RAG & LLM
-    POLICY --> EVAL
-    DASH --> POLICY & LONG
-    GRAPH --> SCHEMAS
-    AGENTS --> SCHEMAS
-    DRIFT --> SCHEMAS
-    POLICY --> SCHEMAS
-    DASH --> SCHEMAS
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4
+    L4 --> L5
+    L5 --> L6
 ```
+
+| Package | Imports from |
+|---|---|
+| `scripts/` | graph, agents, data, drift, evaluation, rag, llm, longform, dashboard, schemas, config |
+| `app/` | dashboard, policy, config |
+| `graph.py` | agents, schemas |
+| `agents/` (A) | data, drift, schemas, config |
+| `agents/` (B) | data, drift, schemas |
+| `agents/` (C) | evaluation, rag (index, simulated failure), data, schemas, config |
+| `agents/` (D) | evaluation, llm (client), data, schemas |
+| `agents/` (E) | policy, llm (client, prompts), schemas |
+| `data/` | drift, evaluation, rag, llm, config |
+| `drift/` | data, evaluation, rag, schemas |
+| `evaluation/` | data, drift, rag, llm |
+| `policy.py` | evaluation, schemas |
+| `dashboard/` | policy, longform, schemas, config |
+| `rag/`, `llm/`, `longform/` | config only |
+
+`data/`, `drift/` and `evaluation/` share helpers in both directions (for
+example, the drift statistics are reused to measure query drift), so they
+form one layer. `data/` and `evaluation/` import `llm/` only to *build*
+requests (questions, answers, judgements); every decision on the results is
+made in code.
 
 ## 2. Classes
 
@@ -230,7 +241,6 @@ costs nothing.
 
 ```mermaid
 sequenceDiagram
-    autonumber
     actor U as User
     participant S as run_pipeline.py
     participant G as LangGraph

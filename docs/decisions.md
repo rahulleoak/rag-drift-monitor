@@ -490,6 +490,17 @@ date and reason, and add a new entry that supersedes it.
      chi-square p-value, for the same reason as above.
 - **Why:** comparisons stay like-for-like (same section, same size), and
   "unusual" is defined by the archive's own history, not invented constants.
+- **What "not flagged" means (added 2026-11-14):** every comparison is still
+  measured, tested and shown (score as "× ordinary", band low / medium /
+  high). A flag means *unusually* large: bigger than this archive's normal
+  year-to-year change. At this sample size every comparison is
+  statistically real, so a flag on significance alone would fire every
+  time (Evidently's defaults flag 100% of ordinary change, F27). Harm does
+  not depend on the flag: Agent D tests every section in a full run, and
+  sections that lose answers without a flag are escalated. The bars are
+  settings (`drift.severity_null_percentiles`). F27 shows lowering them
+  does not catch the harm: flagging all 15 scorable sections that lost
+  answers would flag about 98% of ordinary change.
 - **Evidence:** F5; `tests/test_agents.py` (null construction falls back from
   months to quarters; the graph flags a shifted synthetic period and routes
   to full evaluation, and routes to the regression check when nothing
@@ -1311,3 +1322,99 @@ date and reason, and add a new entry that supersedes it.
   ranks 6-10 and answers from the top 10 conclude, and what Agent E does
   with the conclusion. Also a limit worth stating: a broken refresh makes
   the stale-vs-refreshed loss shrink, because both indexes fail.
+
+## D35. Build the RAG pipeline and the monitoring and evaluation ourselves
+- **Date:** recorded 2026-11-13 (written down after the fact; the choices
+  date from 2026-11-04, `docs/questions.md` item 10)
+- **Status:** Accepted
+- **Context:** the brief suggests LangChain (or a custom implementation)
+  for RAG, Evidently for monitoring and RAGAS (or custom metrics) for
+  evaluation; all are optional ("not every technology listed needs to be
+  used"). We used none of them, without recording why at the time.
+- **Choice:** a small custom RAG pipeline (bge-small embeddings, exact
+  FAISS search, Claude Sonnet answering only from the top 5 retrieved
+  articles, citing them and declining when they do not hold the answer),
+  and custom, tested drift statistics, retrieval metrics and answer
+  judging.
+- **Why:**
+  - The core measurement is the same questions on a stale and a refreshed
+    index. With no framework layer in between, retrieval and answering are
+    identical on both sides, so a difference is the new data, not the
+    tooling; every step is visible and cached.
+  - Evidently and RAGAS report drift or answer scores on their own; neither
+    runs the stale-vs-refreshed experiment that tells whether drift causes
+    lost answers. We also needed blind, shuffled judging across two
+    indexes, thresholds fixed before results and checks against hand
+    labels.
+  - Every number traces to tested code and a decision.
+- **Cost:** more code to maintain, and no off-the-shelf reports; mitigated
+  by the tests and the dashboard.
+- **Checked later:** D36 / F27 ran Evidently on the same comparisons. With
+  its defaults it flags every comparison, ordinary change included, and its
+  scores do not track the loss of answers.
+
+## D36. Compare our drift detection with Evidently, run out of the box
+- **Date:** 2026-11-14
+- **Status:** Accepted (approved by the author 2026-11-14); rules set before
+  any result
+- **Context:** the brief lists Evidently under "Monitoring" (optional). We
+  built our own drift statistics (D35) and say an
+  off-the-shelf drift tool cannot tell which drift hurts answers. That was
+  an argument, not a measurement. Evidently 0.7.23 has embedding drift
+  (`evidently.metrics.EmbeddingsDrift`, undocumented; default: a domain
+  classifier, drift when its ROC AUC is above 0.55, with a bootstrap test
+  when the reference has under 1,000 rows), text drift (a domain classifier
+  on the text, 0.55) and tabular drift (default tests per column type).
+- **Choice:** run Evidently with its defaults, as a new user would, on
+  exactly the comparisons Agent B makes, with the same article samples:
+  each later year vs the 2016-17 baseline (5) and each eligible year x
+  section group vs the same section in the baseline (37, from the demo run
+  `20261109-221754`). Three checks per comparison: embeddings (bge-small
+  vectors), text (headline and description), and tabular (section and
+  article length). Plus ordinary change inside the baseline: the same
+  calendar month a year apart (12 pairs x 5 draws, as Agent B's severity
+  yardstick, D11). No LLM. Evidently runs in its own environment (it needs
+  pandas 2; the project uses pandas 3).
+- **Compared three ways:** (a) agreement with Agent B's flags; (b) harm:
+  of the 19 sections that lost answers (F20), how many Evidently flags, and
+  whether its scores track the size of the loss (Spearman, as F20); (c)
+  false alarms: how often it flags ordinary change inside the baseline.
+- **Rules (before results):** Evidently sees the harm better than our
+  method if its embedding-drift score tracks the loss (Spearman p < 0.05
+  over the scored sections), or if it flags at least 15 of the 19 losing
+  sections while flagging under 20% of ordinary within-baseline
+  comparisons. It over-alarms if it flags more than 50% of ordinary
+  within-baseline comparisons.
+- **Expectation (before results):** Evidently flags nearly everything,
+  ordinary change included (with about 1,400 articles a side a classifier
+  usually beats 0.55), and, like our scores, does not track the loss.
+- **Reproduce:** run with local analysis scripts that are not part of the
+  repository (Evidently needs its own environment: evidently 0.7.23 with
+  pandas 2). The method above is complete enough to repeat it; every
+  result is in F27.
+- **Addendum (2026-11-14, before running): are we missing drift?** Stage 3
+  found Evidently, judged against our own ordinary-change yardstick, calls
+  2019 high where Agent B calls it low, and that Agent B leaves 25 of 42
+  real (significant) changes unflagged by design. Two follow-up tests:
+  1. **2019: structure or content?** 2019 has the largest section-mix
+     shift (Cramér's V 0.51), 26% of articles in sections new since the
+     baseline, and longer articles. Evidently's embedding check is re-run
+     on 2019 with the structure removed step by step: (i) as before;
+     (ii) sections new since the baseline left out; (iii) the baseline
+     sample matched to 2019's section mix; (iv) also matched on article
+     length within each section. 2020 gets the same treatment as a control
+     (its COVID content should survive the matching). Rule: if 2019's ROC
+     AUC in (iv) is below the 95th percentile of ordinary change (0.757),
+     the 2019 difference is structure, which Agent A reports, and our
+     "low" is right about content; if it stays at or above 0.757, Agent B
+     is missing content drift in 2019. The test is only valid if 2020
+     stays at or above 0.757 in (iv).
+  2. **Where would the bar have to be to catch the harm?** Agent B's
+     ordinary-change nulls are rebuilt exactly as in the run (check: the
+     95th/99th percentile bars must reproduce its 17 flags). For each of
+     the 15 scorable sections that lost answers, find the lowest bar
+     (percentile of ordinary change) at which it would be flagged. Report
+     the bar needed to flag all 15 and the false-alarm rate it implies on
+     ordinary change (100% minus the bar). Expectation: catching all the
+     harm with drift alerts needs a bar that flags a large share of
+     ordinary change, which is the case for re-indexing on a schedule.

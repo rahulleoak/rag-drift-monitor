@@ -1234,3 +1234,119 @@ chart, and whether it supports or contradicts what we expected.
   --fault-share 0.85 --label "Evidence loop demo (simulated failed re-index)"`.
 - **Verdict:** Supports D28 (the loop) and D34; found and fixed one
   classification bug.
+
+## F27. Evidently out of the box flags every change, ordinary change included; neither tool's drift score finds the harm, and our bar is not hiding it
+- **Date:** 2026-11-14
+- **Setup:** D36. Evidently 0.7.23 with its defaults on exactly the
+  comparisons and article samples of Agent B in the demo run
+  (`20261109-221754`): each later year vs the 2016-17 baseline (5), each
+  year x section group vs the same section in the baseline (37), and
+  ordinary change inside the baseline (the same month a year apart, 12
+  pairs x 5 draws = 60). Checks: embeddings (bge-small vectors; a domain
+  classifier, drift when its ROC AUC is above 0.55, or a permutation test
+  below 1,000 reference rows, which applied to 35 of the 37 groups), text
+  (headline and description, same kind of classifier), article length,
+  and section mix. Rules fixed before results. No LLM. Run with local
+  analysis scripts, not part of the repository.
+- **Result (a), how often Evidently flags drift:**
+
+  | Check | Years (5) | Year x section groups (37) | Ordinary change (60) |
+  |---|---|---|---|
+  | Embeddings | 5 | 37 | **60** |
+  | Text | 5 | 32 | **60** |
+  | Article length | 5 | 29 | **60** |
+  | Section mix | 5 | - | **60** |
+
+  Embedding ROC AUC (0.5 = cannot tell the samples apart): ordinary change
+  0.66-0.77 (median 0.71), years 0.68-0.85, groups 0.57-0.96. 2018 (0.68)
+  scores below a typical ordinary month. Exploratory, outside the rules:
+  2017 vs 2016 as whole years is flagged on all four checks too
+  (embeddings 0.61), so single months being easier to tell apart does not
+  explain the false alarms.
+- **Result (b), against Agent B and the harm:**
+  - Agent B flags 17 of the 42 later comparisons; Evidently flags all 42
+    and never misses one of ours. Agent B's own significance tests call
+    all 42 significant too: the two agree that every change is real, and
+    differ only in the bar for an alarm. Their scores rank the 37 groups
+    alike (Spearman 0.54, p = 0.0006).
+  - Of the 19 sections that lost answers (F20), 15 can be scored (4 are
+    U.S. NEWS, not in the baseline, unscorable by either). Evidently flags
+    all 15 (Agent B 7), because it flags everything. Its scores do not
+    track the size of the loss: embeddings Spearman -0.20 (p = 0.48), text
+    -0.41 (p = 0.13); Agent B's 0.41 (p = 0.13), as in F20.
+  - **By the rules: sees the harm better than our method, no; over-alarms
+    (more than 50% of ordinary change flagged), yes: 100%.**
+- **Result (c), same yardstick for both:** Evidently's embedding score
+  judged against ordinary change, as Agent B judges its own (95th
+  percentile 0.757, 99th 0.767):
+
+  | Year | Evidently, on our yardstick | Agent B |
+  |---|---|---|
+  | 2018 | low | low |
+  | 2019 | high | low |
+  | 2020 | high | high |
+  | 2021 | high | medium |
+  | 2022 | high | medium |
+
+  Same drift-or-not answer for 4 of 5 years; both put 2020 highest.
+- **Result (d), 2019, the one disagreement: structure or content?**
+  (addendum to D36, rule set before running). 2019 has the largest
+  section-mix shift (Cramér's V 0.51), 26% of articles in sections new
+  since the baseline, and longer articles (median 24 -> 29 words).
+  Evidently's embedding score with structure removed step by step, 2020
+  as a control:
+
+  | Step | 2019 | 2020 |
+  |---|---|---|
+  | (i) as before | 0.791 | 0.845 |
+  | (ii) sections new since the baseline left out | 0.786 | 0.866 |
+  | (iii) + baseline matched to the section mix | 0.791 | 0.856 |
+  | (iv) + matched on article length | **0.748** | **0.841** |
+
+  By the rule, 2019's difference is structure (below 0.757), and the test
+  is valid (2020 stays above). Five random draws of step (iv), an
+  exploratory check given the thin margin: 2019 0.720-0.748 (mean 0.735),
+  always below; 2020 0.821-0.842 (mean 0.833), always above. Almost all of
+  the drop comes from article length, which Agent A reports; Agent B's
+  "low" for 2019 is right about meaning.
+- **Result (e), where would Agent B's bar have to be to catch the harm?**
+  (addendum to D36). Agent B's ordinary-change references were rebuilt as
+  in the run and reproduce its flags exactly. For the 15 scorable sections
+  that lost answers:
+
+  | Bar (share of ordinary change a drift must exceed) | Losing sections flagged | Ordinary change also flagged |
+  |---|---|---|
+  | 95th percentile (the setting) | 7 | about 5% |
+  | 80th | 9 | about 20% |
+  | 50th | 12 | about 50% |
+  | 1.7th (to flag all 15) | 15 | about 98% |
+
+  Some of the hardest-hit sections changed *less* than ordinary: 2018
+  POLITICS at the 1.7th percentile, 2018 WORLD NEWS at the 5th, 2019
+  POLITICS at the 13th. Politics always reads like politics; every fact in
+  it is new.
+- **What it means:**
+  - "Not flagged" is not "not detected": every change is measured and
+    shown; a flag means unusually large for this archive (D11). Evidently's
+    defaults put the bar at "statistically real", which at this sample size
+    is every comparison, so its alarm carries no information.
+  - No drift bar, ours or Evidently's, catches the harm without alarming on
+    nearly all ordinary change. This strengthens the main recommendation:
+    re-index on a schedule; use drift scores to explain what changed, not
+    to decide when to act.
+  - Our drift measurement is not the weak point: it agrees with an
+    independent method on what changed, and the one disagreement (2019) is
+    article length.
+- **Caveats:** Evidently's defaults only; tuned thresholds would cut its
+  alarms, but its scores do not track the loss at any threshold. Ordinary
+  change is measured month against month (Agent B's yardstick, D11); the
+  year-level check (2017 vs 2016) agrees. The structure test compares
+  smaller samples (1,016 and 1,213 articles a side) with a yardstick built
+  at 1,398. Percentiles of ordinary change come from 60 values (steps of
+  about 1.7 points).
+- **Expectation:** Evidently flags nearly everything and does not track the
+  loss (yes); 2019 is structure (yes, mostly article length rather than
+  section mix, which was not expected); catching the harm with drift alerts
+  needs a bar that flags most ordinary change (yes, 98%).
+- **Verdict:** Supports D11, D35 and the recommendation to re-index on a
+  schedule.

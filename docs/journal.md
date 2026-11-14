@@ -16,6 +16,36 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-14: our drift detection vs Evidently (D36, F27), and whether our bar hides drift
+- **Context:** deadline now effectively 1am Wed 2026-11-18. The brief lists
+  Evidently under "Monitoring"; our "why not Evidently" answer was an
+  argument, so we measured it, in stages with a check after each, rules
+  set before results (D36). D35 records, after the fact, why the RAG
+  pipeline, monitoring and evaluation are our own code.
+- **Built (locally, not published):** analysis scripts that rebuild Agent
+  B's exact samples and run Evidently 0.7.23 with its defaults. Evidently
+  fails to import with pandas 3 (the project's), so it ran in a separate
+  environment. Its embedding drift exists but is undocumented and reports
+  no decision; the decision came from the function it calls by default,
+  checked to reproduce its scores.
+- **Results (F27):** Evidently flags all 42 later comparisons and all 60
+  ordinary within-baseline ones (2017 vs 2016 as whole years too); its
+  scores rank comparisons like ours (0.54) but do not track the loss of
+  answers. Our own significance tests also call all 42 real: the methods
+  differ only in the bar for an alarm.
+- **The author's question, "are we measuring incorrectly or missing
+  drift?":** two follow-up tests (D36 addendum). 2019, the one year
+  Evidently calls high and we call low, turned out to be longer articles,
+  not missed meaning (below the bar in 5 of 5 draws; 2020 stays above).
+  Lowering our bar does not buy harm detection: flagging all 15 scorable
+  sections that lost answers needs a bar that flags about 98% of ordinary
+  change, because 2018 politics changed *less* than ordinary yet lost
+  everything.
+- **Surprises:** the 2019 difference was article length, not the section
+  mix we expected; Evidently switches method below 1,000 rows.
+- **Decided:** keep Agent B's bar; D11 now says plainly what "not flagged"
+  means. No code or README changes; the write-up is docs only.
+
 ## 2026-11-09 (evening): the two extensions worth doing before Friday
 - **Built:** the newer-wording test (D31, F23) and the applied targeted
   re-index (D32, F24), each with thresholds written down before the run.

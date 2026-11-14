@@ -18,6 +18,7 @@ DOCS = pd.DataFrame({
     "title": ["Flu season tips", "Summer wine guide", "How to make a face mask"],
     "text": ["Stay home when sick.", "Light reds for July.", "Cut two layers of cotton."]})
 VECS = np.eye(3, dtype=np.float32)
+REAL_MISSING = ask.missing   # saved at import, before the shared fixture hides the page (conftest.py)
 
 
 class FakeEmbedder:
@@ -57,11 +58,11 @@ def test_missing_names_what_the_page_needs(tmp_path, monkeypatch):
     cfg = copy.deepcopy(load_config())
     cfg["paths"]["data_processed"], cfg["paths"]["indexes"] = str(tmp_path / "d"), str(tmp_path / "i")
     monkeypatch.setattr(ask, "api_key", lambda: None)
-    assert len(ask.missing(cfg)) == 3
+    assert len(REAL_MISSING(cfg)) == 3
     (tmp_path / "d").mkdir(); (tmp_path / "d" / "documents.parquet").write_text("x")
     (tmp_path / "i").mkdir(); (tmp_path / "i" / "manifest.json").write_text("{}")
     monkeypatch.setattr(ask, "api_key", lambda: "k")
-    assert ask.missing(cfg) == []
+    assert REAL_MISSING(cfg) == []
 
 
 def test_ask_answers_from_both_indexes_side_by_side(tmp_path):
@@ -83,3 +84,38 @@ def test_the_page_sends_exactly_agent_ds_request():
     theirs = answer_requests(plan, q, DOCS, cfg)[0]
     ours = ask.answer_request("How do I make a face mask at home?", ["n1", "b1"], DOCS, cfg)
     assert ours.key == theirs.key   # same prompt, model and settings, so the same cache entry
+
+
+DEMO = __import__("pathlib").Path(__file__).resolve().parents[1] / "demo" / "runs"
+APP = str(DEMO.parents[1] / "app" / "streamlit_app.py")
+
+
+def test_the_page_is_hidden_when_something_is_missing(monkeypatch):
+    from streamlit.testing.v1 import AppTest
+    monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(DEMO))
+    at = AppTest.from_file(APP, default_timeout=120)
+    at.run()
+    assert not at.exception and "Ask the Archive" not in at.sidebar.radio[0].options
+
+
+def test_the_page_asks_both_indexes(tmp_path, monkeypatch):
+    from streamlit.testing.v1 import AppTest
+    archive, llm = _archive(tmp_path), FakeLLM()
+    monkeypatch.setattr(ask, "missing", lambda cfg: [])
+    monkeypatch.setattr(ask, "open_archive", lambda cfg: archive)
+    monkeypatch.setattr(ask, "make_llm", lambda cfg: llm)
+    monkeypatch.setenv("DRIFTMON_RUNS_DIR", str(DEMO))
+    at = AppTest.from_file(APP, default_timeout=120)
+    at.run()
+    at.sidebar.radio[0].set_value("Ask the Archive").run()
+    assert not at.exception
+    assert not llm.requests                                   # nothing is asked until the button is pressed
+    at.text_input[0].input("How do I make a face mask at home?")
+    at.button[0].click().run()
+    assert not at.exception
+    text = " ".join(m.value for m in at.markdown)
+    assert "Cut two layers of cotton." in text and "The archive does not say." in text
+    assert "**A · 2020-04-01 · WELLNESS · How to make a face mask**" in text   # ranked first, cited, in bold
+    assert "Stale index (the baseline only)" in text and "Refreshed index (up to 2020)" in text
+    assert any("Cost of this question: $0.020" in c.value for c in at.caption)
+    assert len(llm.requests) == 2

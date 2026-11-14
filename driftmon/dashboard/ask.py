@@ -23,10 +23,13 @@ import pandas as pd
 
 from driftmon.config import resolve_path
 from driftmon.evaluation.answers import article_listing
-from driftmon.llm.client import LLMRequest, api_key
+from driftmon.llm.client import LLMClient, LLMRequest, api_key
 from driftmon.llm.prompts import ANSWER_SYSTEM, ANSWER_TEMPLATE, ANSWER_VERSION, RagAnswer
 from driftmon.rag.embeddings import Embedder
 from driftmon.rag.index import VectorIndex
+
+
+MAX_QUESTION = 300   # characters; a question, not a document
 
 
 def missing(cfg: Mapping[str, Any]) -> list[str]:
@@ -52,6 +55,11 @@ class Archive:
     _indexes: dict[str, VectorIndex] = field(default_factory=dict)
 
     @property
+    def baseline(self) -> str:
+        """The period(s) the stale index holds, e.g. '2016-17'."""
+        return ", ".join(self.manifest["indexes"]["stale"].get("periods", ["the baseline"]))
+
+    @property
     def years(self) -> list[str]:
         """Years a refreshed index exists for, oldest first."""
         return [n.removeprefix("refreshed_") for n in self.manifest["indexes"] if n.startswith("refreshed_")]
@@ -73,6 +81,12 @@ def open_archive(cfg: Mapping[str, Any]) -> Archive:
                            columns=["doc_id", "date", "period", "category", "title", "text"])
     return Archive(docs=docs, embedder=Embedder.from_config(cfg, model_name=manifest["embedding_model"]),
                    directory=directory, manifest=manifest)
+
+
+def make_llm(cfg: Mapping[str, Any]) -> LLMClient:
+    """The project's LLM client: same cache, cost ledger and budget as the pipeline."""
+    return LLMClient(config=cfg["llm"], cache_dir=resolve_path(cfg["paths"]["cache"]) / "llm",
+                     ledger=resolve_path(cfg["paths"]["runs"]) / "llm_costs.csv")
 
 
 def retrieve(archive: Archive, question: str, index_name: str, k: int) -> list[str]:

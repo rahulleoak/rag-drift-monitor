@@ -29,7 +29,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.dashboard import live, story  # noqa: E402
+from driftmon.dashboard import ask, live, story  # noqa: E402
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.dashboard.runs import (ALL_OTHER, answers_stale_vs_refreshed, default_run,  # noqa: E402
                                      flagged_share_by_year, harm_vs_drift, list_runs, load_run, run_label,
@@ -65,6 +65,9 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label {{ padding: 0.3rem
 </style>""", unsafe_allow_html=True)
 
 PAGES = ["Overview", "Data Monitoring", "Drift", "Retrieval", "Impact", "Recommendations"]
+ASK_PAGE = "Ask the Archive"   # live RAG; only where the documents, indexes and an API key exist
+if not ask.missing(config):
+    PAGES.append(ASK_PAGE)
 page = st.sidebar.radio("Pages", PAGES, label_visibility="collapsed")
 
 head, picker = st.columns([3.2, 1], vertical_alignment="bottom")
@@ -672,5 +675,63 @@ def recommendations() -> None:
         st.caption(note)
 
 
+@st.cache_resource(show_spinner=False)
+def _archive() -> ask.Archive:
+    """The documents, model and two default indexes, loaded once per server (about 30 s)."""
+    a = ask.open_archive(config)
+    a.embedder.embed_queries(["warm up"])          # load the model now, not on the first question
+    for name in ("stale", f"refreshed_{a.years[-1]}"):
+        a.index(name)
+    return a
+
+
+@st.cache_resource(show_spinner=False)
+def _llm():
+    return ask.make_llm(config)
+
+
+def ask_archive() -> None:
+    page_header(ASK_PAGE, "Live: the RAG pipeline the experiment measures")
+    say("Type a question and see what the assistant answers from the stale index (built once, never updated) "
+        "and from a refreshed index, side by side. Same search, same prompt and same model as Agent D. This page "
+        "is live: it is not part of the saved run, and each new question costs about 1-2 cents (asked before, "
+        "free).")
+    with st.spinner("Loading the archive and the search model (about 30 seconds, once)..."):
+        a = _archive()
+    with st.form("ask"):
+        q = st.text_input("Question", max_chars=ask.MAX_QUESTION,
+                          placeholder="e.g. How do I make a face mask at home?")
+        year = st.selectbox("Refreshed index includes articles up to", a.years, index=len(a.years) - 1)
+        go = st.form_submit_button("Ask both indexes")
+    if go and q.strip():
+        with st.spinner("Searching both indexes and asking Claude Sonnet..."):
+            try:
+                st.session_state["ask_result"] = ask.ask(a, q.strip(), year, _llm(), config)
+            except Exception as e:   # a live call can fail; say so rather than break the page
+                st.error(f"Could not answer this question: {e}")
+    r = st.session_state.get("ask_result")
+    if not r:
+        return
+    with st.container(border=True):
+        st.markdown(f"**{r['question']}**")
+        cols = st.columns(2)
+        sides = (("stale", f"Stale index ({a.baseline} only)", "dot-stale"),
+                 ("refreshed", f"Refreshed index (up to {r['year']})", "dot-new"))
+        for col, (side, title, cls) in zip(cols, sides):
+            s = r[side]
+            with col:
+                st.markdown(f'<span class="{cls}">●</span> **{title}**', unsafe_allow_html=True)
+                verdict = ("Answer found" if s["found"] else "Not in these articles" if s["found"] is False
+                           else "No answer")
+                st.caption(verdict)
+                st.markdown(s["answer"])
+                st.caption(f"Top {r['k']} articles it read (cited in bold):")
+                st.markdown("\n".join(
+                    f"- {'**' if x['letter'] in s['sources'] else ''}{x['letter']} · {x['date']} · {x['section']} · "
+                    f"{x['title']}{'**' if x['letter'] in s['sources'] else ''}" for x in s["articles"]))
+    cached = r["stale"]["cached"] and r["refreshed"]["cached"]
+    st.caption(f"Cost of this question: ${r['cost_usd']:.3f}" + (" (both answers from the cache)" if cached else ""))
+
+
 {"Overview": overview, "Data Monitoring": data_monitoring, "Drift": drift, "Retrieval": retrieval,
- "Impact": impact, "Recommendations": recommendations}[page]()
+ "Impact": impact, "Recommendations": recommendations, ASK_PAGE: ask_archive}[page]()

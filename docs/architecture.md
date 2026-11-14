@@ -165,7 +165,12 @@ test) and Recommendations (E: each action with its explanation and evidence,
 and the actions ruled out). Charts are live Altair charts
 (`driftmon/dashboard/live.py`); every "what this run shows" sentence is
 built from the run's numbers (`driftmon/dashboard/story.py`). It reads `runs/` and falls back to the committed `demo/runs/`, so it
-works straight after cloning, without an API key, a GPU or a rerun.
+works straight after cloning, without an API key, a GPU or a rerun. One
+optional page is live: **Ask the Archive** (`driftmon/dashboard/ask.py`,
+D37) asks a typed question of the stale and a refreshed index with Agent D's
+exact retrieval and prompt. It appears only where the documents, saved
+indexes and an API key exist, so a fresh clone never shows it; the saved-run
+pages never call the LLM.
 
 **Storage (no database server).** Vector search uses FAISS exact
 inner-product indexes held in memory and rebuilt from cached embeddings at

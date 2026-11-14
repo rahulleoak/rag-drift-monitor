@@ -16,6 +16,21 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-14 (later): "Ask the Archive", and the main folder made complete
+- **Built:** a live dashboard page (D37) that asks a typed question of the
+  stale and a refreshed index with Agent D's exact pipeline; hidden unless
+  the documents, indexes and an API key exist. Checked in the browser with
+  real data: 23 s first load, about 15 s per answer pair, under a cent per
+  question, about 2 GB of memory. 207 tests.
+- **Found:** the author's main project folder had no data, no key and no
+  Python environment; all of it lived only in the temporary working folder
+  Claude Code created. Copied the data, indexes, caches, runs and key there
+  and built an identical environment from the exact package list (PyTorch
+  2.11 with CUDA 12.8). Checked: 202 tests pass there, and a full pipeline
+  run from the cache matches the demo run exactly, at $0.
+- **Decided:** no README entry for the page (reviewers cannot open it without
+  the data and a key); documented in `docs/` only.
+
 ## 2026-11-14: our drift detection vs Evidently (D36, F27), and whether our bar hides drift
 - **Context:** deadline now effectively 1am Wed 2026-11-18. The brief lists
   Evidently under "Monitoring"; our "why not Evidently" answer was an

@@ -694,7 +694,7 @@ def ask_archive() -> None:
     page_header(ASK_PAGE, "Live: the RAG pipeline the experiment measures")
     say("Type a question and see what the assistant answers from the stale index (built once, never updated) "
         "and from a refreshed index, side by side. Same search, same prompt and same model as Agent D. This page "
-        "is live: it is not part of the saved run, and each new question costs about 1-2 cents (asked before, "
+        "is live: it is not part of the saved run, and each new question costs under a cent (asked before, "
         "free).")
     with st.spinner("Loading the archive and the search model (about 30 seconds, once)..."):
         a = _archive()

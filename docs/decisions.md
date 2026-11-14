@@ -1418,3 +1418,33 @@ date and reason, and add a new entry that supersedes it.
      ordinary change (100% minus the bar). Expectation: catching all the
      harm with drift alerts needs a bar that flags a large share of
      ordinary change, which is the case for re-indexing on a schedule.
+
+## D37. A live "Ask the Archive" page on the dashboard
+- **Date:** 2026-11-14
+- **Status:** Accepted (approved by the author 2026-11-14)
+- **Context:** the baseline RAG pipeline (D35) is the system under test, but
+  it was only visible through saved results. The author wanted to show it
+  live: type a question and see what the stale and a refreshed index answer.
+- **Options:** (a) leave the dashboard read-only; (b) a live page that runs
+  the same pipeline on demand; (c) a separate small app.
+- **Choice:** (b), built so it cannot weaken the rest of the dashboard:
+  - **Same pipeline:** bge-small, the saved FAISS indexes, top 5, and the
+    exact request Agent D sends (a test checks the request is identical, so
+    the same question reuses the same cache entry).
+  - **Only where it can work:** shown only when the cleaned documents, the
+    saved indexes and an API key exist (`ask.missing`). A fresh clone never
+    sees it; the saved-run pages still never call the LLM. Tests hide it by
+    default so they behave the same on any machine.
+  - **No accidental spend:** questions go out only on the button (a form),
+    at most 300 characters; errors show as a message, not a crash.
+  - **Loaded once:** the model and indexes load when the page opens (about
+    20-30 seconds) and stay in memory.
+- **Measured (2026-11-14):** first load 23 s; an answer pair about 15 s;
+  cost under a cent per new question ($0.006 for "How do I make a face mask
+  at home?"; six live answers in testing cost about $0.02); the dashboard
+  uses about 2 GB with the page loaded, so do not run the pipeline at the
+  same time.
+- **Example:** the stale index answers "the archive does not say", reading
+  2016 skincare pieces ("14 Flawless Face Masks Editors Swear By"); the
+  refreshed one answers from April 2020 coronavirus mask articles. The same
+  word, a new meaning (F6), live.

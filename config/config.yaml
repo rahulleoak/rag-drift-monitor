@@ -284,6 +284,20 @@ truth_table:
   min_rise: 0.02                 # producing "caught": wrong-with-an-answer-in-front rises by 2+ points ...
   alpha: 0.05                    # ... and the paired exact test (McNemar, one-sided) says it is not chance
 
+# D40: keyword search (BM25) next to meaning-based search, same articles and questions
+# (scripts/keyword_search.py). No LLM. Thresholds set before any result, matching the
+# newer-wording test (D31).
+keyword_search:
+  k1: 1.5                        # BM25 term-frequency saturation (the usual default)
+  b: 0.75                        # BM25 length normalisation (the usual default)
+  depth: 100                     # ranks beyond this count as not found
+  hit_k: 5                       # found = the source article is in the top 5 (what the answer step reads)
+  min_group_gap: 0.10            # wording drift hurts keyword search more: its shortfall against meaning
+                                 #   search is 10+ points bigger in wording-drift sections than in no-drift ones
+  min_drop: 0.10                 # newer wording hurts a search: it finds the article 10+ points less often
+  alpha: 0.05                    # both must also be significant (permutation test; exact McNemar)
+  permutations: 5000
+
 # D29: Agent E. One rule per action in the brief; the LLM only explains.
 recommendation:
   explain: true                  # Sonnet writes a short explanation per recommended action (number-checked)

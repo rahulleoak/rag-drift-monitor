@@ -177,3 +177,48 @@ def test_applied_reindex_is_cited_and_a_shortfall_asks_for_a_scheduled_full_rein
     assert "alone was enough" in ok.finding
     plain = pol.reindex_documents(_x(cfg, None, longform=_longform()))
     assert all(e.source != "Wikipedia: targeted re-index applied" for e in plain.evidence)
+
+
+def test_where_answers_went_wrong_is_cited_without_changing_the_rules(cfg):
+    imp = _impact([_seg("2020|WELLNESS", DRIFT_HURTS)])
+    before = (pol.reindex(_x(cfg, imp)).status, pol.prompts(_x(cfg, imp)).status)
+    imp.attribution = [{"role": "stale", "answers": 100, "wrong": 50, "knowledge": 48, "retrieval": 2,
+                        "producing": 0, "unplaced": 0},
+                       {"role": "refreshed", "answers": 100, "wrong": 3, "knowledge": 0, "retrieval": 3,
+                        "producing": 0, "unplaced": 0}]
+    r, p = pol.reindex(_x(cfg, imp)), pol.prompts(_x(cfg, imp))
+    assert (r.status, p.status) == before
+    assert any("Of 50 wrong answers on the stale index, 48 were about articles the index never held" in e.claim
+               for e in r.evidence)
+    assert any("Of 53 wrong answers on both indexes" in e.claim and "0 were wrong although the top 5" in e.claim
+               for e in p.evidence)
+    imp.attribution = []
+    assert not any(e.source == "Agent D: why answers went wrong" for e in pol.prompts(_x(cfg, imp)).evidence)
+
+
+def test_a_failed_reindex_is_re_run_not_blamed_on_the_model(cfg):
+    failed = dict(_seg("2020|WORLD NEWS", "borderline (sent back for more evidence)", loss=0.15, refreshed=0.15,
+                       retrieval=0.15, cause=pol.REINDEX_FAILED), refreshed_missing=0.85)
+    imp = _impact([_seg("2020|WELLNESS", DRIFT_HURTS), failed])
+    r = pol.reindex(_x(cfg, imp))
+    assert r.status == "recommended" and set(r.scope) == {"2020 WELLNESS", "2020 WORLD NEWS"}
+    assert "re-index itself failed for 2020 WORLD NEWS" in r.finding
+    assert any("85% of its wrong answers there are about articles the refreshed index does not hold "
+               "(threshold 50%)" in e.claim for e in r.evidence)
+    m = pol.model_evaluation(_x(cfg, imp))
+    assert m.status == "not needed" and "failed re-index" in m.finding
+    assert not any("every one" in e.claim for e in m.evidence)   # never claims re-indexing fixed every section
+    only = pol.reindex(_x(cfg, _impact([failed])))               # a failed re-index alone is enough to act
+    assert only.status == "recommended" and only.scope == ["2020 WORLD NEWS"]
+
+
+def test_a_completely_failed_reindex_shows_no_loss_but_is_not_called_unaffected(cfg):
+    # both indexes fail, so the loss is zero and the section is "drift that does not hurt" by its class
+    total = dict(_seg("2020|WORLD NEWS", DRIFT_HARMLESS, loss=0.0, refreshed=0.0, retrieval=0.0,
+                      cause=pol.REINDEX_FAILED), refreshed_missing=1.0)
+    fine = _seg("2020|WELLNESS", DRIFT_HARMLESS, loss=0.0, cause="")
+    imp = _impact([total, fine])
+    assert "2020 WORLD NEWS" in pol.reindex(_x(cfg, imp)).scope
+    from types import SimpleNamespace
+    m = pol.monitor(_x(cfg, imp, drift=SimpleNamespace(whole_period=[], segments=[], drifted_segments=[])))
+    assert "2020 WELLNESS" in m.scope and "2020 WORLD NEWS" not in m.scope

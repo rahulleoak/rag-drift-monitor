@@ -117,6 +117,9 @@ def overview_findings(run: Run) -> list[str]:
         else:
             s += ", and drift detection flagged all of them.**"
         out.append(s)
+    a = overview_attribution(run)
+    if a:
+        out.append(a)
     p = drift_peak(run)
     if p:
         s = f"**The biggest change is {p['year']}:** {p['times']:.1f}× ordinary change from the baseline ({p['band']})."
@@ -272,6 +275,61 @@ def answers_takeaway(run: Run) -> str:
     if "invented" in h:
         s += (f" On the stale index the assistant fails silently: it declines rather than inventing an answer "
               f"({h['invented']} of {h['questions']} answers added a claim not in the articles).")
+    return s
+
+
+def _side(row: dict[str, Any], index: str) -> str:
+    """'on the stale index, 373 of 373 wrong answers were knowledge' style clause for one index."""
+    wrong = row["wrong"]
+    if not wrong:
+        return f"the {index} index got none wrong"
+    parts = [(row[k], name) for k, name in (("knowledge", "about articles it never held (knowledge)"),
+                                            ("retrieval", "search misses: the article was in the index but not "
+                                                          "found (retrieval)"),
+                                            ("producing", "wrong with an answer in front of the model (producing)"))
+             if row[k]]
+    if len(parts) == 1 and parts[0][0] == wrong:
+        what = f"all {wrong} wrong answers were {parts[0][1]}" if wrong > 1 else f"its 1 wrong answer was {parts[0][1]}"
+    else:
+        what = f"of {wrong} wrong answers, " + ", ".join(f"{n} {name}" for n, name in parts)
+    return f"on the {index} index, {what}"
+
+
+def attribution_takeaway(run: Run) -> str:
+    """Where the wrong answers broke (D38): knowledge, retrieval or producing."""
+    rows = {r["role"]: r for r in (run.impact.attribution if run.impact is not None else [])}
+    if not rows or not any(r["wrong"] for r in rows.values()):
+        return ""
+    sides = [_side(rows[i], i) for i in ("stale", "refreshed") if i in rows]
+    s = "; ".join(sides) + "."
+    s = s[0].upper() + s[1:]
+    producing = sum(r["producing"] for r in rows.values())
+    if not producing:
+        s += (" None went wrong after the right article was found, so the answer step is not where quality is "
+              "lost.")
+    unplaced = sum(r["unplaced"] for r in rows.values())
+    if unplaced:
+        s += f" {unplaced} could not be placed (a relevance grade is missing)."
+    return s
+
+
+def overview_attribution(run: Run) -> str:
+    """One Overview finding: where the wrong answers broke."""
+    rows = {r["role"]: r for r in (run.impact.attribution if run.impact is not None else [])}
+    st = rows.get("stale")
+    if not st or not st["wrong"]:
+        return ""
+
+    def share(n: int, of: int) -> str:
+        return f"all {of}" if n == of else f"{n} of {of}"
+    s = (f"**Every wrong answer traced to where it broke:** {share(st['knowledge'], st['wrong'])} on the stale "
+         f"index were about articles it never held (knowledge)")
+    ref = rows.get("refreshed")
+    if ref and ref["wrong"]:
+        s += f", and {share(ref['retrieval'], ref['wrong'])} on the refreshed index were search misses (retrieval)"
+    producing = sum(r["producing"] for r in rows.values())
+    s += (f". {producing} went wrong with the right article in front of the model (producing)." if producing else
+          ". None went wrong once the right article was found (producing: 0).")
     return s
 
 

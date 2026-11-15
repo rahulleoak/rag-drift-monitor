@@ -9,12 +9,13 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-10 (the evidence loop shown working, section 8f; before that: all agents, Wikipedia results, the
-newer-wording test and the applied re-index; next steps in section 16).
+Last updated: 2026-11-14 (the four kinds of drift, section 8g; before that: the evidence loop shown working, section
+8f; all agents, Wikipedia results, the newer-wording test and the applied re-index; next steps in section 16).
 
 The slide-by-slide brief (titles, bullets, speaker notes, screenshots) is
 kept on the `presentation` branch until after the walkthrough. Numbers here
-match the demo run `demo/runs/20261109-221754`.
+match the demo run `demo/runs/20261114-174819` (the 2026-11-09 run `20261109-221754`
+rerun from the cache on 2026-11-14: identical numbers, plus D38's split).
 
 ---
 
@@ -408,8 +409,10 @@ the 90 flagged articles, applied to a copy of the index.
   2. The graph sends it back to Agent C, which grades ranks 6-10; Agent D
      answers from the top 10: still 15%.
   3. Conclusion, in code: **still unclear (escalate to a human)**.
-  4. Agent E escalates the section with those numbers, and suggests a model
-     evaluation ("re-indexing did not help").
+  4. Agent E escalates the section with those numbers. Since D38 it also
+     sees why: all 17 wrong answers on the refreshed index are articles that
+     index does not hold, so it says "re-run the re-index there" instead of
+     the model evaluation it suggested at first (section 8g).
 - **Talking point:** "On our data every result was clear-cut, which is itself
   the finding. To show the loop works, I broke the refresh on purpose: the
   system noticed it could not be sure, looked again with more context, still
@@ -417,11 +420,55 @@ the 90 flagged articles, applied to a copy of the index.
   monitor."
 - **Honest limit it exposed:** a refresh that silently fails makes the
   stale-vs-refreshed loss shrink, because both indexes fail. A partial
-  failure is caught by the loop; a total one would show no loss at all. Next
-  step 11 is a floor on the refreshed index's own quality.
+  failure is caught by the loop; a total one would show no loss at all.
+  D38 now catches both, for sections with enough questions: it checks
+  whether the refreshed index holds the articles behind its misses.
 - **In the demo:** run picker (top right) -> "Evidence loop demo (simulated
   failed re-index)" -> the yellow banner -> Impact -> "Evidence loop". It
   never opens by default.
+
+### 8g. Which kind of drift? Every wrong answer traced (D38, F28) ✅
+
+- **The framing** (from a review of the project): drift comes in four
+  kinds, each with its own fix. A score can tank while two of the four are
+  perfect, so the system has to say which one broke.
+
+  | Kind | What went wrong | How we measure it | Fix |
+  |---|---|---|---|
+  | Knowledge | content outdated or missing | stale vs refreshed; changed facts; is the source article in the index? | update, re-index |
+  | Query | users ask in new words | drift on the questions; newer-wording test (F23) | query rewriting, synonyms |
+  | Retrieval | content there, not found | the top 5 held no answer although the article is indexed | chunking, embeddings, settings |
+  | Producing | right articles, wrong answer | wrong although the top 5 held an answer | prompt, answer-model evaluation |
+
+- **Result (normal run):** all 373 wrong answers on the stale index are
+  knowledge; the refreshed index's 5 are search misses; **0 producing**.
+  Every answer with an answer in its top 5 was correct (468 of 468).
+- **Talking point:** "The system doesn't just say quality dropped; it says
+  where the chain broke. Here every lost answer is a missing article,
+  which is why the recommendation is re-index, not a new model or prompt."
+- **It found a mistake in our own pipeline:** on the simulated failed
+  re-index, the first version blamed search, and Agent E suggested
+  evaluating the embedding model. Checking whether the refreshed index
+  actually holds the articles showed 17 of 17 were missing. Now the
+  system says "re-run the re-index there". A wrong recommendation is the
+  expensive failure in a monitor.
+- **In the demo:**
+  - **Overview:** first lines.
+  - **Impact -> "Why answers went wrong":** the table, with each column
+    explained on hover.
+  - **Impact -> "Every section":** the likely-cause column, starting
+    "Knowledge · ...".
+  - **Recommendations:** the chip under each action; hover it for the kind
+    and its fix.
+  - **For the failure case:** switch the run picker to the evidence-loop run.
+- **Honest limits:**
+  - Producing is 0 partly because each question is written from one
+    article, so answering is easy once it is found.
+  - A model or prompt change could still break the answer step; the
+    truth table (change one of model, prompt or articles at a time) would
+    catch that (next step).
+  - The split needs a known source article, so it runs on test
+    questions, not live traffic.
 
 ## 9. Recommendations with evidence (✅, D29, F22)
 
@@ -659,6 +706,20 @@ Honest moments that show judgement, good for a "what we learned" slide:
   agentic without giving up repeatability.
 - **"Your loops never fired. Do they work?"** Both routes are tested, and
   section 8f shows the evidence loop on real data with a simulated failure.
+- **"How do you know the model isn't the problem?"** Every wrong answer is
+  traced (section 8g): 0 of 378 had an answer in the top 5 the model
+  read. Every miss is a missing article (knowledge) or, 5 times, a search
+  miss (retrieval).
+- **"How would you catch a model or prompt regression (producing drift)?"**
+  With a truth table on the fixed test set: change the model, the prompt or
+  the articles one at a time and see which change breaks answers. The same
+  idea as stale vs refreshed. Not run here because our model and prompt
+  are pinned, so it would only show "no change"; it belongs in the release
+  process for any model or prompt change.
+- **"Isn't 0 producing errors too good to be true?"** Partly it reflects
+  the test: questions are written from one article, so they are easy once
+  it is found. The claim is narrow: on this data, quality is lost before
+  the answer step, not in it.
 
 ## 15. Charts
 
@@ -721,9 +782,10 @@ Not done, in the order I would do them; each has the reason it would help.
     **fine-tuning experiment** for the retraining action (D7): larger
     pieces of work, lower priority.
 11. **Check the refreshed index's own quality, not only the difference.**
-    F26 showed a refresh that silently failed makes the stale-vs-refreshed
-    loss shrink; a section where it failed completely would show no loss.
-    A floor on refreshed correctness per section would catch it.
+    Partly done (D38): a section whose refreshed index lacks most of the
+    articles behind its misses is now diagnosed as a failed re-index, even
+    when it shows no loss. Still open: sections with too few questions to
+    classify, and a plain floor on refreshed correctness as a second check.
 12. **Length guard inside the pipeline.** The length check (D33, F25) runs
     beside the pipeline today and changed nothing here. On other data (an
     archive moving from short summaries to full articles) length could
@@ -732,3 +794,7 @@ Not done, in the order I would do them; each has the reason it would help.
     comparison and reports drift both ways.
 13. **Production:** scheduled runs with alerts, a shared vector database,
     access control and audit (section 12b).
+14. **A truth table for the answer step (producing drift).** On the fixed
+    test set, change the model, the prompt or the articles one at a time;
+    a simulated model change (a smaller answer model) would show one cell
+    working. Not run because the model and prompt are pinned (D38).

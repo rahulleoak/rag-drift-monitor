@@ -5,7 +5,7 @@
       "key": "reindex",
       "status": "recommended",
       "rule": "a section loses at least the material share of correct answers on the stale index, and the refreshed index answers it well",
-      "finding": "Re-index the archive on a schedule, with every new batch of articles, not only when drift is flagged. Without it, questions about new events lose almost every answer: in 18 sections correct answers drop by 89-100 percentage points.",
+      "finding": "Re-index the archive on a schedule, with every new batch of articles, not only when drift is flagged. Without it, questions about new events lose almost every answer: in 18 sections correct answers drop by 89-100 percentage points. The re-index itself failed for 2020 WORLD NEWS: the refreshed index is missing its articles, so re-run the re-index there and check that the articles arrive.",
       "scope": [
         "2019 WORLD NEWS",
         "2020 POLITICS",
@@ -24,7 +24,8 @@
         "2022 WORLD NEWS",
         "2021 SPORTS",
         "2018 QUEER VOICES",
-        "2020 U.S. NEWS"
+        "2020 U.S. NEWS",
+        "2020 WORLD NEWS"
       ],
       "priority": 1,
       "evidence": [
@@ -45,6 +46,10 @@
           "claim": "It fails silently: when nothing relevant is found it declines (99% of those cases); 1 of 374 stale answers added a claim not in the articles."
         },
         {
+          "source": "Agent D: why answers went wrong",
+          "claim": "Of 373 wrong answers on the stale index, 373 were about articles the index never held (knowledge), 0 missed articles the index held (retrieval) and 0 were wrong although the top 5 held an answer (producing)."
+        },
+        {
           "source": "Agent D: which drift matters",
           "claim": "12 of the 18 sections that lose answers were not flagged by drift detection (for example 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS)."
         },
@@ -55,9 +60,13 @@
         {
           "source": "Agent D: example",
           "claim": "\"How many children and teachers in Uvalde are being mourned through a series of funerals and burials after the Texas school shooting?\" Stale index: \"The archive does not say. None of the articles cover the Uvalde school shooting or its funerals; they concern other Texas shootings, such as the 2017 ...\" Refreshed index: \"The Uvalde community is mourning 19 children and two teachers killed in the shooting, with visitations, funerals and burials taking place over roughly two and ...\""
+        },
+        {
+          "source": "Agent D: why answers went wrong",
+          "claim": "2020 WORLD NEWS: 15% correct on the refreshed index, and 100% of its wrong answers there are about articles the refreshed index does not hold (threshold 50%)."
         }
       ],
-      "explanation": "Re-index the archive on a schedule, with every new batch of articles, rather than only when drift is flagged. Questions about 2018 to 2022 were answered correctly 0-1% of the time from the stale index vs 76-100% from the refreshed one, and 12 of the 18 sections that lose answers were not flagged by drift detection, while no drift measure predicted the size of the loss. Without scheduled re-indexing, questions about new events keep losing almost every answer, and the stale index fails silently by declining rather than warning anyone.",
+      "explanation": "Re-index the archive on a schedule, with every new batch of articles, rather than only when drift is flagged, and re-run the re-index for 2020 WORLD NEWS, checking that its articles arrive (only 15% correct there on the refreshed index). The stale index held none of the articles behind its 373 wrong answers, so questions about 2018 to 2022 were 0-1% correct versus 76-100% on the refreshed index, and 12 of the 18 sections that lose answers were not flagged by drift detection. Without scheduled re-indexing, questions about new events will keep losing almost every answer, silently, because the assistant simply declines.",
       "explanation_check": "LLM, numbers checked (attempt 1)"
     },
     {
@@ -193,25 +202,6 @@
       "explanation_check": "LLM, numbers checked (attempt 1)"
     },
     {
-      "action": "Trigger model evaluation",
-      "key": "model_evaluation",
-      "status": "recommended",
-      "rule": "a section stays poor on the refreshed index, and its top 5 rarely holds an answer although the source article is in the index",
-      "finding": "Evaluate a second embedding model on 1 section(s) where re-indexing did not help.",
-      "scope": [
-        "2020 WORLD NEWS"
-      ],
-      "priority": 3,
-      "evidence": [
-        {
-          "source": "Agent D: sections",
-          "claim": "2020 WORLD NEWS: 15% correct and an answer in the top 5 for 15% of questions on the refreshed index."
-        }
-      ],
-      "explanation": "Run an evaluation of a second embedding model on the 2020 WORLD NEWS section, where re-indexing did not help. On the refreshed index, only 15% of answers were correct and an answer appeared in the top 5 for just 15% of questions. If this is not done, journalists will keep getting mostly incorrect answers from this section.",
-      "explanation_check": "LLM, numbers checked (attempt 1)"
-    },
-    {
       "action": "Escalate cases for human review",
       "key": "escalate",
       "status": "recommended",
@@ -232,7 +222,7 @@
         "2018 QUEER VOICES",
         "2020 WORLD NEWS"
       ],
-      "priority": 4,
+      "priority": 3,
       "evidence": [
         {
           "source": "Agent D: harm without drift",
@@ -263,7 +253,7 @@
       "scope": [
         "long-form documents (Wikipedia set)"
       ],
-      "priority": 5,
+      "priority": 4,
       "evidence": [
         {
           "source": "Wikipedia: long documents",
@@ -290,7 +280,7 @@
       "scope": [
         "questions about the baseline (2016-17)"
       ],
-      "priority": 6,
+      "priority": 5,
       "evidence": [
         {
           "source": "Agent D: historical control",
@@ -345,39 +335,63 @@
         {
           "source": "Agent D: grounding",
           "claim": "3 of 846 answers added a claim not in the retrieved articles (0.4%)."
+        },
+        {
+          "source": "Agent D: why answers went wrong",
+          "claim": "Of 395 wrong answers on both indexes, 390 were about articles the index never held (knowledge), 5 missed articles the index held (retrieval) and 0 were wrong although the top 5 held an answer (producing)."
         }
       ],
       "explanation": "Not needed: where the right articles are found, the answers are correct and stay within them.",
       "explanation_check": "rule text (not recommended)"
     },
     {
+      "action": "Trigger model evaluation",
+      "key": "model_evaluation",
+      "status": "not needed",
+      "rule": "a section stays poor on the refreshed index, and its top 5 rarely holds an answer although the source article is in the index",
+      "finding": "Not needed: every section the refreshed index holds recovers; where one does not, its articles are missing from the index (a failed re-index), which no model can fix.",
+      "scope": [],
+      "priority": 0,
+      "evidence": [
+        {
+          "source": "Agent D: sections",
+          "claim": "The refreshed index answers 89-100% of questions correctly in 18 of the 19 sections with enough questions (threshold 60%)."
+        },
+        {
+          "source": "Agent D: why answers went wrong",
+          "claim": "2020 WORLD NEWS: 15% correct on the refreshed index, and 100% of its wrong answers there are about articles the refreshed index does not hold (threshold 50%)."
+        }
+      ],
+      "explanation": "Not needed: every section the refreshed index holds recovers; where one does not, its articles are missing from the index (a failed re-index), which no model can fix.",
+      "explanation_check": "rule text (not recommended)"
+    },
+    {
       "action": "Recommend retraining",
       "key": "retraining",
-      "status": "not checked",
+      "status": "not needed",
       "rule": "a model evaluation shows quality stays poor with a second embedding model and a fresh index",
-      "finding": "Decide after the model evaluation: retrain only if the second model is also poor.",
+      "finding": "Not needed: model evaluation was not triggered, and retraining only follows a failed evaluation.",
       "scope": [],
       "priority": 0,
       "evidence": [
         {
           "source": "Agent E: model evaluation rule",
-          "claim": "Model evaluation: recommended."
+          "claim": "Model evaluation: not needed."
         }
       ],
-      "explanation": "Decide after the model evaluation: retrain only if the second model is also poor.",
+      "explanation": "Not needed: model evaluation was not triggered, and retraining only follows a failed evaluation.",
       "explanation_check": "rule text (not recommended)"
     }
   ],
   "summary": {
-    "recommended": 6,
-    "not needed": 2,
-    "not checked": 1
+    "recommended": 5,
+    "not needed": 4
   },
   "explanations": {
-    "requests": 6,
+    "requests": 5,
     "rejected_drafts": 0,
     "fallbacks": 0,
-    "cost_usd": 0.0
+    "cost_usd": 0.0052
   },
   "notes": []
 }

@@ -9,13 +9,15 @@ One plain function per action in the brief. Each reads the agents' reports
     not checked   an input the rule needs is missing
 
 The rules, in short:
-    re-index the knowledge base   material answer loss that the refreshed index recovers
+    re-index the knowledge base   material answer loss that the refreshed index recovers, or a
+                                  section whose re-index failed (its articles missing; D38)
     re-index specific documents   changed facts flagged, and the outdated-answer test says they matter
     improve chunking              documents far longer than the embedding model reads, and
                                   chunks follow real edits clearly better
     update retrieval settings     the loop found answers just outside the top k
     improve prompts               retrieval finds answers but answers are wrong, or claims are invented
-    model evaluation              poor answers on the refreshed index, with poor retrieval
+    model evaluation              poor answers on the refreshed index, with poor retrieval,
+                                  although the index holds the articles
     retraining                    a model evaluation that showed the problem persists
     escalate to a human           harm without drift, an unclear loop result, or a weak judge
     continue monitoring           drift without material loss
@@ -32,7 +34,7 @@ from typing import Any
 import pandas as pd
 
 from driftmon.evaluation.answers import (BORDERLINE, DRIFT_HARMLESS, DRIFT_HURTS, HARM_WITHOUT_DRIFT, JUST_OUTSIDE,
-                                         UNCLEAR)
+                                         REINDEX_FAILED, UNCLEAR)
 from driftmon.schemas import (DriftReport, EvidenceItem, ImpactReport, MonitoringReport, Recommendation,
                               RetrievalReport)
 
@@ -129,13 +131,19 @@ def _later(rows: Sequence[Mapping[str, Any]], key: str, baseline: str) -> list[M
 # ---------- the rules ----------
 
 def reindex(x: Inputs) -> Recommendation:
-    """Material loss that the refreshed index recovers: the content was missing."""
+    """Material loss that the refreshed index recovers: the content was missing. A section whose
+    refreshed index lacks most of the articles behind its misses (a failed re-index, D38) is
+    named too: the fix is to re-run the re-index there."""
     rule = ("a section loses at least the material share of correct answers on the stale index, "
             "and the refreshed index answers it well")
     seg = x.segments()
     if not len(seg):
         return _rec(REINDEX, "not checked", rule, "No classified sections from Agent D.")
     hit = seg[seg["class"].isin(MATERIAL) & (seg["cause"] == MISSING_CONTENT)].copy()
+    failed = seg[seg["cause"] == REINDEX_FAILED]
+    if not len(hit) and len(failed):
+        return _rec(REINDEX, "recommended", rule, _rerun_finding(failed), _failed_evidence(failed, x),
+                    [_seg_name(s) for s in failed["segment_id"]])
     if not len(hit):
         return _rec(REINDEX, "not needed", rule,
                     f"No section loses a material share of answers that re-indexing recovers "
@@ -165,6 +173,9 @@ def reindex(x: Inputs) -> Recommendation:
     silent = _silence(x, base)
     if silent:
         ev.append(silent)
+    where = _where_wrong(x, "stale")
+    if where:
+        ev.append(where)
     trigger, why = _trigger(x, hit)
     ev.extend(why)
     if x.impact.examples:
@@ -176,7 +187,43 @@ def reindex(x: Inputs) -> Recommendation:
             if trigger == "schedule" else "whenever drift detection flags a section")
     finding = (f"Re-index the archive {when}. Without it, questions about new events lose almost every "
                f"answer: in {len(hit)} sections correct answers drop by {points(hit['loss_correct'])}.")
-    return _rec(REINDEX, "recommended", rule, finding, ev, [_seg_name(s) for s in hit["segment_id"]])
+    scope = [_seg_name(s) for s in hit["segment_id"]]
+    if len(failed):
+        finding += " " + _rerun_finding(failed)
+        ev.extend(_failed_evidence(failed, x))
+        scope += [_seg_name(s) for s in failed["segment_id"]]
+    return _rec(REINDEX, "recommended", rule, finding, ev, scope)
+
+
+def _rerun_finding(failed: pd.DataFrame) -> str:
+    names = ", ".join(_seg_name(s) for s in failed["segment_id"])
+    return (f"The re-index itself failed for {names}: the refreshed index is missing its articles, so re-run "
+            f"the re-index there and check that the articles arrive.")
+
+
+def _failed_evidence(failed: pd.DataFrame, x: Inputs) -> list[EvidenceItem]:
+    """Sections whose refreshed index lacks the articles its questions were written from (D38)."""
+    return [EvidenceItem(source="Agent D: why answers went wrong",
+                         claim=f"{_seg_name(r['segment_id'])}: {pct(r['refreshed_correct'])} correct on the refreshed "
+                               f"index, and {pct(r['refreshed_missing'])} of its wrong answers there are about "
+                               f"articles the refreshed index does not hold (threshold "
+                               f"{pct(x.cfg['impact']['failed_reindex_share'])}).")
+            for r in failed.to_dict("records")]
+
+
+def _where_wrong(x: Inputs, role: str | None = None) -> EvidenceItem | None:
+    """Where the wrong answers broke (D38): knowledge, retrieval or producing.
+    ``role`` "stale" or "refreshed" for one index; None for both together."""
+    rows = [r for r in (x.impact.attribution if x.impact else []) if role is None or r["role"] == role]
+    wrong = sum(r["wrong"] for r in rows)
+    if not wrong:
+        return None
+    k, r_, p_ = (sum(r[b] for r in rows) for b in ("knowledge", "retrieval", "producing"))
+    where = f"on the {role} index" if role else "on both indexes"
+    return EvidenceItem(source="Agent D: why answers went wrong",
+                        claim=f"Of {wrong} wrong answers {where}, {k} were about articles the index never held "
+                              f"(knowledge), {r_} missed articles the index held (retrieval) and {p_} were wrong "
+                              f"although the top 5 held an answer (producing).")
 
 
 def _trigger(x: Inputs, hit: pd.DataFrame) -> tuple[str, list[EvidenceItem]]:
@@ -390,6 +437,9 @@ def prompts(x: Inputs) -> Recommendation:
           EvidenceItem(source="Agent D: grounding",
                        claim=f"{round(invented)} of {2 * n} answers added a claim not in the retrieved articles "
                              f"({pct(rate)}).")]
+    where = _where_wrong(x)
+    if where:
+        ev.append(where)
     if len(step) or rate > float(x.rc["max_hallucinated"]):
         scope = [_seg_name(s) for s in step["segment_id"]] if len(step) else ["all sections"]
         return _rec(PROMPTS, "recommended", rule,
@@ -415,12 +465,20 @@ def model_evaluation(x: Inputs) -> Recommendation:
         return _rec(MODEL_EVAL, "recommended", rule,
                     f"Evaluate a second embedding model on {len(bad)} section(s) where re-indexing did not help.",
                     ev, [_seg_name(s) for s in bad["segment_id"]])
+    failed = seg[seg["cause"] == REINDEX_FAILED]
+    ok = seg[seg["cause"] != REINDEX_FAILED]
     ev = [EvidenceItem(source="Agent D: sections",
-                       claim=f"The refreshed index answers {pct_range(seg['refreshed_correct'])} of questions "
-                             f"correctly in every one of the {len(seg)} sections with enough questions "
-                             f"(threshold {pct(x.cfg['impact']['recovered_correct'])}).")]
+                       claim=f"The refreshed index answers {pct_range(ok['refreshed_correct'])} of questions "
+                             f"correctly in {'every one' if not len(failed) else f'{len(ok)}'} of the {len(seg)} "
+                             f"sections with enough questions (threshold "
+                             f"{pct(x.cfg['impact']['recovered_correct'])}).")] if len(ok) else []
+    if not len(failed):
+        return _rec(MODEL_EVAL, "not needed", rule,
+                    "Not needed: re-indexing fixes every section, so the embedding model handles the new content.", ev)
+    ev.extend(_failed_evidence(failed, x))
     return _rec(MODEL_EVAL, "not needed", rule,
-                "Not needed: re-indexing fixes every section, so the embedding model handles the new content.", ev)
+                "Not needed: every section the refreshed index holds recovers; where one does not, its articles are "
+                "missing from the index (a failed re-index), which no model can fix.", ev)
 
 
 def retraining(x: Inputs, model_eval: Recommendation) -> Recommendation:
@@ -524,7 +582,10 @@ def monitor(x: Inputs) -> Recommendation:
     if x.impact is None or x.drift is None:
         return _rec(MONITOR, "not checked", rule, "Missing Agent B or Agent D report.")
     base = x.baseline_name()
-    harmless = seg[seg["class"] == DRIFT_HARMLESS] if len(seg) else seg
+    # drift that does not hurt, and the section is fine on the refreshed index too: a section that is poor on
+    # both (for example a re-index that failed completely, D38) shows no loss but is not "unaffected"
+    harmless = seg[(seg["class"] == DRIFT_HARMLESS) & ~seg["cause"].isin([REINDEX_FAILED, ANSWER_STEP,
+                                                                         RETRIEVAL_OR_MODEL])] if len(seg) else seg
     old = [r for r in x.impact.by_period if r["period"] == base]
     stable_old = bool(old) and old[0]["refreshed_correct"] >= old[0]["stale_correct"] - \
         float(x.cfg["impact"]["min_answer_quality_drop"])

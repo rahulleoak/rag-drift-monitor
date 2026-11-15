@@ -1,7 +1,7 @@
 {
-  "run_id": "20261110-135233",
-  "created": "2026-11-10T13:54:22-08:00",
-  "duration_s": 109,
+  "run_id": "20261114-174819",
+  "created": "2026-11-14T17:50:01-08:00",
+  "duration_s": 102,
   "mode": "full",
   "pilot_questions": null,
   "question_set": "full",
@@ -11,7 +11,7 @@
   },
   "embedding_model": "BAAI/bge-small-en-v1.5",
   "llm_cost_usd": 0.0,
-  "code_version": "4802fea",
+  "code_version": "b3f07e3",
   "settings": {
     "top_k": 10,
     "judge_k": 5,
@@ -21,10 +21,6 @@
     "dataset": "huffpost",
     "description": "HuffPost news articles"
   },
-  "label": "Evidence loop demo (simulated failed re-index)",
-  "fault_injection": {
-    "period": "2020",
-    "category": "WORLD NEWS",
-    "drop_share": 0.85
-  }
+  "label": null,
+  "fault_injection": null
 }

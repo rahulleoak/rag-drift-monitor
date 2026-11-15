@@ -16,6 +16,45 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-14 (evening): which kind of drift broke each answer (D38, F28)
+- **Context:** a review of the project suggested sorting drift into four
+  kinds (knowledge, query, retrieval, producing), each with its own fix,
+  and asked how to tell producing drift apart. Built in stages with a check
+  after each, on branch `four-buckets`.
+- **Built:**
+  - Code that places every wrong answer as knowledge (the source article is
+    not in the index searched), retrieval (it is, but the top 5 held no
+    answer) or producing (the top 5 held an answer). Agent D saves it;
+    Agent E cites it.
+  - The dashboard names each kind where it is measured: visible on the
+    cause column and the recommendation chips, on hover elsewhere; a "Why
+    answers went wrong" section; one Overview line. Hover notes checked in
+    the browser.
+  - Both demo runs rerun from the cache and compared file by file:
+    identical apart from the additions. 222 tests.
+- **Result:** stale index 373 wrong, all knowledge; refreshed 5, all search
+  misses; producing 0 (468 of 468 answers with an answer in the top 5 were
+  right).
+- **Surprises:**
+  - **The evidence-loop run caught two problems of our own.** The first
+    version inferred index membership from the year, so the articles the
+    failed re-index left out were counted as search misses; Agent C now
+    records membership from the index it searched.
+  - **Agent D's section cause** (from averages) still blamed retrieval or
+    the model, and Agent E suggested a model evaluation, when the articles
+    were simply missing. With the author's approval, a rule change: at
+    least half of a section's refreshed misses missing from the index means
+    a failed re-index (threshold set before the rerun); E re-runs the
+    re-index there.
+  - **Checking the "complete failure" case** found that continue-monitoring
+    would have listed such a section as unaffected; fixed.
+- **Decided:** no truth table (model, prompt and articles changed one at a
+  time): the model and prompt are pinned, so it would only show "no
+  change". Listed as a next step for catching model or prompt
+  regressions.
+- **Next:** the Sunday slides (add section 8g's table and demo moment; the
+  F26 backup slide's "suggests a model evaluation" is now out of date).
+
 ## 2026-11-14 (later): "Ask the Archive", and the main folder made complete
 - **Built:** a live dashboard page (D37) that asks a typed question of the
   stale and a refreshed index with Agent D's exact pipeline; hidden unless

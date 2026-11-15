@@ -6,7 +6,7 @@ Summary: 5 recommended, 4 not needed
 
 ## 1. Update or re-index the knowledge base
 
-Re-index the archive on a schedule with every new batch of articles, not only when drift is flagged. On questions about 2018 to 2022, the stale index answered 0-1% correctly versus 96-100% after a refresh, and 12 of the 19 sections that lost answers were not flagged by drift detection, with no drift measure predicting the size of the loss. Without scheduled re-indexing, questions about new events will keep failing silently, with the assistant declining to answer in 99% of those cases.
+Re-index the archive on a schedule with every new batch of articles, not only when drift is flagged. On the stale index, questions about 2018 to 2022 were answered correctly 0-1% of the time versus 96-100% on the refreshed index, and 12 of the 19 sections that lose answers were not flagged by drift detection. Without scheduled re-indexing, questions about new events will keep losing almost every answer, with correct answers dropping by 89-100 percentage points in 19 sections.
 
 **Applies to (19):** 2020 POLITICS, 2019 WORLD NEWS, 2019 U.S. NEWS, 2020 WORLD NEWS, 2021 POLITICS, 2022 POLITICS, 2021 U.S. NEWS, 2018 POLITICS, 2019 POLITICS, 2022 U.S. NEWS, and 9 more
 
@@ -16,6 +16,7 @@ Re-index the archive on a schedule with every new batch of articles, not only wh
 - *Agent D: sections:* 19 of 19 sections with enough questions lose a material share of answers (correct answers drop by 89-100 percentage points), and the refreshed index answers 89-100% of their questions correctly.
 - *Agent D: historical control:* Questions about the baseline (2016-17): 100% correct on the stale index and 100% on the refreshed one, so re-indexing does not hurt older questions.
 - *Agent D: how the stale index fails:* It fails silently: when nothing relevant is found it declines (99% of those cases); 1 of 374 stale answers added a claim not in the articles.
+- *Agent D: why answers went wrong:* Of 373 wrong answers on the stale index, 373 were about articles the index never held (knowledge), 0 missed articles the index held (retrieval) and 0 were wrong although the top 5 held an answer (producing).
 - *Agent D: which drift matters:* 12 of the 19 sections that lose answers were not flagged by drift detection (for example 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS).
 - *Agent D: drift scores vs loss:* No drift measure predicts the size of the loss across sections (Spearman -0.19 to 0.41, all p > 0.05).
 - *Agent D: example:* "How many children and teachers in Uvalde are being mourned through a series of funerals and burials after the Texas school shooting?" Stale index: "The archive does not say. None of the articles cover the Uvalde school shooting or its funerals; they concern other Texas shootings, such as the 2017 ..." Refreshed index: "The Uvalde community is mourning 19 children and two teachers killed in the shooting, with visitations, funerals and burials taking place over roughly two and ..."
@@ -87,6 +88,6 @@ Keep monitoring without intervention for questions about 2016-17, because answer
 | Action | Status | Why |
 |---|---|---|
 | Update retrieval configurations | not needed | Not needed: the refreshed index already puts an answer in the top 5, and no section had answers just outside it. On the refreshed index the top 5 holds an answering article for 96-100% of new questions. 0 sections were borderline, so the loop back to Agent C did not run. |
-| Improve prompts or retrieval strategies | not needed | Not needed: where the right articles are found, the answers are correct and stay within them. On the refreshed index 96-100% of new questions are answered correctly. 4 of 846 answers added a claim not in the retrieved articles (0.5%). |
+| Improve prompts or retrieval strategies | not needed | Not needed: where the right articles are found, the answers are correct and stay within them. On the refreshed index 96-100% of new questions are answered correctly. 4 of 846 answers added a claim not in the retrieved articles (0.5%). Of 378 wrong answers on both indexes, 373 were about articles the index never held (knowledge), 5 missed articles the index held (retrieval) and 0 were wrong although the top 5 held an answer (producing). |
 | Trigger model evaluation | not needed | Not needed: re-indexing fixes every section, so the embedding model handles the new content. The refreshed index answers 89-100% of questions correctly in every one of the 19 sections with enough questions (threshold 60%). |
 | Recommend retraining | not needed | Not needed: model evaluation was not triggered, and retraining only follows a failed evaluation. Model evaluation: not needed. |

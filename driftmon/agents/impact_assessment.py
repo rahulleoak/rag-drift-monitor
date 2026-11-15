@@ -7,7 +7,8 @@ Does: the RAG pipeline answers every test question from the stale and the
 refreshed index; the judge grades each answer on its own; code computes the
 loss in correct answers on the stale index per segment with an interval,
 classes each segment (drift that hurts / drift that does not / harm without
-drift / healthy) with a likely cause, and correlates drift scores with the
+drift / healthy) with a likely cause, splits every wrong answer into
+knowledge, retrieval or producing (D38), and correlates drift scores with the
 loss. Unanswerable questions test whether the system declines rather than
 inventing an answer.
 Writes: ``ImpactReport`` and the per-answer and per-segment tables.
@@ -27,6 +28,7 @@ import numpy as np
 import pandas as pd
 
 from driftmon.evaluation import answers as an
+from driftmon.evaluation import attribution as at
 from driftmon.evaluation import retrieval as rv
 from driftmon.llm.client import LLMResult
 from driftmon.data.periods import study_periods
@@ -109,10 +111,14 @@ def impact_assessment(state: PipelineState) -> dict[str, Any]:
     per_answer = an.per_answer(plan, answers, judgements, questions, has)
     pq = an.paired(per_answer, questions)
     pq = pq.merge(questions[["question_id", "drift_status"]], on="question_id")
+    if "source_in_index" in runs.columns:   # does the refreshed index hold the source article? (D38)
+        held = runs.set_index(["question_id", "index"])["source_in_index"].to_dict()
+        pq["refreshed_in_index"] = [held.get((q, pairs[q][1])) for q in pq["question_id"]]
     ans_pq = pq[pq["set"] == "answerable"]
     seg = an.segments(pq, base, drift.drifted_segments, cfg)
     drift_segs = pd.DataFrame([s.model_dump() for s in drift.segments])
     corr = an.drift_quality_correlation(seg, drift_segs) if len(seg) and len(drift_segs) else pd.DataFrame()
+    why = at.attribute(per_answer, questions, runs)   # D38
     un = pq[pq["set"] == "unanswerable"]
     unanswerable_summary = [{"index": role, "questions": len(un), "declined": un[f"{role}_correct"].mean(),
                              "hallucinated": un[f"{role}_hallucinated"].mean()} for role in an.ROLES] if len(un) else []
@@ -132,12 +138,13 @@ def impact_assessment(state: PipelineState) -> dict[str, Any]:
         classes=seg["class"].value_counts().to_dict() if len(seg) else {},
         borderline=seg.loc[seg["borderline"], "segment_id"].tolist() if len(seg) else [],
         correlations=_records(corr), examples=_examples(per_answer, questions),
+        attribution=_records(at.summary(why)), attribution_by_period=_records(at.summary(why, ("role", "period"))),
         judge={"answer_requests": len(plan), "judge_requests": sum(j is not None for j in judgements),
                "failed_answers": failed_answers, "failed_judgements": failed_judge,
                "cost_usd": round(llm.spent() - before, 4)},
         notes=notes)
     return {"impact": report, "impact_tables": {"answers": per_answer, "paired": pq, "segments": seg,
-                                                "correlations": corr}}
+                                                "correlations": corr, "attribution": why}}
 
 
 def _evidence_round(state: PipelineState) -> dict[str, Any]:

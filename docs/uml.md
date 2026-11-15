@@ -61,7 +61,7 @@ flowchart LR
 | Package | Imports from |
 |---|---|
 | `scripts/` | graph, agents, data, drift, evaluation, rag, llm, longform, dashboard, schemas, config |
-| `app/` | dashboard, policy, config |
+| `app/` | dashboard, evaluation (the kinds of drift), policy, config |
 | `graph.py` | agents, schemas |
 | `agents/` (A) | data, drift, schemas, config |
 | `agents/` (B) | data, drift, schemas |
@@ -72,7 +72,7 @@ flowchart LR
 | `drift/` | data, evaluation, rag, schemas |
 | `evaluation/` | data, drift, rag, llm |
 | `policy.py` | evaluation, schemas |
-| `dashboard/` | policy, longform, schemas, config |
+| `dashboard/` | policy, evaluation, longform, schemas, config; and rag, llm for the live Ask page (D37) |
 | `rag/`, `llm/`, `longform/` | config only |
 
 `data/`, `drift/` and `evaluation/` share helpers in both directions (for

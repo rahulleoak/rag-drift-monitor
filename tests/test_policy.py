@@ -210,3 +210,15 @@ def test_a_failed_reindex_is_re_run_not_blamed_on_the_model(cfg):
     assert not any("every one" in e.claim for e in m.evidence)   # never claims re-indexing fixed every section
     only = pol.reindex(_x(cfg, _impact([failed])))               # a failed re-index alone is enough to act
     assert only.status == "recommended" and only.scope == ["2020 WORLD NEWS"]
+
+
+def test_a_completely_failed_reindex_shows_no_loss_but_is_not_called_unaffected(cfg):
+    # both indexes fail, so the loss is zero and the section is "drift that does not hurt" by its class
+    total = dict(_seg("2020|WORLD NEWS", DRIFT_HARMLESS, loss=0.0, refreshed=0.0, retrieval=0.0,
+                      cause=pol.REINDEX_FAILED), refreshed_missing=1.0)
+    fine = _seg("2020|WELLNESS", DRIFT_HARMLESS, loss=0.0, cause="")
+    imp = _impact([total, fine])
+    assert "2020 WORLD NEWS" in pol.reindex(_x(cfg, imp)).scope
+    from types import SimpleNamespace
+    m = pol.monitor(_x(cfg, imp, drift=SimpleNamespace(whole_period=[], segments=[], drifted_segments=[])))
+    assert "2020 WELLNESS" in m.scope and "2020 WORLD NEWS" not in m.scope

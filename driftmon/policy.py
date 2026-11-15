@@ -582,7 +582,10 @@ def monitor(x: Inputs) -> Recommendation:
     if x.impact is None or x.drift is None:
         return _rec(MONITOR, "not checked", rule, "Missing Agent B or Agent D report.")
     base = x.baseline_name()
-    harmless = seg[seg["class"] == DRIFT_HARMLESS] if len(seg) else seg
+    # drift that does not hurt, and the section is fine on the refreshed index too: a section that is poor on
+    # both (for example a re-index that failed completely, D38) shows no loss but is not "unaffected"
+    harmless = seg[(seg["class"] == DRIFT_HARMLESS) & ~seg["cause"].isin([REINDEX_FAILED, ANSWER_STEP,
+                                                                         RETRIEVAL_OR_MODEL])] if len(seg) else seg
     old = [r for r in x.impact.by_period if r["period"] == base]
     stable_old = bool(old) and old[0]["refreshed_correct"] >= old[0]["stale_correct"] - \
         float(x.cfg["impact"]["min_answer_quality_drop"])

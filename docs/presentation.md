@@ -9,7 +9,7 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-14 (the truth table, section 8h; the four kinds of drift, section 8g; before that: the evidence loop shown working, section
+Last updated: 2026-11-14 (keyword search, section 8i; the truth table, section 8h; the four kinds of drift, section 8g; before that: the evidence loop shown working, section
 8f; all agents, Wikipedia results, the newer-wording test and the applied re-index; next steps in section 16).
 
 The slide-by-slide brief (titles, bullets, speaker notes, screenshots) is
@@ -185,9 +185,10 @@ a measurement, not an opinion.
   embedding drift) while the vocabulary changed completely; a topic shift in
   familiar words shows up in embeddings but not vocabulary.
 - **Four kinds of drift** (from the author's paper, P2): wording-only, meaning,
-  both, neither. Hypothesis not yet tested: keyword search suffers from
-  wording drift, meaning-based search mostly does not (BM25 is a next step;
-  for meaning-based search, F23 found newer wording barely hurts).
+  both, neither. Hypothesis tested (section 8i): keyword search suffers from
+  wording drift, meaning-based search mostly does not. Not supported by
+  section, because the questions drift with their articles; on newer wording
+  it points the same way but is too rare to decide.
 - **Also measured:** query drift; how the context around key terms changes
   ("mask", "remote", "vaccine"); emerging topics that cut across sections
   (D7).
@@ -500,6 +501,30 @@ with the same questions, the same top 5 and the same judge.
 - **Limits:** single-fact questions written from one article; one prompt
   edit and one model; $8.30.
 
+### 8i. Keyword search vs meaning-based search (D40, F30) ✅
+
+Why search by meaning? We ran BM25 keyword search on the same articles and
+questions. No LLM.
+
+- **Overall:** meaning-based search finds the article in the top 5 for
+  98.6% of questions, keyword search for 92.4%. Only meaning search found
+  it 29 times, only keyword search 3 times (p < 0.001), and that is with
+  questions written from their article, which favours keywords.
+- **The misses are paraphrase:** the article says "Brain Fog", the question
+  "mental fogginess".
+- **The hypothesis (wording drift hurts keyword search more) is not
+  supported by section:** the shortfall is 4.9 points in wording-drift
+  sections and 7.2 in sections without drift. Each question is written in
+  its own period's words, so it drifts with its article.
+- **Where the words do differ (newer wording, 18 questions):** keyword
+  search loses the article twice as often as meaning search (2 against 1;
+  "COVID" for "coronavirus": rank 1 to 42 against 2 to 14), but 18 is too
+  few to decide.
+- **Talking point:** "Wording drift only hurts when the person asking uses
+  different words from the article. In this archive that's rare, and when
+  it happens meaning-based search copes better. That's the case for
+  embeddings, measured here rather than assumed."
+
 ## 9. Recommendations with evidence (✅, D29, F22)
 
 One rule per action in the brief, in code; every rule reports, fired or not.
@@ -715,7 +740,14 @@ Honest moments that show judgement, good for a "what we learned" slide:
   no change to retrieval, and relationship shift is already measured with a
   significance test (F6). Future work: temporal knowledge graphs, GraphRAG.
 - **"What would you do with more time?"** See section 16; lead with the
-  changed-facts check for names and added numbers, and BM25.
+  changed-facts check for names and added numbers.
+- **"Why embeddings and not keyword search?"** Measured (section 8i):
+  98.6% against 92.4% of articles found, 29 against 3 where only one
+  search found it. Keyword search misses paraphrases.
+- **"Doesn't that contradict your own hypothesis?"** Partly, and we say so:
+  wording drift in the archive did not hurt keyword search more, because
+  the questions drift with the articles. The hypothesis needs a mismatch
+  between the question's words and the article's, and that is rare here.
 - **"Isn't it obvious a stale index fails on new questions?"** Yes, and
   that is the point: the system shows the obvious fix (re-index on a
   schedule) beats the sophisticated trigger (re-index when drift is
@@ -796,8 +828,9 @@ Not done, in the order I would do them; each has the reason it would help.
 1. **Changed-facts check for names and added numbers.** The two gaps F24
    measured: a new office holder, or "August 1703" -> "14 August 1703".
    Needs care so added citation years are not flagged (D27).
-2. **Keyword search (BM25) next to meaning-based search.** Tests the
-   paper's hypothesis that wording drift hurts keyword search more (P2).
+2. **Keyword search (BM25) next to meaning-based search.** *Done (D40,
+   F30, section 8i).* Next: questions written by people, or rewritten
+   away from the article's words, to test the mismatch case at scale.
 3. **More test questions per section.** 43 groups had too few (under 8) to
    classify; more questions would tighten the drift-vs-harm comparison (F20).
 4. **A larger Wikipedia sample.** 165 of about 1,000 vital articles; would

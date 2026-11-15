@@ -147,7 +147,7 @@ agent breaks the next one.
 | LLM cost ledger (every billed request) | `runs/llm_costs.csv` | No |
 | Run outputs (reports, charts) | `runs/<run_id>/` | No |
 | Long-form evidence Agent E read, saved with each run | `runs/<run_id>/longform/` | No |
-| Separate experiments: newer wording (D31), applied re-index (D32), truth table (D39) | `runs/wording/`, `runs/longform/reindex_*`, `runs/truth_table/` | No |
+| Separate experiments: newer wording (D31), applied re-index (D32), truth table (D39), keyword search (D40) | `runs/wording/`, `runs/longform/reindex_*`, `runs/truth_table/`, `runs/keyword/` | No |
 | Demo run for the dashboard (reports, dark charts, long-form snapshot; about 1 MB), from `scripts/export_demo.py` | `demo/runs/<run_id>/` | Yes |
 | Exploration tables | `runs/explore/<dataset>/` (CSV) | No |
 | Charts for a run | `runs/<run_id>/charts/` (PNG) | No |

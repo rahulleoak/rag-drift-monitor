@@ -160,7 +160,9 @@ date and reason, and add a new entry that supersedes it.
   - **P2:** label each segment's drift as wording-only, meaning, both or
     neither, using the two drift techniques. Adding BM25 (keyword search) to
     test whether wording-only drift hurts keyword search but not
-    meaning-based search is a stretch goal.
+    meaning-based search is a stretch goal. *Done 2026-11-14 (D40, F30):
+    not supported by section, because the questions drift with their
+    articles.*
   - **P3:** track how spread out each period's embeddings are, and check that
     LLM-generated queries are not much less varied than their source
     documents.
@@ -1578,3 +1580,42 @@ date and reason, and add a new entry that supersedes it.
   error lands in producing (13 lost, 0 gained), but the rise is 0.7-1.4
   points, below the 2-point bar, so none of the cells counts as caught.
   The thresholds were not moved after the results.
+
+## D40. Keyword search (BM25) next to meaning-based search, as a separate experiment
+- **Date:** 2026-11-14
+- **Status:** Accepted (approved by the author 2026-11-14)
+- **Context:** the proposal's P2 hypothesis says wording drift (new words
+  for the same things) hurts keyword search more than meaning-based search.
+  It was listed as untested, and it is the direct argument for searching by
+  meaning (embeddings) rather than by keywords.
+- **Options:**
+  - (a) **Leave it untested.** No work, but the choice of embeddings rests on
+    general knowledge, not on this archive.
+  - (b) **Add BM25 to the pipeline as a second retriever,** judged like the
+    first. It doubles the relevance judging (LLM cost) and changes what the
+    agents report.
+  - (c) **A separate experiment with known-item search:** the same articles,
+    questions and index per question, with only the search changed. Does the
+    question's source article land in the top 5? No LLM.
+- **Choice:** (c), in `scripts/keyword_search.py`, beside the pipeline like
+  D31 and D39.
+  - **BM25 is written in-house** (`driftmon/rag/bm25.py`, about 40 lines,
+    tested against a hand-worked score) rather than adding a library. It
+    uses Agent B's vocabulary tokens, with no stemming, so the words it
+    matches are the words the wording-drift measure counts. The usual
+    defaults are k1 = 1.5 and b = 0.75.
+  - **Two tests:**
+    - by Agent B's drift kind per section (wording or both, against none):
+      is keyword search's shortfall against meaning search bigger where the
+      wording drifted?
+    - on the 18 newer-wording questions of D31: does keyword search lose
+      the article more often when the question uses later words?
+  - **Check:** the meaning-based ranks computed here must reproduce the
+    saved run's top 10, or the script stops.
+- **Thresholds, set before any result** (`keyword_search`), matching D31:
+  - the shortfall is 10+ points bigger in wording-drift sections, with
+    permutation p < 0.05;
+  - newer wording costs a search 10+ points, with exact McNemar p < 0.05.
+- **Known bias:** each question was written from its article, so the two
+  share words, which favours keyword search.
+- **Evidence:** F30.

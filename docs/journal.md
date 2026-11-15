@@ -16,6 +16,27 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-14 (night): the truth table (D39, F29)
+- **Context:** strengthening the findings. F28's "0 producing errors" was
+  only convincing if the split would catch a worse answer step. Branch
+  `truth-table`.
+- **Built:** `scripts/truth_table.py` and `driftmon/evaluation/truth_table.py`.
+  The normal demo run's questions are answered again from the same top 5
+  with Haiku 5.5, an "under 10 words" prompt, or both; the same judge
+  grades and the same split places the errors. Thresholds were set in the
+  config before the run. 228 tests pass.
+- **Result:** isolated in every cell. Only producing moved (3, 3 and 6
+  answers; 13 lost, 0 gained), below the 2-point bar, so none counts as
+  caught. The answer step is robust here. Haiku is within 0.9 points.
+- **Surprises:** how little a 10-word cap hurts: the answers drop to a
+  median of 6 words and are still right 99% of the time when the article
+  is in the top 5. The errors are mostly "partly right", not invented.
+- **Tried and abandoned:** keeping the 15 unanswerable questions; the run
+  does not save their top 5.
+- **Open questions:** whether harder, multi-article questions would show
+  a model gap worth acting on.
+- **Next:** BM25 (next strengthening item), then the slides.
+
 ## 2026-11-14 (evening): which kind of drift broke each answer (D38, F28)
 - **Context:** a review of the project suggested sorting drift into four
   kinds (knowledge, query, retrieval, producing), each with its own fix,

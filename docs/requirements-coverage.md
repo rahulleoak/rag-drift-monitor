@@ -86,7 +86,7 @@ Last checked: 2026-11-14, against the demo run `demo/runs/20261114-174819`
 | Deliverable | Where | Status |
 |---|---|---|
 | Working application | LangGraph pipeline + Streamlit dashboard (works from the committed demo run, no key needed) | **Done** |
-| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (222 tests) | **Done** |
+| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (228 tests) | **Done** |
 | Agent architecture diagram | `docs/architecture.md` (Mermaid), README | **Done**, kept up to date |
 | Drift analysis: metrics, visualisations, explanations, examples | Agent B outputs, dashboard Drift page, `docs/figures/` | **Done** (F4–F6) |
 | RAG evaluation across periods | Agents C and D, dashboard Retrieval and Impact pages | **Done** (F15, F20) |

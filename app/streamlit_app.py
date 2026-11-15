@@ -29,12 +29,13 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from driftmon.config import load_config, resolve_path  # noqa: E402
-from driftmon.dashboard import ask, live, story  # noqa: E402
+from driftmon.dashboard import ask, buckets, live, story  # noqa: E402
 from driftmon.dashboard.charts import DARK as T  # noqa: E402  (Rivvun dark palette, validated)
 from driftmon.dashboard.runs import (ALL_OTHER, answers_stale_vs_refreshed, default_run,  # noqa: E402
                                      flagged_share_by_year, harm_vs_drift, list_runs, load_run, run_label,
                                      run_models, section_shares, severity_grid, stale_label, stale_vs_refreshed,
                                      term_shift, with_settings)
+from driftmon.evaluation.attribution import KNOWLEDGE, PRODUCING, RETRIEVAL  # noqa: E402
 from driftmon.policy import pct  # noqa: E402
 
 st.set_page_config(page_title="RAG Drift Monitor", layout="wide", initial_sidebar_state="expanded")
@@ -57,6 +58,7 @@ st.markdown(f"""<style>
 .chip {{ display: inline-block; padding: 2px 10px; margin: 2px 6px 4px 0; border-radius: 999px;
   background: #1A2232; color: #D3D6DB; font-size: 0.8rem; white-space: nowrap; }}
 .chip b {{ color: {T.ink}; font-weight: 600; }}
+.chip.kind {{ border: 1px solid #3A4A63; cursor: help; }}
 .topbar {{ margin: -0.4rem 0 0.6rem 0; }}
 .agent {{ color: #AEB3BB; font-size: 0.95rem; margin-top: -0.6rem; }}
 .subtitle {{ color: #AEB3BB; font-size: 0.98rem; margin-top: -0.9rem; }}
@@ -151,6 +153,11 @@ def chips(items: list[str], limit: int = 14) -> str:
     shown = "".join(f'<span class="chip">{html.escape(str(i))}</span>' for i in items[:limit])
     more = f'<span class="chip">+{len(items) - limit} more</span>' if len(items) > limit else ""
     return shown + more
+
+
+def kind_chip(label: str, note: str) -> str:
+    """A bucket chip (Knowledge, Retrieval ...) whose hover note says what it means and what fixes it."""
+    return f'<span class="chip kind" title="{html.escape(note, quote=True)}">{html.escape(label)}</span>'
 
 
 def bullets(items: list[str]) -> str:
@@ -261,7 +268,9 @@ def overview() -> None:
           decimals=("times_ordinary_embedding", "times_ordinary_lexical"),
           help={"times_ordinary_embedding": "How far what the articles are about moved, × ordinary change.",
                 "times_ordinary_lexical": "How far the vocabulary moved, × ordinary change.",
-                "severity": "Low, medium or high, against the archive's own ordinary change."})
+                "severity": "Low, medium or high, against the archive's own ordinary change. This is how much "
+                            "the archive changed (the knowledge base), not harm: Impact checks whether answers "
+                            "suffered."})
 
 
 def data_monitoring() -> None:
@@ -408,7 +417,8 @@ def drift() -> None:
             "The same analysis on the test questions instead of the articles, each year against the baseline "
             "questions, scaled by the change inside the baseline (the reference row). The questions were written "
             "from each year's articles, so they partly mirror the article drift; a real query log could drift on "
-            "its own.", story.query_drift_takeaway(run))
+            "its own. This is query drift: people asking in new words while the documents are fine. Its fix is "
+            "query rewriting or synonyms, not re-indexing.", story.query_drift_takeaway(run))
     if isinstance(run.drift.query_drift, str):
         st.info("Query drift: " + run.drift.query_drift)
     else:
@@ -450,12 +460,14 @@ def retrieval() -> None:
         m = st.columns(4)
         m[0].metric("Questions tested", rep.questions)
         m[1].metric("Found without re-indexing", pct(sum(r["stale_answer"] * r["questions"] for r in later) / n),
-                    help=f"Questions about later years with an answer in the {top('judge_k')}, stale index.")
+                    help=f"Questions about later years with an answer in the {top('judge_k')}, stale index. Misses "
+                         "here are knowledge drift: the stale index never got those years' articles.")
         m[2].metric("Found after re-indexing", pct(sum(r["refreshed_answer"] * r["questions"] for r in later) / n))
         if base:
             m[3].metric("Old questions still found", pct(base[0]["refreshed_answer"]),
                         help=f"{run.baseline} questions on the refreshed index: adding new articles should not hurt "
-                             "them (the historical control).")
+                             "them (the historical control). This is the retrieval drift check: the content "
+                             "was always in the index, so a drop would mean ranking got worse.")
         section(f"Answer found in the {top('judge_k')}",
                 f"Each pair of bars is a year of questions: blue = the stale index (never updated), orange = the "
                 f"refreshed one. {run.baseline} questions are the control: both should score the same.",
@@ -530,7 +542,9 @@ def impact() -> None:
                 help=f"Answered from both indexes: {imp.questions - n_un} normal questions plus {n_un} built to be "
                      "unanswerable.")
     if h:
-        m[1].metric("Correct without re-indexing", pct(h["stale"]), help=f"Questions about {h['years']}.")
+        m[1].metric("Correct without re-indexing", pct(h["stale"]),
+                    help=f"Questions about {h['years']}. Answers lost here are knowledge drift: the stale index "
+                         "never got these articles.")
         m[2].metric("Correct after re-indexing", pct(h["refreshed"]))
     if "refreshed" in un:
         r = un["refreshed"]
@@ -541,6 +555,20 @@ def impact() -> None:
             f"orange = refreshed. {run.baseline} questions are the control.", story.answers_takeaway(run))
     chart(live.grouped_bars(answers_stale_vs_refreshed(run), "Questions answered correctly", stale_label(run.baseline),
                             run.baseline))
+    if imp.attribution:
+        section("Why answers went wrong",
+                "Every wrong answer to a normal question, by where the chain broke, in order: was the question's "
+                "article in the index at all (knowledge), did the top 5 the assistant read hold an answer "
+                "(retrieval), and if it did, why is the answer still wrong (producing)? Query drift is a cause "
+                "of retrieval misses, measured on the Drift page.  \n" + buckets.legend(),
+                story.attribution_takeaway(run))
+        names = {"stale": stale_label(run.baseline), "refreshed": "Refreshed index"}
+        rows = sorted(imp.attribution, key=lambda r: r["role"] != "stale")
+        table(pd.DataFrame(rows).assign(role=lambda d: d["role"].map(names).fillna(d["role"])),
+              {"role": "Index", "answers": "Answers", "wrong": "Wrong",
+               KNOWLEDGE: buckets.BUCKETS[KNOWLEDGE].name, RETRIEVAL: buckets.BUCKETS[RETRIEVAL].name,
+               PRODUCING: buckets.BUCKETS[PRODUCING].name},
+              help={k: buckets.BUCKETS[k].note() for k in (KNOWLEDGE, RETRIEVAL, PRODUCING)})
 
     seg = harm_vs_drift(run)
     if len(seg):
@@ -560,11 +588,13 @@ def impact() -> None:
                 st.caption(f"A section counts as harmed when its correct answers drop by {loss}; this was fixed "
                            f"before looking at the results. Sections without "
                            f"{at_least('min_segment_questions', 'questions')} are not classified.")
-            table(pd.DataFrame(imp.segments),
+            table(pd.DataFrame(imp.segments).assign(cause=lambda d: d["cause"].map(buckets.cause_label)),
                   {"period": "Year", "category": "Section", "questions": "Questions",
                    "stale_correct": "Correct, stale", "refreshed_correct": "Correct, refreshed",
                    "loss_correct": "Drop", "flagged": "Flagged for drift", "class": "Class", "cause": "Likely cause"},
-                  percent=("stale_correct", "refreshed_correct", "loss_correct"))
+                  percent=("stale_correct", "refreshed_correct", "loss_correct"),
+                  help={"cause": "Where a harmed section's answers broke, named by kind.  \n"
+                                 + buckets.legend((KNOWLEDGE, RETRIEVAL, PRODUCING))})
     if imp.correlations:
         statement(story.correlation_takeaway(run))
         with st.expander("Each drift measure against the size of the loss"):
@@ -605,7 +635,8 @@ def impact() -> None:
                 "A separate test on long Wikipedia articles captured at the end of each year. For edits that replaced "
                 "a number or date, and for edits that only reworded the text, a question was written from the new "
                 "version and answered from the old and the new archive. Bars: the share whose answer differs; lines "
-                "are 95% intervals.", story.wikipedia_takeaway(run))
+                "are 95% intervals. This is knowledge drift in its plainest form: the fact changed, and the index "
+                "still holds the old one. The fix is re-indexing those documents.", story.wikipedia_takeaway(run))
         chart(live.outdated_chart(lf["outdated_summary"]))
         items = lf.get("outdated_items")
         if items is not None and len(items):
@@ -644,7 +675,9 @@ def recommendations() -> None:
     st.caption("In order of the kind of evidence: measured loss of answers first, then cases for a person, then "
                "maintenance.")
     for r in rec.recommended():
-        st.subheader(f"{r.priority}. {r.action}", anchor=False)
+        st.subheader(f"{r.priority}. {r.action}", anchor=False, help=buckets.action_note(r.key) or None)
+        if buckets.action_kinds(r.key):
+            st.markdown(kind_chip(buckets.action_kinds(r.key), buckets.action_note(r.key)), unsafe_allow_html=True)
         say(r.explanation)
         if r.scope:
             st.markdown(f"**Applies to {len(r.scope)}:** " + chips(list(r.scope)), unsafe_allow_html=True)
@@ -669,7 +702,9 @@ def recommendations() -> None:
             reason = r.finding.split(": ", 1)[1] if r.finding.lower().startswith(("not needed:", "not checked:")) \
                 else r.finding
             deciding = r.evidence[0].claim if r.evidence else ""
-            st.markdown(f'**{r.action}** <span class="chip">{r.status}</span>', unsafe_allow_html=True)
+            kind = (" " + kind_chip(buckets.action_kinds(r.key), buckets.action_note(r.key))
+                    if buckets.action_kinds(r.key) else "")
+            st.markdown(f'**{r.action}** <span class="chip">{r.status}</span>{kind}', unsafe_allow_html=True)
             say(f"{reason[:1].upper() + reason[1:]} {deciding}")
     for note in rec.notes:
         st.caption(note)
@@ -723,7 +758,9 @@ def ask_archive() -> None:
                 st.markdown(f'<span class="{cls}">●</span> **{title}**', unsafe_allow_html=True)
                 verdict = ("Answer found" if s["found"] else "Not in these articles" if s["found"] is False
                            else "No answer")
-                st.caption(verdict)
+                live_gap = side == "stale" and s["found"] is False and bool(r["refreshed"]["found"])
+                st.caption(verdict, help=(f"Knowledge drift, live: the stale index never got articles after "
+                                          f"{a.baseline}, and the refreshed index answers." if live_gap else None))
                 st.markdown(s["answer"])
                 st.caption(f"Top {r['k']} articles it read (cited in bold):")
                 st.markdown("\n".join(

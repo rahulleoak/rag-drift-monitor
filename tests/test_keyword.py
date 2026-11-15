@@ -39,6 +39,13 @@ def test_ranks_ignore_keyword_results_without_a_shared_word():
     assert kw.ranks(ids, ["b", "c"], np.array([[3.0, 0.0], [1.0, 0.5]])) == [0, 1]
 
 
+def test_drift_kinds_from_a_saved_csv(tmp_path):
+    seg = pd.DataFrame({"period": ["2018", "2018"], "category": ["A", "B"], "compared_with": ["2016-17", "2017"],
+                        "kind": ["wording", "both"]})
+    seg.to_csv(tmp_path / "s.csv", index=False)
+    assert kw.drift_kinds(pd.read_csv(tmp_path / "s.csv"), "2016-17") == {("2018", "A"): "wording"}
+
+
 def _pq(shortfall_wording, shortfall_none):
     """Questions in wording-drift and no-drift sections with given meaning/keyword outcomes."""
     rows = []

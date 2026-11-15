@@ -46,9 +46,10 @@ def ranks(ids: np.ndarray, sources: Sequence[str], scores: np.ndarray | None = N
 
 
 def drift_kinds(segments: pd.DataFrame, baseline: str) -> dict[tuple[str, str], str]:
-    """(period, section) -> Agent B's drift kind, against the baseline."""
-    s = segments[segments["compared_with"] == baseline]
-    return {(p, c): k for p, c, k in zip(s["period"], s["category"], s["kind"])}
+    """(period, section) -> Agent B's drift kind, against the baseline. Periods as text: a
+    saved CSV reads "2018" back as a number."""
+    s = segments[segments["compared_with"].astype(str) == baseline]
+    return {(str(p), c): k for p, c, k in zip(s["period"], s["category"], s["kind"])}
 
 
 def per_question(questions: pd.DataFrame, rank_meaning: Sequence[int], rank_keyword: Sequence[int],

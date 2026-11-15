@@ -117,6 +117,8 @@ class ImpactReport(BaseModel):
     borderline: list[str] = Field(default_factory=list)                 # segments that may need more evidence
     evidence: list[dict[str, Any]] = Field(default_factory=list)        # the loop back to C: top 10 instead of top 5
     correlations: list[dict[str, Any]] = Field(default_factory=list)    # drift measure vs quality loss
+    attribution: list[dict[str, Any]] = Field(default_factory=list)     # wrong answers: knowledge / retrieval / producing (D38)
+    attribution_by_period: list[dict[str, Any]] = Field(default_factory=list)
     examples: list[dict[str, Any]] = Field(default_factory=list)        # answers that show the harm
     judge: dict[str, Any] = Field(default_factory=dict)                 # requests, failures, cost
     notes: list[str] = Field(default_factory=list)

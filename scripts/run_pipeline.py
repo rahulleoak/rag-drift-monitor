@@ -253,6 +253,9 @@ def _report_impact(state, run_dir: Path) -> None:
     show(rep.by_period, ["period"] + cols)
     print("    by drift status:")
     show(rep.by_status, ["drift_status"] + cols)
+    if rep.attribution:
+        print("    why answers went wrong (D38; answerable questions):")
+        show(rep.attribution, ["role", "answers", "wrong", "knowledge", "retrieval", "producing", "unplaced"])
     if rep.unanswerable:
         print("    unanswerable questions (should decline):")
         show(rep.unanswerable, ["index", "questions", "declined", "hallucinated"])

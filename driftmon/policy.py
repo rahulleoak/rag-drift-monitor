@@ -165,6 +165,9 @@ def reindex(x: Inputs) -> Recommendation:
     silent = _silence(x, base)
     if silent:
         ev.append(silent)
+    where = _where_wrong(x, "stale")
+    if where:
+        ev.append(where)
     trigger, why = _trigger(x, hit)
     ev.extend(why)
     if x.impact.examples:
@@ -177,6 +180,21 @@ def reindex(x: Inputs) -> Recommendation:
     finding = (f"Re-index the archive {when}. Without it, questions about new events lose almost every "
                f"answer: in {len(hit)} sections correct answers drop by {points(hit['loss_correct'])}.")
     return _rec(REINDEX, "recommended", rule, finding, ev, [_seg_name(s) for s in hit["segment_id"]])
+
+
+def _where_wrong(x: Inputs, role: str | None = None) -> EvidenceItem | None:
+    """Where the wrong answers broke (D38): knowledge, retrieval or producing.
+    ``role`` "stale" or "refreshed" for one index; None for both together."""
+    rows = [r for r in (x.impact.attribution if x.impact else []) if role is None or r["role"] == role]
+    wrong = sum(r["wrong"] for r in rows)
+    if not wrong:
+        return None
+    k, r_, p_ = (sum(r[b] for r in rows) for b in ("knowledge", "retrieval", "producing"))
+    where = f"on the {role} index" if role else "on both indexes"
+    return EvidenceItem(source="Agent D: why answers went wrong",
+                        claim=f"Of {wrong} wrong answers {where}, {k} were about articles the index never held "
+                              f"(knowledge), {r_} missed articles the index held (retrieval) and {p_} were wrong "
+                              f"although the top 5 held an answer (producing).")
 
 
 def _trigger(x: Inputs, hit: pd.DataFrame) -> tuple[str, list[EvidenceItem]]:
@@ -390,6 +408,9 @@ def prompts(x: Inputs) -> Recommendation:
           EvidenceItem(source="Agent D: grounding",
                        claim=f"{round(invented)} of {2 * n} answers added a claim not in the retrieved articles "
                              f"({pct(rate)}).")]
+    where = _where_wrong(x)
+    if where:
+        ev.append(where)
     if len(step) or rate > float(x.rc["max_hallucinated"]):
         scope = [_seg_name(s) for s in step["segment_id"]] if len(step) else ["all sections"]
         return _rec(PROMPTS, "recommended", rule,

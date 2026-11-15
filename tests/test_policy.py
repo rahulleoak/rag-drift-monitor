@@ -177,3 +177,20 @@ def test_applied_reindex_is_cited_and_a_shortfall_asks_for_a_scheduled_full_rein
     assert "alone was enough" in ok.finding
     plain = pol.reindex_documents(_x(cfg, None, longform=_longform()))
     assert all(e.source != "Wikipedia: targeted re-index applied" for e in plain.evidence)
+
+
+def test_where_answers_went_wrong_is_cited_without_changing_the_rules(cfg):
+    imp = _impact([_seg("2020|WELLNESS", DRIFT_HURTS)])
+    before = (pol.reindex(_x(cfg, imp)).status, pol.prompts(_x(cfg, imp)).status)
+    imp.attribution = [{"role": "stale", "answers": 100, "wrong": 50, "knowledge": 48, "retrieval": 2,
+                        "producing": 0, "unplaced": 0},
+                       {"role": "refreshed", "answers": 100, "wrong": 3, "knowledge": 0, "retrieval": 3,
+                        "producing": 0, "unplaced": 0}]
+    r, p = pol.reindex(_x(cfg, imp)), pol.prompts(_x(cfg, imp))
+    assert (r.status, p.status) == before
+    assert any("Of 50 wrong answers on the stale index, 48 were about articles the index never held" in e.claim
+               for e in r.evidence)
+    assert any("Of 53 wrong answers on both indexes" in e.claim and "0 were wrong although the top 5" in e.claim
+               for e in p.evidence)
+    imp.attribution = []
+    assert not any(e.source == "Agent D: why answers went wrong" for e in pol.prompts(_x(cfg, imp)).evidence)

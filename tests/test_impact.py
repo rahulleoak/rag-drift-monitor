@@ -71,6 +71,12 @@ def test_agent_d_finds_drift_that_hurts_and_a_steady_historical_control(tmp_path
     assert rep.unanswerable and rep.unanswerable[0]["questions"] == 1
     assert rep.judge["failed_answers"] == 0 and rep.judge["failed_judgements"] == 0
     assert rep.examples and rep.examples[0]["period"] == "2020"
+    # why answers went wrong (D38): the stale index never held the 2020 articles -> knowledge, nothing else
+    why = {r["role"]: r for r in rep.attribution}
+    assert why["stale"]["wrong"] > 0 and why["stale"]["knowledge"] == why["stale"]["wrong"]
+    assert why["refreshed"]["wrong"] == 0 and why["stale"]["producing"] == 0
+    assert {(r["role"], r["period"]) for r in rep.attribution_by_period} >= {("stale", "2020"), ("stale", "2016-17")}
+    assert len(out["impact_tables"]["attribution"]) == why["stale"]["answers"] + why["refreshed"]["answers"]
 
     # the judge is never told which index an answer came from
     judge_prompts = [c["params"]["messages"][0]["content"] for b_ in api.batches for c in b_

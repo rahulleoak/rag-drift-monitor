@@ -325,7 +325,12 @@ def overview_attribution(run: Run) -> str:
     s = (f"**Every wrong answer traced to where it broke:** {share(st['knowledge'], st['wrong'])} on the stale "
          f"index were about articles it never held (knowledge)")
     ref = rows.get("refreshed")
-    if ref and ref["wrong"]:
+    if ref and ref["wrong"] and ref["knowledge"]:   # e.g. a failed re-index: some articles never arrived
+        parts = [f"{ref['knowledge']} were about articles it does not hold (knowledge)"]
+        if ref["retrieval"]:
+            parts.append(f"{ref['retrieval']} were search misses (retrieval)")
+        s += f", and of {ref['wrong']} on the refreshed index, " + " and ".join(parts)
+    elif ref and ref["wrong"]:
         s += f", and {share(ref['retrieval'], ref['wrong'])} on the refreshed index were search misses (retrieval)"
     producing = sum(r["producing"] for r in rows.values())
     s += (f". {producing} went wrong with the right article in front of the model (producing)." if producing else

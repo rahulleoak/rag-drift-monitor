@@ -244,6 +244,21 @@ class RagAnswer(BaseModel):
     sources: list[str] = Field(description="Letters of the articles the answer relies on")
 
 
+# ---------- truth-table variant of the answer prompt (experiment only, D39) ----------
+# One realistic bad edit: a product team asks for terser answers. Everything else is unchanged.
+
+ANSWER_SHORT_VERSION = "ans-v1-short10"
+ANSWER_SHORT_SYSTEM = ANSWER_SYSTEM.replace("- Keep the answer short and direct: one to three sentences.",
+                                            "- Keep the answer under 10 words.")
+assert ANSWER_SHORT_SYSTEM != ANSWER_SYSTEM
+
+
+class RagAnswerShort(RagAnswer):
+    """The same answer, with the terser length rule in its description."""
+
+    answer: str = Field(description="Under 10 words; if not found, say the archive does not say")
+
+
 # ---------- answer quality (Opus, Agent D) ----------
 
 ANSWER_JUDGE_VERSION = "aj-v1"

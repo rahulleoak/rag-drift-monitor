@@ -154,6 +154,7 @@ llm:
   prices:
     claude-sonnet-5-5: {input: 2.0, output: 10.0}
     claude-opus-5-5: {input: 4.0, output: 20.0}
+    claude-haiku-5-5: {input: 0.10, output: 0.50}   # truth table only (D39; checked 2026-11-14)
   # Per job: thinking effort (low / medium / high), output cap (thinking counts
   # towards it), and the output size assumed when estimating cost in advance.
   jobs:
@@ -273,6 +274,15 @@ impact:
                                  #   refreshed index does not hold -> the re-index failed (set before the rerun)
   bootstrap_resamples: 2000
   max_evidence_loops: 1          # how many times Impact may ask Retrieval Eval for more queries
+
+# D39: the truth table. Same questions, same retrieved articles; change the answer model or
+# the answer prompt one at a time and see where wrong answers land (scripts/truth_table.py).
+# Thresholds set before any result.
+truth_table:
+  small_model: claude-haiku-5-5  # the model change: a much smaller, cheaper answer model
+  isolation_tolerance: 0.01      # knowledge and retrieval counts may move by at most this share of answers
+  min_rise: 0.02                 # producing "caught": wrong-with-an-answer-in-front rises by 2+ points ...
+  alpha: 0.05                    # ... and the paired exact test (McNemar, one-sided) says it is not chance
 
 # D29: Agent E. One rule per action in the brief; the LLM only explains.
 recommendation:

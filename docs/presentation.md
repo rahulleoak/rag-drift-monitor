@@ -9,7 +9,7 @@ detail.
 **Status markers:** ✅ done and measured · 🔨 designed, not built yet ·
 ❓ open question.
 
-Last updated: 2026-11-14 (the four kinds of drift, section 8g; before that: the evidence loop shown working, section
+Last updated: 2026-11-14 (the truth table, section 8h; the four kinds of drift, section 8g; before that: the evidence loop shown working, section
 8f; all agents, Wikipedia results, the newer-wording test and the applied re-index; next steps in section 16).
 
 The slide-by-slide brief (titles, bullets, speaker notes, screenshots) is
@@ -465,10 +465,40 @@ the 90 flagged articles, applied to a copy of the index.
   - Producing is 0 partly because each question is written from one
     article, so answering is easy once it is found.
   - A model or prompt change could still break the answer step; the
-    truth table (change one of model, prompt or articles at a time) would
-    catch that (next step).
+    truth table (section 8h) shows the split catches that.
   - The split needs a known source article, so it runs on test
     questions, not live traffic.
+
+### 8h. Would the split catch a worse answer step? The truth table (D39, F29) ✅
+
+The split found 0 producing errors. To show that is a measurement and not a
+blind spot, we made the answer step worse on purpose, one change at a time,
+with the same questions, the same top 5 and the same judge.
+
+| Cell (refreshed index) | Wrong | Knowledge | Retrieval | Producing |
+|---|---|---|---|---|
+| Sonnet, 1-3 sentences (pipeline) | 5 | 0 | 5 | 0 |
+| Sonnet, "under 10 words" | 8 | 0 | 5 | 3 |
+| Haiku 5.5, 1-3 sentences | 8 | 0 | 5 | 3 |
+| Haiku 5.5, "under 10 words" | 11 | 0 | 5 | 6 |
+
+- **Talking point:** "Change only the answer step, and only the producing
+  column moves. Knowledge and retrieval stay put, because the articles
+  didn't change. That is the split isolating the cause. The answer step
+  itself is robust: even a model about 20 times cheaper with a 10-word cap
+  keeps 97% of answers correct."
+- **Honest part:** the losses (3-6 answers, 13 lost and 0 gained overall)
+  stayed below the bar we set beforehand (2 points and p < 0.05), so we
+  report "direction right, regression too small to count", not "caught".
+  We did not move the bar.
+- **What the errors look like:** partly right, not invented. The terse
+  prompt drops a detail; Haiku says "Yes, no one else is involved" to a
+  no-question.
+- **Cost angle:** Haiku 5.5 loses 0.9 points (not significant) at a
+  twentieth of the price. Worth testing on harder questions before
+  switching.
+- **Limits:** single-fact questions written from one article; one prompt
+  edit and one model; $8.30.
 
 ## 9. Recommendations with evidence (✅, D29, F22)
 
@@ -711,15 +741,22 @@ Honest moments that show judgement, good for a "what we learned" slide:
   read. Every miss is a missing article (knowledge) or, 5 times, a search
   miss (retrieval).
 - **"How would you catch a model or prompt regression (producing drift)?"**
-  With a truth table on the fixed test set: change the model, the prompt or
-  the articles one at a time and see which change breaks answers. The same
-  idea as stale vs refreshed. Not run here because our model and prompt
-  are pinned, so it would only show "no change"; it belongs in the release
-  process for any model or prompt change.
+  With a truth table on the fixed test set: change one thing at a time
+  and see which column moves. We ran it (section 8h). With a smaller model
+  or a 10-word prompt, only producing moved (3-6 answers), and knowledge
+  and retrieval did not. It belongs in the release process for any model
+  or prompt change.
 - **"Isn't 0 producing errors too good to be true?"** Partly it reflects
   the test: questions are written from one article, so they are easy once
   it is found. The claim is narrow: on this data, quality is lost before
-  the answer step, not in it.
+  the answer step, not in it. And the split does see the answer step fail
+  when we break it on purpose (section 8h).
+- **"Why not call the truth table a success, if p = 0.016 for both
+  changes?"** Because the bar, set before the run, was also a 2-point rise,
+  and it rose 1.4. A significant but small loss is reported as what it is.
+- **"Could you use a cheaper answer model?"** Possibly: Haiku 5.5 lost 4
+  of 438 answers (not significant) at a twentieth of the price. We would
+  test it on harder, multi-article questions first.
 
 ## 15. Charts
 
@@ -794,7 +831,7 @@ Not done, in the order I would do them; each has the reason it would help.
     comparison and reports drift both ways.
 13. **Production:** scheduled runs with alerts, a shared vector database,
     access control and audit (section 12b).
-14. **A truth table for the answer step (producing drift).** On the fixed
-    test set, change the model, the prompt or the articles one at a time;
-    a simulated model change (a smaller answer model) would show one cell
-    working. Not run because the model and prompt are pinned (D38).
+14. **A truth table for the answer step (producing drift).** *Done
+    (D39, F29, section 8h)* for one model and one prompt edit. Next: harder
+    questions (several articles, conflicting dates) and a groundedness edit,
+    then make it a release check for any model or prompt change.

@@ -1421,6 +1421,8 @@ chart, and whether it supports or contradicts what we expected.
   - Membership needs a known source article, so the split works on
     evaluation questions, not live traffic.
   - Only sections with at least 8 questions get a cause.
+  - *Update 2026-11-14:* the truth table (F29) made the answer step worse on
+    purpose; the split then placed every new error in producing.
 - **Reproduce:** `python scripts/run_pipeline.py`, and for the evidence-loop
   run add `--fault "2020|WORLD NEWS" --fault-share 0.85 --label "Evidence
   loop demo (simulated failed re-index)"`. Per answer:
@@ -1433,3 +1435,78 @@ chart, and whether it supports or contradicts what we expected.
   caught it, and fixing it led to the rule change in D38.
 - **Verdict:** Supports D13 and D28 (re-indexing is the fix); revises F26's
   recommendation for a failed re-index.
+
+## F29. Truth table: a smaller model and a terser prompt cost at most 1.4 points, and every loss lands in producing
+- **Date:** 2026-11-14
+- **Setup:** D39. The normal demo run's 423 answerable questions, each
+  answered from both indexes' saved top 5 (846 answers per cell), with one
+  change at a time. The same Opus judge grades every answer; the D38 split
+  places every wrong one.
+  - The baseline came entirely from the cache (846 of 846), so it is the
+    pipeline's own answers.
+  - 0 failed calls. Cost $8.30 (Batch API).
+- **Result (refreshed index):**
+
+  | Cell | Answer model | Prompt | Wrong | Knowledge | Retrieval | Producing | Median words |
+  |---|---|---|---|---|---|---|---|
+  | Baseline | Sonnet 5.5 | 1-3 sentences | 5 | 0 | 5 | 0 | 25 |
+  | Prompt change | Sonnet 5.5 | under 10 words | 8 | 0 | 5 | 3 | 6 |
+  | Model change | Haiku 5.5 | 1-3 sentences | 8 | 0 | 5 | 3 | 27 |
+  | Both | Haiku 5.5 | under 10 words | 11 | 0 | 5 | 6 | 9 |
+
+  On the stale index, 373 answers stay wrong in every cell. They are almost
+  all knowledge: Haiku moves one answer into producing, and with both
+  changes one knowledge answer turns right and another goes wrong in
+  producing.
+
+  | Paired test (438 answers with the article in the top 5) | Lost | Gained | Rise | p | Caught (2 points, p < 0.05)? |
+  |---|---|---|---|---|---|
+  | Prompt change | 3 | 0 | +0.7 points | 0.125 | No |
+  | Model change | 4 | 0 | +0.9 points | 0.063 | No |
+  | Both | 6 | 0 | +1.4 points | 0.016 | No (significant, but below 2 points) |
+
+- **What the errors are:** almost all partly right (correctness 1 of 2),
+  not invented.
+  - The terse prompt drops a needed detail. Napolitano predicted a quick
+    decision "via an emergency ruling"; the answer kept only "a quick
+    decision".
+  - Haiku answers a no-question with "Yes, police believe no one else is
+    involved", hedges into a decline, or picks the other of two dated
+    facts (A$AP Rocky "until his trial" instead of "another week").
+  - Answers judged not grounded: 4 of 846 in the baseline, 6 with the
+    terse prompt, 10 with Haiku.
+- **What it means:**
+  - **The split isolates the cause.** Knowledge and retrieval did not move
+    in any cell (by at most 1 answer, against a tolerance of 4). Every new
+    error with the article in the top 5 was placed in producing, and among
+    those answers no change made a wrong one right.
+  - **The answer step is robust to realistic changes on these questions.**
+    Even a model about 20 times cheaper with a 10-word limit keeps 97% of
+    answers correct, so a regression this small stays under the bar. The
+    bar was set for a loss worth acting on, and it was not moved.
+  - **0 producing in F28 is a measurement, not a blind spot:** the same
+    split counts 3-6 producing errors as soon as the answer step is made
+    worse.
+  - **Cost:** Haiku 5.5 loses 4 answers of 438 (0.9 points, not
+    significant) at a twentieth of Sonnet's price. Worth considering for
+    the answer step, but only after a test on harder questions.
+- **Caveats:**
+  - The questions are single-fact lookups written from one article. A
+    harder set (several articles, conflicting dates) would stress the
+    answer step more, and would likely show a larger gap between models.
+  - One prompt edit and one model. A different edit, such as dropping
+    "use only what the articles say", tests groundedness instead.
+  - The losses are small counts (3-6), so they show the direction, not a
+    precise size.
+- **Reproduce:** `python scripts/truth_table.py --estimate`, then
+  `python scripts/truth_table.py` (from a normal pipeline run). Output:
+  `runs/truth_table/answers.csv`, `summary.csv`, `verdict.json`.
+- **Expectation:**
+  - **Isolation:** expected, and it held.
+  - **The prompt change pushes answers into producing:** yes in direction,
+    but too few to count. The test was weaker than expected.
+  - **The model change:** no prediction was made. The result: a small,
+    non-significant loss.
+- **Verdict:** supports D38. The split places losses where they happen,
+  and the answer step is not where this system loses quality. Adds: the
+  pre-set bar for "caught" is stricter than these realistic regressions.

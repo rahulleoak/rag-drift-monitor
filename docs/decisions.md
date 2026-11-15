@@ -1485,7 +1485,8 @@ date and reason, and add a new entry that supersedes it.
     B; the newer-wording test, F23). It is one cause of retrieval misses,
     not an outcome of an answer, so it is not a fourth outcome in the split.
   - **(b) is how to catch a model or prompt regression,** and is listed as a
-    next step.
+    next step. *Done 2026-11-14, as a separate experiment that breaks the
+    answer step on purpose (D39, F29).*
 - **Where membership comes from:** Agent C records, for every search,
   whether the question's source article is in the index it searched
   (`source_in_index`).
@@ -1532,3 +1533,48 @@ date and reason, and add a new entry that supersedes it.
     Questions written from one article are easy once that article is found,
     and a model or prompt change could still break it.
 - **Evidence:** F28.
+
+## D39. A truth table for the answer step: change the model or the prompt, keep the articles
+- **Date:** 2026-11-14
+- **Status:** Accepted (approved by the author 2026-11-14, including the
+  prompt change)
+- **Context:** the split in D38 found no producing errors. That is only
+  convincing if the split *would* catch a worse answer step; otherwise 0
+  could be a blind spot. D38 set the truth table aside, because our model
+  and prompt are pinned, so rerunning them would only show "no change". The
+  point here is different: break the answer step on purpose and see where
+  the losses land.
+- **Options:**
+  - (a) **Leave it as a next step.** No cost, but "the answer step is fine"
+    rests on a measurement nobody has seen fail.
+  - (b) **Rerun the whole pipeline with another model.** It changes
+    retrieval grades and explanations too, so more than one thing moves.
+  - (c) **A separate experiment on a saved run:** answer the same
+    questions from the same top 5 (the normal demo run's), changing one
+    thing at a time, with the same judge and the same split.
+- **Choice:** (c), in `scripts/truth_table.py`, beside the pipeline like
+  the newer-wording test (D31). The pipeline and dashboard do not change.
+  - **Cells:**
+    - baseline (Sonnet 5.5, the pipeline prompt);
+    - prompt change: "Keep the answer under 10 words" instead of "one to
+      three sentences", the kind of edit a product team makes for terser
+      answers;
+    - model change: Haiku 5.5, a much smaller and cheaper model;
+    - both changes together.
+  - **Same articles:** the baseline is rebuilt from the saved run and must
+    come entirely from the cache. If any of it needed a new call, the
+    rebuild would not match and the script stops before spending.
+  - **Only the 423 answerable questions:** the run does not keep the top 5
+    of the 15 unanswerable ones, and declining is their right answer, so
+    they have no producing bucket.
+- **Thresholds, set before any result** (`truth_table` in the config):
+  - **Isolation:** knowledge and retrieval counts may move by at most 1% of
+    answers. The articles do not change, so they should not.
+  - **Producing caught:** among answers with the right article in the
+    top 5, the share wrong rises by at least 2 points, and a paired exact
+    test (McNemar, one-sided) gives p < 0.05. An answer counts once when
+    both indexes handed over the same top 5.
+- **Evidence:** F29. The split stays isolated in every cell. Every new
+  error lands in producing (13 lost, 0 gained), but the rise is 0.7-1.4
+  points, below the 2-point bar, so none of the cells counts as caught.
+  The thresholds were not moved after the results.

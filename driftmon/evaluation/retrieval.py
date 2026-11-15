@@ -59,21 +59,28 @@ def retrieve_all(questions: pd.DataFrame, qvecs: np.ndarray, indexes: StudyIndex
 
     Later-period questions: the stale index and their period's refreshed
     index. Baseline questions: the stale index and every refreshed index.
-    Returns one row per run: question_id, index, doc_ids, scores.
+    Returns one row per run: question_id, index, doc_ids, scores, and
+    ``source_in_index``: whether the question's source article is in the
+    index searched (False for a later year on the stale index, and for an
+    article a failed re-index left out; Agent D's attribution, D38).
     """
     period = questions["period"].to_numpy()
     plan: dict[str, list[int]] = {"stale": list(range(len(questions)))}
     for p in indexes.refreshed:
         plan[f"refreshed_{p}"] = [i for i in range(len(questions)) if period[i] in (p, baseline)]
+    source = (questions["doc_id"] if "doc_id" in questions.columns
+              else pd.Series([None] * len(questions))).to_numpy()
     rows = []
     for name, idx in plan.items():
         if not idx:
             continue
         index = indexes.stale if name == "stale" else indexes.refreshed[name[len("refreshed_"):]]
+        held = set(index.doc_ids.tolist())
         ids, scores = index.search(qvecs[idx], k)
         for i, d, s in zip(idx, ids, scores):
             rows.append({"question_id": questions["question_id"].iloc[i], "index": name,
-                         "doc_ids": list(d), "scores": [float(x) for x in s]})
+                         "doc_ids": list(d), "scores": [float(x) for x in s],
+                         "source_in_index": source[i] in held})
     return pd.DataFrame(rows)
 
 

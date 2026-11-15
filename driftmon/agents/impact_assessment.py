@@ -115,7 +115,7 @@ def impact_assessment(state: PipelineState) -> dict[str, Any]:
     seg = an.segments(pq, base, drift.drifted_segments, cfg)
     drift_segs = pd.DataFrame([s.model_dump() for s in drift.segments])
     corr = an.drift_quality_correlation(seg, drift_segs) if len(seg) and len(drift_segs) else pd.DataFrame()
-    why = at.attribute(per_answer, questions, at.index_periods(base, later))   # D38
+    why = at.attribute(per_answer, questions, runs)   # D38
     un = pq[pq["set"] == "unanswerable"]
     unanswerable_summary = [{"index": role, "questions": len(un), "declined": un[f"{role}_correct"].mean(),
                              "hallucinated": un[f"{role}_hallucinated"].mean()} for role in an.ROLES] if len(un) else []

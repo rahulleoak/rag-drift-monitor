@@ -22,7 +22,7 @@ unanswerable questions are left out: declining is their right answer.
 """
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
@@ -31,19 +31,10 @@ KNOWLEDGE, RETRIEVAL, PRODUCING = "knowledge", "retrieval", "producing"
 BUCKETS = (KNOWLEDGE, RETRIEVAL, PRODUCING)
 
 
-def index_periods(baseline: str, later: Sequence[str]) -> dict[str, set[str]]:
-    """The periods each study index holds: the stale index the baseline only,
-    ``refreshed_<period>`` the baseline and every period up to that one."""
-    out, held = {"stale": {baseline}}, {baseline}
-    for p in later:
-        held = held | {p}
-        out[f"refreshed_{p}"] = held
-    return out
-
-
-def bucket(correct: float, in_index: bool, context_has_answer: float) -> str | None:
-    """Where one answer's chain broke; None when it is right or cannot be scored."""
-    if correct is None or np.isnan(correct) or correct == 1:
+def bucket(correct: float, in_index: bool | None, context_has_answer: float) -> str | None:
+    """Where one answer's chain broke; None when it is right or cannot be placed
+    (index membership or the relevance grade unknown)."""
+    if correct is None or np.isnan(correct) or correct == 1 or in_index is None:
         return None
     if not in_index:
         return KNOWLEDGE
@@ -52,19 +43,22 @@ def bucket(correct: float, in_index: bool, context_has_answer: float) -> str | N
     return PRODUCING if context_has_answer == 1 else RETRIEVAL
 
 
-def attribute(answers: pd.DataFrame, questions: pd.DataFrame,
-              periods_in: Mapping[str, set[str]]) -> pd.DataFrame:
+def attribute(answers: pd.DataFrame, questions: pd.DataFrame, runs: pd.DataFrame) -> pd.DataFrame:
     """One row per scored answer to an answerable question, with ``bucket``
     (knowledge / retrieval / producing, or None when the answer is right).
 
     ``answers``: Agent D's per-answer table (question_id, role, index,
     correct, context_has_answer). ``questions``: question_id, set, period,
-    category. ``periods_in``: index name -> the periods it holds.
+    category. ``runs``: Agent C's retrieval runs, with ``source_in_index``
+    from the index actually searched, so an article a failed re-index left
+    out counts as knowledge, not as a search miss.
     """
     q = questions[questions["set"] == "answerable"][["question_id", "period", "category"]]
+    held = (runs.set_index(["question_id", "index"])["source_in_index"].to_dict()
+            if "source_in_index" in runs.columns else {})
     a = answers.merge(q, on="question_id")
     a = a[a["correct"].notna()].copy()
-    a["in_index"] = [p in periods_in.get(i, set()) for p, i in zip(a["period"], a["index"])]
+    a["in_index"] = [held.get((qid, i)) for qid, i in zip(a["question_id"], a["index"])]   # None: unknown
     a["bucket"] = [bucket(c, ii, h) for c, ii, h in zip(a["correct"], a["in_index"], a["context_has_answer"])]
     return a[["question_id", "role", "index", "period", "category", "correct", "in_index",
               "context_has_answer", "bucket"]].reset_index(drop=True)

@@ -269,6 +269,8 @@ impact:
   answer_k: 5                    # articles the answer step reads (the judged top k, D25)
   recovered_correct: 0.6         # refreshed index answers at least this share correctly -> the content was missing (re-index)
   retrieval_ok: 0.6              # top k holds an answer for at least this share -> retrieval is not the problem
+  failed_reindex_share: 0.5      # D38: at least this share of a section's refreshed-index misses are articles the
+                                 #   refreshed index does not hold -> the re-index failed (set before the rerun)
   bootstrap_resamples: 2000
   max_evidence_loops: 1          # how many times Impact may ask Retrieval Eval for more queries
 

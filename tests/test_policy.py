@@ -194,3 +194,19 @@ def test_where_answers_went_wrong_is_cited_without_changing_the_rules(cfg):
                for e in p.evidence)
     imp.attribution = []
     assert not any(e.source == "Agent D: why answers went wrong" for e in pol.prompts(_x(cfg, imp)).evidence)
+
+
+def test_a_failed_reindex_is_re_run_not_blamed_on_the_model(cfg):
+    failed = dict(_seg("2020|WORLD NEWS", "borderline (sent back for more evidence)", loss=0.15, refreshed=0.15,
+                       retrieval=0.15, cause=pol.REINDEX_FAILED), refreshed_missing=0.85)
+    imp = _impact([_seg("2020|WELLNESS", DRIFT_HURTS), failed])
+    r = pol.reindex(_x(cfg, imp))
+    assert r.status == "recommended" and set(r.scope) == {"2020 WELLNESS", "2020 WORLD NEWS"}
+    assert "re-index itself failed for 2020 WORLD NEWS" in r.finding
+    assert any("85% of its wrong answers there are about articles the refreshed index does not hold "
+               "(threshold 50%)" in e.claim for e in r.evidence)
+    m = pol.model_evaluation(_x(cfg, imp))
+    assert m.status == "not needed" and "failed re-index" in m.finding
+    assert not any("every one" in e.claim for e in m.evidence)   # never claims re-indexing fixed every section
+    only = pol.reindex(_x(cfg, _impact([failed])))               # a failed re-index alone is enough to act
+    assert only.status == "recommended" and only.scope == ["2020 WORLD NEWS"]

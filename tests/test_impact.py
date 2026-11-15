@@ -100,7 +100,8 @@ def test_pilot_sample_spreads_over_periods():
 
 def _cfg():
     return {"seed": 0, "impact": {"min_answer_quality_drop": 0.1, "min_segment_questions": 8,
-                                  "bootstrap_resamples": 300, "recovered_correct": 0.6, "retrieval_ok": 0.6}}
+                                  "bootstrap_resamples": 300, "recovered_correct": 0.6, "retrieval_ok": 0.6,
+                                  "failed_reindex_share": 0.5}}
 
 
 def test_classes_and_causes():
@@ -111,6 +112,23 @@ def test_classes_and_causes():
     assert an.diagnose(False, 0.9, 0.9, cfg) == ""
     assert an.diagnose(True, 0.3, 0.9, cfg).startswith("answer step")
     assert an.diagnose(False, 0.3, 0.2, cfg).startswith("retrieval or embedding model")
+    # D38: most misses on the refreshed index are articles it does not hold -> the re-index failed
+    assert an.diagnose(False, 0.15, 0.15, cfg, refreshed_missing=0.85) == an.REINDEX_FAILED
+    assert an.diagnose(False, 0.3, 0.2, cfg, refreshed_missing=0.4).startswith("retrieval or embedding model")
+    assert an.diagnose(True, 0.9, 0.9, cfg, refreshed_missing=1.0) == "missing content (re-index)"   # recovered
+
+
+def test_segments_measure_how_many_refreshed_misses_are_missing_articles():
+    n = 10
+    pq = pd.DataFrame({"question_id": [f"q{i}" for i in range(n)], "period": "2020", "category": "X",
+                       "set": "answerable", "loss_correct": [0.0] * n, "stale_correct": 0.0,
+                       "refreshed_correct": [1.0, 1.0] + [0.0] * 8, "stale_hallucinated": 0.0,
+                       "refreshed_context_has_answer": [1.0, 1.0] + [0.0] * 8,
+                       "refreshed_in_index": [True, True, True] + [False] * 7})   # 7 of the 8 misses are missing
+    s = an.segments(pq, "2016-17", [], _cfg()).iloc[0]
+    assert s["refreshed_missing"] == 7 / 8 and s["cause"] == an.REINDEX_FAILED
+    s = an.segments(pq.drop(columns="refreshed_in_index"), "2016-17", [], _cfg()).iloc[0]
+    assert np.isnan(s["refreshed_missing"]) and s["cause"].startswith("retrieval or embedding model")
 
 
 def test_material_needs_size_and_an_interval_above_zero():

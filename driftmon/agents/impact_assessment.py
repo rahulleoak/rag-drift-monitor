@@ -111,6 +111,9 @@ def impact_assessment(state: PipelineState) -> dict[str, Any]:
     per_answer = an.per_answer(plan, answers, judgements, questions, has)
     pq = an.paired(per_answer, questions)
     pq = pq.merge(questions[["question_id", "drift_status"]], on="question_id")
+    if "source_in_index" in runs.columns:   # does the refreshed index hold the source article? (D38)
+        held = runs.set_index(["question_id", "index"])["source_in_index"].to_dict()
+        pq["refreshed_in_index"] = [held.get((q, pairs[q][1])) for q in pq["question_id"]]
     ans_pq = pq[pq["set"] == "answerable"]
     seg = an.segments(pq, base, drift.drifted_segments, cfg)
     drift_segs = pd.DataFrame([s.model_dump() for s in drift.segments])

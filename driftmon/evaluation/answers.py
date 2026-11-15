@@ -37,6 +37,7 @@ ROLES = ("stale", "refreshed")
 DRIFT_HURTS, DRIFT_HARMLESS = "drift that hurts", "drift that does not hurt"
 HARM_WITHOUT_DRIFT, HEALTHY = "harm without drift", "healthy"
 BORDERLINE = "borderline (sent back for more evidence)"   # not harmless: the loop decides (D28, D34)
+REINDEX_FAILED = "missing from the refreshed index (re-index failed)"   # D38
 DRIFT_METRICS = ("mmd2", "jsd_excess", "centroid_shift", "novelty_mean", "novel_share", "new_term_rate",
                  "times_ordinary_embedding", "times_ordinary_lexical")
 
@@ -156,13 +157,17 @@ def classify(material: bool, flagged: bool) -> str:
 
 
 def diagnose(material: bool, refreshed_correct: float, refreshed_retrieval: float,
-             cfg: Mapping[str, Any]) -> str:
-    """Likely cause (D13), from where quality is lost.
+             cfg: Mapping[str, Any], refreshed_missing: float = np.nan) -> str:
+    """Likely cause (D13, D38), from where quality is lost.
 
     Harm that the refreshed index recovers means the content was missing:
-    re-index. If quality is poor on the refreshed index too, the cause is
-    after the index: the answer step when retrieval finds answers, else
-    retrieval or the embedding model.
+    re-index. If quality is poor on the refreshed index too, first ask
+    whether the refreshed index even holds the articles: when most of its
+    misses (``refreshed_missing``, the share of the section's wrong answers
+    on the refreshed index whose source article it does not hold) are
+    missing articles, the re-index failed, and no model or setting can fix
+    that. Otherwise the cause is after the index: the answer step when
+    retrieval finds answers, else retrieval or the embedding model.
     """
     imp = cfg["impact"]
     recovered = refreshed_correct >= float(imp["recovered_correct"])
@@ -170,6 +175,8 @@ def diagnose(material: bool, refreshed_correct: float, refreshed_retrieval: floa
         return "missing content (re-index)"
     if recovered:
         return ""
+    if not np.isnan(refreshed_missing) and refreshed_missing >= float(imp["failed_reindex_share"]):
+        return REINDEX_FAILED
     if not np.isnan(refreshed_retrieval) and refreshed_retrieval >= float(imp["retrieval_ok"]):
         return "answer step (articles found, answers wrong)"
     return "retrieval or embedding model (poor on the refreshed index too)"
@@ -192,6 +199,7 @@ def segments(pq: pd.DataFrame, baseline: str, flagged: Sequence[str], cfg: Mappi
                "loss_correct": loss, "loss_low": lo, "loss_high": hi,
                "stale_hallucinated": g["stale_hallucinated"].mean(),
                "refreshed_retrieval": g["refreshed_context_has_answer"].mean(),
+               "refreshed_missing": _missing_share(g),
                "flagged": seg in flagged, "baseline": period == baseline}
         enough = len(g) >= min_n
         row["material"] = bool(enough and loss >= threshold and lo > 0)
@@ -199,10 +207,19 @@ def segments(pq: pd.DataFrame, baseline: str, flagged: Sequence[str], cfg: Mappi
         row["class"] = ("historical control" if row["baseline"] else
                         "too few questions" if not enough else
                         BORDERLINE if row["borderline"] else classify(row["material"], row["flagged"]))
-        row["cause"] = diagnose(row["material"], row["refreshed_correct"], row["refreshed_retrieval"], cfg) \
-            if enough else ""
+        row["cause"] = diagnose(row["material"], row["refreshed_correct"], row["refreshed_retrieval"], cfg,
+                                row["refreshed_missing"]) if enough else ""
         rows.append(row)
     return pd.DataFrame(rows)
+
+
+def _missing_share(g: pd.DataFrame) -> float:
+    """Of a section's wrong answers on the refreshed index, the share whose source article the
+    refreshed index does not hold (NaN when membership is unknown or nothing is wrong)."""
+    if "refreshed_in_index" not in g.columns:
+        return np.nan
+    wrong = g[(g["refreshed_correct"] == 0) & g["refreshed_in_index"].notna()]
+    return float((~wrong["refreshed_in_index"].astype(bool)).mean()) if len(wrong) else np.nan
 
 
 def by_group(pq: pd.DataFrame, by: str | Sequence[str], cfg: Mapping[str, Any]) -> pd.DataFrame:

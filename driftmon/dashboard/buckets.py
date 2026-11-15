@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from driftmon.evaluation.answers import REINDEX_FAILED
 from driftmon.evaluation.attribution import KNOWLEDGE, PRODUCING, RETRIEVAL
 from driftmon.policy import (ANSWER_STEP, CHUNKING, ESCALATE, MISSING_CONTENT, MODEL_EVAL, MONITOR, PROMPTS,
                              REINDEX, REINDEX_DOCS, RETRAIN, RETRIEVAL_CONFIG, RETRIEVAL_OR_MODEL)
@@ -53,7 +54,8 @@ ORDER = (KNOWLEDGE, QUERY, RETRIEVAL, PRODUCING)
 ALL = "All kinds"
 
 # Agent D's likely cause per section -> its bucket
-CAUSE = {MISSING_CONTENT: KNOWLEDGE, RETRIEVAL_OR_MODEL: RETRIEVAL, ANSWER_STEP: PRODUCING}
+CAUSE = {MISSING_CONTENT: KNOWLEDGE, REINDEX_FAILED: KNOWLEDGE, RETRIEVAL_OR_MODEL: RETRIEVAL,
+         ANSWER_STEP: PRODUCING}
 
 # Agent E's actions -> the bucket(s) they fix; () = every kind (monitoring, a person's judgement).
 # Model evaluation and retraining are about the *embedding* model here: their rule fires on poor

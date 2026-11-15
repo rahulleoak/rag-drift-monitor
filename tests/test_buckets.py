@@ -21,7 +21,8 @@ SPLIT = [{"role": "refreshed", "answers": 423, "wrong": 5, "knowledge": 0, "retr
 
 def test_every_cause_and_action_has_a_kind():
     assert set(buckets.ACTION) == set(pol.ACTIONS)
-    assert set(buckets.CAUSE) == {pol.MISSING_CONTENT, pol.RETRIEVAL_OR_MODEL, pol.ANSWER_STEP}
+    assert set(buckets.CAUSE) == {pol.MISSING_CONTENT, pol.REINDEX_FAILED, pol.RETRIEVAL_OR_MODEL, pol.ANSWER_STEP}
+    assert buckets.cause_label(pol.REINDEX_FAILED).startswith("Knowledge · ")
     assert all(buckets.action_kinds(k) and buckets.action_note(k) for k in pol.ACTIONS)
 
 

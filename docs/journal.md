@@ -16,6 +16,26 @@ minimum, added before stopping. Plain language.
 
 ## Entries
 
+## 2026-11-14 (late night): keyword search next to meaning-based search (D40, F30)
+- **Built:** a small BM25 (`driftmon/rag/bm25.py`, Agent B's tokens) and
+  `scripts/keyword_search.py`. Same articles, questions and index per
+  question as the pipeline, with only the search changed; no LLM. The
+  meaning-based ranks reproduce the saved run's top 10. 236 tests pass.
+  Branch `bm25`, stacked on `truth-table`.
+- **Result:** meaning search finds the article more often (98.6% vs 92.4%;
+  29 against 3). The hypothesis that wording drift hurts keyword search
+  more is not supported by section (4.9 against 7.2 points). On newer
+  wording it points the same way (2 lost against 1), with too few
+  questions to decide.
+- **Surprises:** the misses are paraphrases ("Brain Fog" vs "mental
+  fogginess"), not new words over time. Questions drift with their
+  articles.
+- **Fixed along the way:** the first run put every section under
+  "unknown": a saved CSV reads the period "2018" back as a number. Fixed
+  and tested before reading any result by kind.
+- **Next:** the changed-facts check for names and added numbers, if time
+  allows; then the slides.
+
 ## 2026-11-14 (night): the truth table (D39, F29)
 - **Context:** strengthening the findings. F28's "0 producing errors" was
   only convincing if the split would catch a worse answer step. Branch

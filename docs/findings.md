@@ -1033,6 +1033,8 @@ chart, and whether it supports or contradicts what we expected.
   check holds.
 
 ## F23. Newer wording about older articles: rare in this archive, and it costs rank, not the article
+- *Update 2026-11-14:* keyword search (BM25) on the same 18 questions loses
+  the article twice as often (2 against 1; F30).
 - **Date:** 2026-11-09
 - **Setup:** D31. All 370 answerable questions from 2016-17 to 2021. Sonnet
   wrote a same-era rewording and a version in late-2022 wording (or said
@@ -1510,3 +1512,78 @@ chart, and whether it supports or contradicts what we expected.
 - **Verdict:** supports D38. The split places losses where they happen,
   and the answer step is not where this system loses quality. Adds: the
   pre-set bar for "caught" is stricter than these realistic regressions.
+
+## F30. Meaning-based search finds the article more often than keyword search, but not because of drift
+- **Date:** 2026-11-14
+- **Setup:** D40. 423 answerable questions, each searched on the index the
+  pipeline's judged comparison uses (its period's refreshed index; the
+  latest for baseline questions), with meaning-based search (bge-small,
+  FAISS) and with keyword search (BM25). Found = the source article is in
+  the top 5. No LLM calls.
+  - The meaning-based top 10 matched the normal demo run's for all 423
+    questions.
+- **Result: overall.** Meaning-based search found 98.6% of the articles,
+  keyword search 92.4%.
+  - In 29 questions only meaning search found the article; in 3, only
+    keyword search did (exact McNemar p < 0.001).
+  - Mean reciprocal rank: 0.94 vs 0.86.
+- **Result: by drift kind** (Agent B's label for the question's section):
+
+  | Drift kind | Questions | Meaning found | Keyword found | Shortfall |
+  |---|---|---|---|---|
+  | Wording | 76 | 97.4% | 93.4% | 3.9 points |
+  | Both (wording and meaning) | 47 | 100% | 93.6% | 6.4 points |
+  | None | 166 | 98.2% | 91.0% | 7.2 points |
+  | Baseline period | 49 | 100% | 91.8% | 8.2 points |
+  | Not tested by Agent B (mostly U.S. News) | 85 | 98.8% | 94.1% | 4.7 points |
+
+  The shortfall is *not* bigger where the wording drifted: 4.9 points in
+  wording-drift sections against 7.2 in sections without drift (gap -2.4
+  points, permutation p = 0.83). The hypothesis is not supported.
+- **Result: newer wording** (18 questions, D31):
+
+  | Search | Found, same-era words | Found, later words | Lost | Gained |
+  |---|---|---|---|---|
+  | Meaning-based | 94% | 89% | 1 | 0 |
+  | Keyword | 78% | 67% | 2 | 0 |
+
+  Keyword search loses twice as often (11 against 6 points), but neither
+  drop is significant (p = 0.25 and 0.5; 18 questions).
+  - The clearest case: "As COVID cases climbed in July 2020, which
+    activities..." Keyword search drops the article from rank 1 to rank 42;
+    meaning search drops it from 2 to 14.
+- **What the misses are:** paraphrase between the question and its
+  article, not new words over time. The article says "Brain Fog", the
+  question "mental fogginess"; the article says "Fifth Day", the question
+  "consecutive days". Meaning-based search bridges those, and keyword
+  search cannot.
+- **What it means:**
+  - **Meaning-based search is the right choice for this archive,** even
+    with a bias that favours keyword search (questions share words with
+    their articles).
+  - **Wording drift in the archive does not hurt keyword search here,
+    because the questions drift with it.** Each question is written in its
+    own period's words, from an article in those words. The harm the
+    hypothesis predicts needs a mismatch between the question's words and
+    the article's, which is the newer-wording case. That points the same
+    way (2 lost against 1) but is too rare in this archive (18 of 370) to
+    decide.
+  - **This matches F23:** wording drift costs rank, not the article, and
+    only where the question's words and the article's differ.
+- **Caveats:**
+  - Questions written from one article favour keyword search. Real users'
+    words differ more, so the gap is likely larger in use.
+  - No stemming ("vaccine" and "vaccines" are different words), the same as
+    the vocabulary measure. Stemming would help keyword search somewhat.
+  - The newer-wording part has 18 questions.
+- **Reproduce:** `python scripts/keyword_search.py` (needs a normal
+  pipeline run, and `scripts/newer_wording.py` for the second part).
+  Output: `runs/keyword/per_question.csv`, `summary.csv`, `wording.csv`,
+  `verdict.json`.
+- **Expectation:**
+  - Meaning search better overall: expected, and it held.
+  - Keyword search hurt more by wording drift: not supported by section;
+    in the right direction, but not significant, on newer wording.
+- **Verdict:** supports the choice of embeddings (D2) and F23. Contradicts
+  P2's hypothesis as stated for sections; the explanation (questions drift
+  with their articles) is a reading, not a test.

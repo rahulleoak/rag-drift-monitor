@@ -86,7 +86,7 @@ Last checked: 2026-11-14, against the demo run `demo/runs/20261114-174819`
 | Deliverable | Where | Status |
 |---|---|---|
 | Working application | LangGraph pipeline + Streamlit dashboard (works from the committed demo run, no key needed) | **Done** |
-| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (228 tests) | **Done** |
+| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (236 tests) | **Done** |
 | Agent architecture diagram | `docs/architecture.md` (Mermaid), README | **Done**, kept up to date |
 | Drift analysis: metrics, visualisations, explanations, examples | Agent B outputs, dashboard Drift page, `docs/figures/` | **Done** (F4–F6) |
 | RAG evaluation across periods | Agents C and D, dashboard Retrieval and Impact pages | **Done** (F15, F20) |
@@ -117,7 +117,7 @@ dashboard), as agreed with the author on 2026-11-08.**
 | Extension | Why | Source |
 |---|---|---|
 | Entity co-occurrence graph per period for a few key entities (networkx) | A visual complement to term-context shift: neighbours gained and lost (e.g. "Biden" with Obama in 2016–17, Congress in 2021) | D21 (colleague's knowledge-graph suggestion, lightweight version) |
-| Keyword search (BM25) next to the dense retriever | Tests whether wording drift hurts keyword search but not meaning-based search | P2 |
+| Keyword search (BM25) next to the dense retriever | Tests whether wording drift hurts keyword search but not meaning-based search | P2. **Done 2026-11-14 (D40, F30):** meaning search finds more (98.6% vs 92.4%); wording drift by section does not hurt keyword search more |
 | Fine-tuning experiment for the "recommend retraining" action | Evidence that retraining would help, with train and test from different periods | D7 |
 | Baseline-candidates chart | Visual for the baseline decision | F2 |
 | Newer-wording questions about older topics (e.g. "COVID" asked of an article that says "coronavirus") | Tests the one case where a change in wording itself could hurt search; F15 found drift level did not predict harm, and this would check that claim where it is most likely to fail. Needs a few extra LLM questions | F15 (author, 2026-11-06: do if time allows). **Done 2026-11-09 (D31, F23):** 18 of 370 questions had a natural newer wording; search lost the article once (rank, not the article, moves) |

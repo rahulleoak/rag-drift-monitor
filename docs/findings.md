@@ -1204,8 +1204,9 @@ chart, and whether it supports or contradicts what we expected.
 - **Setup:** D34. The full pipeline with 85% of 2020 World News articles
   (124 of 146) left out of every refreshed index, as if an ingestion batch
   had failed; everything else as in the demo run. Labelled run
-  `demo/runs/20261110-135233` ("Evidence loop demo (simulated failed
-  re-index)"). Cost $0.58 (batch), including a first run that found the bug
+  `demo/runs/20261114-175003` ("Evidence loop demo (simulated failed
+  re-index)"; first run `20261110-135233`, rerun from the cache on
+  2026-11-14 with identical results apart from D38). Cost $0.58 (batch), including a first run that found the bug
   below.
 - **Result:**
   - Agent D: 2020 World News drops 15% (interval 0% to 30%) on 20
@@ -1219,6 +1220,12 @@ chart, and whether it supports or contradicts what we expected.
     model evaluation for it ("re-indexing did not help": 15% correct on the
     refreshed index). Both fit a section that fails on both indexes; a
     person would find the missing articles.
+  - **Updated 2026-11-14 (D38, F28):** Agent D now checks whether the
+    refreshed index holds the articles. All 17 of the section's wrong answers
+    there are about articles it does not hold, so the cause is "missing from
+    the refreshed index (re-index failed)". Agent E re-runs the re-index for
+    the section and still escalates it; model evaluation is no longer
+    suggested.
 - **Bug found by the run:** a borderline section was classed "drift that
   does not hurt" (not material, and flagged), so the first run's
   "continue monitoring" listed 2020 World News as unaffected. Borderline
@@ -1229,7 +1236,8 @@ chart, and whether it supports or contradicts what we expected.
   makes the loss shrink, because both indexes fail. Here the loop caught it
   and sent it to a person; a section where the refresh failed completely
   would show no loss at all (a next step: check the refreshed index's own
-  quality, not only the difference).
+  quality, not only the difference; done for sections with enough
+  questions in D38).
 - **Reproduce:** `python scripts/run_pipeline.py --fault "2020|WORLD NEWS"
   --fault-share 0.85 --label "Evidence loop demo (simulated failed re-index)"`.
 - **Verdict:** Supports D28 (the loop) and D34; found and fixed one
@@ -1350,3 +1358,78 @@ chart, and whether it supports or contradicts what we expected.
   needs a bar that flags most ordinary change (yes, 98%).
 - **Verdict:** Supports D11, D35 and the recommendation to re-index on a
   schedule.
+
+## F28. Every wrong answer traced: all knowledge on the stale index, five search misses on the refreshed one, none in the answer step
+- **Date:** 2026-11-14
+- **Setup:** D38. Each wrong answer to a normal question, from either index,
+  is placed by code in the order of the chain:
+  1. is the source article in the index searched (no: knowledge);
+  2. did the top 5 hold an answer, from Agent C's relevance grades (no:
+     retrieval);
+  3. otherwise the answer step (producing).
+
+  Both demo runs were rerun from the cache: `demo/runs/20261114-174819` (normal)
+  and `demo/runs/20261114-175003` (evidence loop, D34). The split itself makes no
+  LLM calls.
+  - Every earlier number is identical, compared file by file with the
+    previous demo runs: drift, retrieval, answers, classes and the loop's
+    result.
+  - The new spend was Sonnet rewriting the explanations whose evidence
+    changed (about a cent).
+- **Result (normal run, 423 answerable questions, each answered from both
+  indexes):**
+
+  | Index | Answers | Wrong | Knowledge | Retrieval | Producing |
+  |---|---|---|---|---|---|
+  | Stale (2016-17 only) | 423 | 373 | 373 | 0 | 0 |
+  | Refreshed | 423 | 5 | 0 | 5 | 0 |
+
+  - **Every answer whose top 5 held an answer was correct** (468 of 468), and
+    every wrong answer had none in its top 5 (378 of 378).
+  - **The 5 search misses** are single questions in 2020 Entertainment,
+    Politics and U.S. News, 2021 Politics and 2022 Politics: 1.2% of the
+    refreshed index's answers.
+  - **All 19 harmed sections** have the cause "missing content
+    (re-index)", now labelled Knowledge.
+- **Result (evidence-loop run, 85% of 2020 World News left out of the
+  refreshed index):**
+  - **Refreshed index: 22 wrong**, made up of 17 knowledge (all in 2020
+    World News: the articles the failed re-index left out) and the same 5
+    search misses as the normal run. The stale index is unchanged (373, all
+    knowledge).
+  - **2020 World News:** 3 of 20 correct on the refreshed index, and all 17
+    misses are articles it does not hold. Its cause is now "missing from the
+    refreshed index (re-index failed)" (threshold 50%, set before the
+    rerun).
+  - **Agent E:** names it in the re-index recommendation ("re-run the
+    re-index there and check that the articles arrive") and still escalates
+    it (the loop was unclear). Model evaluation is not needed: "every
+    section the refreshed index holds recovers; where one does not, its
+    articles are missing from the index (a failed re-index), which no model
+    can fix". Before D38 this run suggested a model evaluation (F26).
+- **What it means:**
+  - **The losses are knowledge drift.** The fix is re-indexing, not search
+    settings, prompts or a new model, which the rules already concluded
+    from averages and the split now shows answer by answer.
+  - **The answer step is not where quality is lost here.**
+  - **A failed re-index is now told apart from a search problem.**
+- **Caveats:**
+  - Each question is written from one article, so answering is easy once
+    that article is found; 0 producing errors does not show the answer step
+    would survive a model or prompt change (a next step: the truth table in
+    D38).
+  - Membership needs a known source article, so the split works on
+    evaluation questions, not live traffic.
+  - Only sections with at least 8 questions get a cause.
+- **Reproduce:** `python scripts/run_pipeline.py`, and for the evidence-loop
+  run add `--fault "2020|WORLD NEWS" --fault-share 0.85 --label "Evidence
+  loop demo (simulated failed re-index)"`. Per answer:
+  `runs/<run_id>/impact_attribution.csv`; summary: `attribution` in
+  `impact.json`; on the dashboard: Impact -> "Why answers went wrong".
+- **Expectation:** the stale index's losses are knowledge (yes, all 373);
+  few or no producing errors (yes, 0). Not expected: the first version,
+  which inferred membership from the year, miscounted the failed
+  re-index's missing articles as search misses. The evidence-loop run
+  caught it, and fixing it led to the rule change in D38.
+- **Verdict:** Supports D13 and D28 (re-indexing is the fix); revises F26's
+  recommendation for a failed re-index.

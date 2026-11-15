@@ -9,8 +9,9 @@ walkthrough to show each requirement mapped to the system.
 deliverable not started · **Limitation** = cannot be met with this dataset;
 documented instead.
 
-Last checked: 2026-11-09, against the demo run `demo/runs/20261109-221754`
-(earlier check 2026-11-04: gaps found and closed in D7).
+Last checked: 2026-11-14, against the demo run `demo/runs/20261114-174819`
+(the 2026-11-09 run rerun from the cache with D38 added; earlier checks
+2026-11-09 and 2026-11-04: gaps found and closed in D7).
 
 ## A. Data Monitoring Agent
 
@@ -49,21 +50,21 @@ Last checked: 2026-11-09, against the demo run `demo/runs/20261109-221754`
 |---|---|---|
 | Evaluate whether detected drift affects RAG performance | Stale vs refreshed index on the same questions (key experiment) | **Done** (F20) |
 | Compare answer quality across historical and recent evaluation datasets | Historical questions (from baseline articles) as control vs recent questions (D7) | **Done** (F20: 100% vs 100% on the control) |
-| Identify degradation in relevance, correctness and groundedness | Opus grades each answer alone (correct, grounded, declined); checked against blind hand labels | **Done** (F19, F20) |
+| Identify degradation in relevance, correctness and groundedness | Opus grades each answer alone (correct, grounded, declined); checked against blind hand labels. Every wrong answer traced to where it broke: knowledge, retrieval or producing (D38) | **Done** (F19, F20, F28: 373 knowledge, 5 retrieval, 0 producing) |
 | Relationships between drift scores and retrieval or answer quality | Spearman of each drift measure vs the loss across segments | **Done** (F20: −0.19 to 0.41, all p > 0.1) |
-| Distinguish significant drift from drift that does not matter | Four classes: drift that hurts / does not / harm without drift / healthy | **Done** (F20: 7 hurt, 12 harm without drift) |
+| Distinguish significant drift from drift that does not matter | Four classes: drift that hurts / does not / harm without drift / healthy; and which kind of drift broke each answer (D38) | **Done** (F20: 7 hurt, 12 harm without drift; F28) |
 
 ## E. Recommendation Agent
 
 | Action in the brief | Evidence that triggers it (D29) | Status on the demo run |
 |---|---|---|
 | Continue monitoring | Drift, but no material quality loss | **Done**: recommended for questions about the baseline |
-| Update or re-index the knowledge base | Quality recovers on the refreshed index | **Done**: recommended, on a schedule (F20, F22) |
+| Update or re-index the knowledge base | Quality recovers on the refreshed index; or a section's refreshed index lacks the articles behind its misses (a failed re-index: re-run it, D38) | **Done**: recommended, on a schedule (F20, F22); the failed re-index shown on the evidence-loop run (F28) |
 | Re-index specific documents (added for edited documents) | Changed facts flagged, and shown to change answers | **Done**: recommended for 90 articles, applied and re-checked, paired with a scheduled full re-index (F21, F24) |
 | Improve document chunking or embedding strategies | Chunking: the Wikipedia chunking experiment (D26). Embedding: via model evaluation below | **Done**: chunking recommended (F16, F22) |
 | Update retrieval configurations | Right article usually found just outside the top K | **Done**: rule built; not needed (top 5 holds an answer 96–100%) |
 | Improve prompts or retrieval strategies | Retrieval fine, answers wrong or ungrounded | **Done**: rule built; not needed (0.4% added claims) |
-| Trigger model evaluation or retraining | A section stays poor after re-indexing, or the judge disagrees with hand labels | Rule built; not needed (every section recovers). The second embedding model itself is designed, not built (D29) |
+| Trigger model evaluation or retraining | A section stays poor after re-indexing although the index holds its articles, or the judge disagrees with hand labels | Rule built; not needed (every section recovers; on the evidence-loop run the poor section's articles are missing, so it is a failed re-index, D38). The second embedding model itself is designed, not built (D29) |
 | Escalate cases for human review | Quality loss without drift, or inconclusive evidence | **Done**: 12 sections escalated (F22) |
 | Every recommendation has evidence and an explanation | Rules cite evidence; a recommendation without numbers is rejected; LLM explanations are number-checked | **Done** (F22) |
 
@@ -85,7 +86,7 @@ Last checked: 2026-11-09, against the demo run `demo/runs/20261109-221754`
 | Deliverable | Where | Status |
 |---|---|---|
 | Working application | LangGraph pipeline + Streamlit dashboard (works from the committed demo run, no key needed) | **Done** |
-| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (202 tests) | **Done** |
+| Source code with an appropriate structure | `driftmon/`, `scripts/`, `tests/` (222 tests) | **Done** |
 | Agent architecture diagram | `docs/architecture.md` (Mermaid), README | **Done**, kept up to date |
 | Drift analysis: metrics, visualisations, explanations, examples | Agent B outputs, dashboard Drift page, `docs/figures/` | **Done** (F4–F6) |
 | RAG evaluation across periods | Agents C and D, dashboard Retrieval and Impact pages | **Done** (F15, F20) |

@@ -1448,3 +1448,87 @@ date and reason, and add a new entry that supersedes it.
   2016 skincare pieces ("14 Flawless Face Masks Editors Swear By"); the
   refreshed one answers from April 2020 coronavirus mask articles. The same
   word, a new meaning (F6), live.
+
+## D38. Name the kind of drift behind every wrong answer: knowledge, query, retrieval or producing
+- **Date:** 2026-11-14
+- **Status:** Accepted (approved by the author 2026-11-14, including the rule
+  change below)
+- **Context:** one quality score can fall for different reasons, and each
+  has a different fix. A review of the project suggested four kinds:
+  - **knowledge:** the archive holds outdated content, or lacks the new
+    content (fix: update and re-index);
+  - **query:** people ask in new words; the documents are fine (fix: query
+    rewriting, synonyms);
+  - **retrieval:** the right content is in the index but is not found or
+    ranked high enough (fix: chunking, embeddings, retrieval settings);
+  - **producing:** the right articles reach the model and the answer is
+    still wrong (fix: the prompt, or evaluating the answer model).
+
+  Agent D gave each harmed section a likely cause from averages (D13), but
+  never split the wrong answers themselves, so "the answer step is fine"
+  was an inference, not a measurement.
+- **Options:**
+  - (a) **Elimination:** rule out three kinds, and the fourth is what is left.
+    Indirect, and it fails silently when two kinds mix.
+  - (b) **A truth table:** change the model, the prompt or the articles one at
+    a time on the same questions. A controlled experiment like stale vs
+    refreshed, but our model and prompt are pinned and versioned, so on our
+    data it would only show "no change", at real cost.
+  - (c) **Trace each wrong answer** to where the chain broke, in order: is the
+    question's source article in the index that was searched (no:
+    knowledge); did the top 5 the assistant read hold an answer, from Agent
+    C's relevance grades (no: retrieval); if it did, the answer step is to
+    blame (producing).
+- **Choice:** (c). Code only, no LLM calls, from what Agents C and D
+  already record.
+  - **Query drift stays a measurement on the questions themselves** (Agent
+    B; the newer-wording test, F23). It is one cause of retrieval misses,
+    not an outcome of an answer, so it is not a fourth outcome in the split.
+  - **(b) is how to catch a model or prompt regression,** and is listed as a
+    next step.
+- **Where membership comes from:** Agent C records, for every search,
+  whether the question's source article is in the index it searched
+  (`source_in_index`).
+  - The first version inferred membership from the article's year. The
+    evidence-loop run (D34) showed that this counted articles a failed
+    re-index had left out as search misses; fixed before anything was
+    published.
+  - Unknown membership, or a missing relevance grade, counts as "unplaced"
+    and is never guessed.
+- **Rule change (Agent D's likely cause, Agent E's rules):** before
+  blaming retrieval or the model for a section that is poor on the
+  refreshed index, Agent D asks whether that index even holds the articles.
+  - If at least half of the section's wrong answers there are about
+    articles the refreshed index does not hold, the cause is **"missing from
+    the refreshed index (re-index failed)"**. The threshold of 50% was set
+    before the rerun (`impact.failed_reindex_share`).
+  - Agent E then names the section in the re-index recommendation ("re-run
+    the re-index there and check that the articles arrive"). Model
+    evaluation is not needed for it: no model can find an article that is
+    not in the index.
+  - Before this, the evidence-loop run suggested a model evaluation for
+    2020 World News (F26).
+  - Continue monitoring no longer lists a section as unaffected when it is
+    poor on the refreshed index too. A re-index that fails completely makes
+    both indexes fail, so it shows no loss.
+- **Dashboard:** each kind is named only where it is measured, so a label
+  never claims more than the number beside it.
+  - **Visible:** in the likely-cause column on Impact ("Knowledge · missing
+    content (re-index)") and as a chip on each recommendation. Model
+    evaluation and retraining are labelled Retrieval, because their rule is
+    about the embedding model.
+  - **On hover:** on the severity column, query drift, the retrieval
+    metrics, the Wikipedia test and the Ask page.
+  - **New:** a "Why answers went wrong" section on Impact and one line on the
+    Overview.
+  - **Display only:** the stored causes Agent E reads are unchanged
+    (`driftmon/dashboard/buckets.py`).
+- **Limits:**
+  - **Membership needs a known source article.** True of our evaluation
+    questions (each written from one article), not of real user questions.
+    In production the split runs on a test set, as the stale vs refreshed
+    comparison already does.
+  - **A producing count of 0 does not mean the answer step cannot fail.**
+    Questions written from one article are easy once that article is found,
+    and a model or prompt change could still break it.
+- **Evidence:** F28.

@@ -8,10 +8,10 @@ import pytest
 
 from driftmon import policy as pol
 from driftmon.dashboard import buckets, story
-from driftmon.dashboard.runs import load_run
+from driftmon.dashboard.runs import default_run, list_runs, load_run
 
 DEMO = Path(__file__).resolve().parents[1] / "demo" / "runs"
-NORMAL = "20261109-221754"
+NORMAL = default_run(DEMO, list_runs(DEMO))   # the normal demo run (not the simulated fault)
 APP = str(DEMO.parents[1] / "app" / "streamlit_app.py")
 SPLIT = [{"role": "refreshed", "answers": 423, "wrong": 5, "knowledge": 0, "retrieval": 5, "producing": 0,
           "unplaced": 0},
@@ -59,14 +59,29 @@ def test_sentences_follow_the_numbers():
     assert story.attribution_takeaway(_run([])) == "" and story.overview_attribution(_run([])) == ""
 
 
+def test_the_demo_runs_carry_the_split():
+    """The committed demo: every stale miss is knowledge; the simulated failed re-index shows up as
+    knowledge on the refreshed index too, apart from the normal run's search misses."""
+    normal = {r["role"]: r for r in load_run(DEMO, NORMAL).impact.attribution}
+    assert normal["stale"]["knowledge"] == normal["stale"]["wrong"] > 0
+    assert normal["refreshed"]["knowledge"] == 0 and normal["refreshed"]["retrieval"] == normal["refreshed"]["wrong"]
+    for rid in list_runs(DEMO):
+        run = load_run(DEMO, rid)
+        if rid != NORMAL:   # a labelled fault run
+            fault = {r["role"]: r for r in run.impact.attribution}
+            assert fault["refreshed"]["knowledge"] > 0
+            assert fault["refreshed"]["retrieval"] == normal["refreshed"]["retrieval"]
+        assert sum(r["producing"] + r["unplaced"] for r in run.impact.attribution) == 0
+
+
 @pytest.fixture(scope="module")
-def runs_with_split(tmp_path_factory):
-    """The demo run, with the split saved as a new pipeline run would save it."""
+def runs_without_split(tmp_path_factory):
+    """The demo run as an older pipeline run saved it: no split."""
     out = tmp_path_factory.mktemp("runs")
     shutil.copytree(DEMO / NORMAL, out / NORMAL)
     path = out / NORMAL / "impact.json"
     imp = json.loads(path.read_text(encoding="utf-8"))
-    imp["attribution"] = SPLIT
+    imp.pop("attribution"), imp.pop("attribution_by_period")
     path.write_text(json.dumps(imp), encoding="utf-8")
     return out
 
@@ -81,8 +96,8 @@ def _app(runs, monkeypatch, page):
     return at
 
 
-def test_impact_page_names_the_kind(runs_with_split, monkeypatch):
-    at = _app(runs_with_split, monkeypatch, "Impact")
+def test_impact_page_names_the_kind(monkeypatch):
+    at = _app(DEMO, monkeypatch, "Impact")
     assert any(h.value == "Why answers went wrong" for h in at.subheader)
     tables = [d.value for d in at.dataframe]
     split = next(t for t in tables if "Producing" in t.columns)
@@ -92,13 +107,13 @@ def test_impact_page_names_the_kind(runs_with_split, monkeypatch):
     assert not causes.str.contains("^missing content", regex=True).any()   # every cause carries its kind
 
 
-def test_recommendations_carry_a_kind_chip(runs_with_split, monkeypatch):
-    at = _app(runs_with_split, monkeypatch, "Recommendations")
+def test_recommendations_carry_a_kind_chip(monkeypatch):
+    at = _app(DEMO, monkeypatch, "Recommendations")
     text = " ".join(m.value for m in at.markdown)
     assert 'class="chip kind" title="Knowledge: the archive holds outdated content' in text
     assert ">All kinds</span>" in text and ">Query · Producing</span>" in text
 
 
-def test_older_runs_without_the_split_still_render(monkeypatch):
-    at = _app(DEMO, monkeypatch, "Impact")
+def test_older_runs_without_the_split_still_render(runs_without_split, monkeypatch):
+    at = _app(runs_without_split, monkeypatch, "Impact")
     assert not any(h.value == "Why answers went wrong" for h in at.subheader)

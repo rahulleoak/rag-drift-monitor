@@ -5,25 +5,24 @@
       "key": "reindex",
       "status": "recommended",
       "rule": "a section loses at least the material share of correct answers on the stale index, and the refreshed index answers it well",
-      "finding": "Re-index the archive on a schedule, with every new batch of articles, not only when drift is flagged. Without it, questions about new events lose almost every answer: in 19 sections correct answers drop by 89-100 percentage points.",
+      "finding": "Re-index the archive on a schedule, with every new batch of articles, not only when drift is flagged. Without it, questions about new events lose almost every answer: in 18 sections correct answers drop by 89-100 percentage points.",
       "scope": [
-        "2020 POLITICS",
         "2019 WORLD NEWS",
+        "2020 POLITICS",
         "2019 U.S. NEWS",
-        "2020 WORLD NEWS",
         "2021 POLITICS",
-        "2022 POLITICS",
         "2021 U.S. NEWS",
+        "2022 POLITICS",
         "2018 POLITICS",
         "2019 POLITICS",
         "2022 U.S. NEWS",
-        "2021 WORLD NEWS",
-        "2018 WORLD NEWS",
         "2018 SPORTS",
-        "2021 SPORTS",
+        "2018 WORLD NEWS",
+        "2021 WORLD NEWS",
         "2018 BUSINESS",
-        "2022 WORLD NEWS",
         "2020 ENTERTAINMENT",
+        "2022 WORLD NEWS",
+        "2021 SPORTS",
         "2018 QUEER VOICES",
         "2020 U.S. NEWS"
       ],
@@ -31,11 +30,11 @@
       "evidence": [
         {
           "source": "Agent D: answers by period",
-          "claim": "Questions about 2018 to 2022: 0-1% answered correctly from the stale index vs 96-100% from the refreshed index (374 questions)."
+          "claim": "Questions about 2018 to 2022: 0-1% answered correctly from the stale index vs 76-100% from the refreshed index (374 questions)."
         },
         {
           "source": "Agent D: sections",
-          "claim": "19 of 19 sections with enough questions lose a material share of answers (correct answers drop by 89-100 percentage points), and the refreshed index answers 89-100% of their questions correctly."
+          "claim": "18 of 19 sections with enough questions lose a material share of answers (correct answers drop by 89-100 percentage points), and the refreshed index answers 89-100% of their questions correctly."
         },
         {
           "source": "Agent D: historical control",
@@ -46,19 +45,23 @@
           "claim": "It fails silently: when nothing relevant is found it declines (99% of those cases); 1 of 374 stale answers added a claim not in the articles."
         },
         {
+          "source": "Agent D: why answers went wrong",
+          "claim": "Of 373 wrong answers on the stale index, 373 were about articles the index never held (knowledge), 0 missed articles the index held (retrieval) and 0 were wrong although the top 5 held an answer (producing)."
+        },
+        {
           "source": "Agent D: which drift matters",
-          "claim": "12 of the 19 sections that lose answers were not flagged by drift detection (for example 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS)."
+          "claim": "12 of the 18 sections that lose answers were not flagged by drift detection (for example 2020 POLITICS, 2019 U.S. NEWS, 2021 POLITICS)."
         },
         {
           "source": "Agent D: drift scores vs loss",
-          "claim": "No drift measure predicts the size of the loss across sections (Spearman -0.19 to 0.41, all p > 0.05)."
+          "claim": "No drift measure predicts the size of the loss across sections (Spearman -0.25 to 0.34, all p > 0.05)."
         },
         {
           "source": "Agent D: example",
           "claim": "\"How many children and teachers in Uvalde are being mourned through a series of funerals and burials after the Texas school shooting?\" Stale index: \"The archive does not say. None of the articles cover the Uvalde school shooting or its funerals; they concern other Texas shootings, such as the 2017 ...\" Refreshed index: \"The Uvalde community is mourning 19 children and two teachers killed in the shooting, with visitations, funerals and burials taking place over roughly two and ...\""
         }
       ],
-      "explanation": "Re-index the archive on a schedule with every new batch of articles, not only when drift is flagged. On questions about 2018 to 2022, the stale index answered 0-1% correctly versus 96-100% after a refresh, and 12 of the 19 sections that lost answers were not flagged by drift detection, with no drift measure predicting the size of the loss. Without scheduled re-indexing, questions about new events will keep failing silently, with the assistant declining to answer in 99% of those cases.",
+      "explanation": "Re-index the archive on a schedule, with every new batch of articles, rather than waiting for drift to be flagged. On questions about 2018 to 2022, the stale index answered 0-1% correctly versus 76-100% from the refreshed index, and 12 of the 18 sections that lose answers were not flagged by drift detection. Without scheduled re-indexing, questions about new events will keep losing almost every answer, since all 373 wrong answers were about articles the index never held.",
       "explanation_check": "LLM, numbers checked (attempt 1)"
     },
     {
@@ -194,11 +197,30 @@
       "explanation_check": "LLM, numbers checked (attempt 1)"
     },
     {
+      "action": "Trigger model evaluation",
+      "key": "model_evaluation",
+      "status": "recommended",
+      "rule": "a section stays poor on the refreshed index, and its top 5 rarely holds an answer although the source article is in the index",
+      "finding": "Evaluate a second embedding model on 1 section(s) where re-indexing did not help.",
+      "scope": [
+        "2020 WORLD NEWS"
+      ],
+      "priority": 3,
+      "evidence": [
+        {
+          "source": "Agent D: sections",
+          "claim": "2020 WORLD NEWS: 15% correct and an answer in the top 5 for 15% of questions on the refreshed index."
+        }
+      ],
+      "explanation": "Run an evaluation of a second embedding model on the 2020 WORLD NEWS section, where re-indexing did not help. On the refreshed index, only 15% of answers were correct and an answer appeared in the top 5 for just 15% of questions. If this is not done, journalists will keep getting mostly incorrect answers from this section.",
+      "explanation_check": "LLM, numbers checked (attempt 1)"
+    },
+    {
       "action": "Escalate cases for human review",
       "key": "escalate",
       "status": "recommended",
       "rule": "a section loses answers without a drift flag, the evidence loop is unclear, or the judge disagrees with the hand labels",
-      "finding": "Send these to a person: 12 sections lost answers without a drift flag. Lesson for the reviewer: new events in a familiar section do not shift the section's overall profile, so drift alerts miss them; and a section that did not exist in the baseline cannot be scored for drift until it has a baseline of its own. On a news archive, rely on scheduled re-indexing, and use drift scores to explain what changed.",
+      "finding": "Send these to a person: 12 sections lost answers without a drift flag; the evidence loop was unclear. Lesson for the reviewer: new events in a familiar section do not shift the section's overall profile, so drift alerts miss them; and a section that did not exist in the baseline cannot be scored for drift until it has a baseline of its own. On a news archive, rely on scheduled re-indexing, and use drift scores to explain what changed.",
       "scope": [
         "2020 POLITICS",
         "2019 U.S. NEWS",
@@ -211,9 +233,10 @@
         "2022 U.S. NEWS",
         "2021 WORLD NEWS",
         "2020 U.S. NEWS",
-        "2018 QUEER VOICES"
+        "2018 QUEER VOICES",
+        "2020 WORLD NEWS"
       ],
-      "priority": 3,
+      "priority": 4,
       "evidence": [
         {
           "source": "Agent D: harm without drift",
@@ -226,9 +249,13 @@
         {
           "source": "Agent A: data monitoring",
           "claim": "4 of them could not be scored for drift (not in baseline): 2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS. Agent A reports these as new sections."
+        },
+        {
+          "source": "Agent D: evidence loop",
+          "claim": "2020 WORLD NEWS: loss 15% with the top 5 and 15% with the top 10, interval 0% to 30%."
         }
       ],
-      "explanation": "Send these 12 sections to a person for review: correct answers dropped by 89-100 percentage points in each, but drift detection did not flag them. 8 were scored with embedding drift of 0.4-2.1x ordinary change and severity low, and 4 (2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS) are not in the baseline and could not be scored. If this is not done, these answer losses will keep going unnoticed because drift alerts do not catch them.",
+      "explanation": "Send these cases to a person for review: 12 sections lost correct answers by 89-100 percentage points, yet drift detection did not flag them, and the evidence loop for 2020 WORLD NEWS was unclear (loss 15% with the top 5 and 15% with the top 10, interval 0% to 30%). Of the 12, 8 were scored with embedding drift 0.4-2.1x ordinary change and severity low, and 4 (2019 U.S. NEWS, 2021 U.S. NEWS, 2022 U.S. NEWS, 2020 U.S. NEWS) are not in the baseline and could not be scored. Without a human review, these answer losses will keep going unflagged because the drift alerts do not catch them.",
       "explanation_check": "LLM, numbers checked (attempt 1)"
     },
     {
@@ -240,7 +267,7 @@
       "scope": [
         "long-form documents (Wikipedia set)"
       ],
-      "priority": 4,
+      "priority": 5,
       "evidence": [
         {
           "source": "Wikipedia: long documents",
@@ -267,7 +294,7 @@
       "scope": [
         "questions about the baseline (2016-17)"
       ],
-      "priority": 5,
+      "priority": 6,
       "evidence": [
         {
           "source": "Agent D: historical control",
@@ -296,11 +323,11 @@
       "evidence": [
         {
           "source": "Agent C: judged retrieval",
-          "claim": "On the refreshed index the top 5 holds an answering article for 96-100% of new questions."
+          "claim": "On the refreshed index the top 5 holds an answering article for 76-100% of new questions."
         },
         {
           "source": "Agent D: evidence loop",
-          "claim": "0 sections were borderline, so the loop back to Agent C did not run."
+          "claim": "1 sections were borderline, so the loop back to Agent C ran."
         }
       ],
       "explanation": "Not needed: the refreshed index already puts an answer in the top 5, and no section had answers just outside it.",
@@ -317,57 +344,45 @@
       "evidence": [
         {
           "source": "Agent D: answers by period",
-          "claim": "On the refreshed index 96-100% of new questions are answered correctly."
+          "claim": "On the refreshed index 76-100% of new questions are answered correctly."
         },
         {
           "source": "Agent D: grounding",
-          "claim": "4 of 846 answers added a claim not in the retrieved articles (0.5%)."
+          "claim": "3 of 846 answers added a claim not in the retrieved articles (0.4%)."
+        },
+        {
+          "source": "Agent D: why answers went wrong",
+          "claim": "Of 395 wrong answers on both indexes, 390 were about articles the index never held (knowledge), 5 missed articles the index held (retrieval) and 0 were wrong although the top 5 held an answer (producing)."
         }
       ],
       "explanation": "Not needed: where the right articles are found, the answers are correct and stay within them.",
       "explanation_check": "rule text (not recommended)"
     },
     {
-      "action": "Trigger model evaluation",
-      "key": "model_evaluation",
-      "status": "not needed",
-      "rule": "a section stays poor on the refreshed index, and its top 5 rarely holds an answer although the source article is in the index",
-      "finding": "Not needed: re-indexing fixes every section, so the embedding model handles the new content.",
-      "scope": [],
-      "priority": 0,
-      "evidence": [
-        {
-          "source": "Agent D: sections",
-          "claim": "The refreshed index answers 89-100% of questions correctly in every one of the 19 sections with enough questions (threshold 60%)."
-        }
-      ],
-      "explanation": "Not needed: re-indexing fixes every section, so the embedding model handles the new content.",
-      "explanation_check": "rule text (not recommended)"
-    },
-    {
       "action": "Recommend retraining",
       "key": "retraining",
-      "status": "not needed",
+      "status": "not checked",
       "rule": "a model evaluation shows quality stays poor with a second embedding model and a fresh index",
-      "finding": "Not needed: model evaluation was not triggered, and retraining only follows a failed evaluation.",
+      "finding": "Decide after the model evaluation: retrain only if the second model is also poor.",
       "scope": [],
       "priority": 0,
       "evidence": [
         {
           "source": "Agent E: model evaluation rule",
-          "claim": "Model evaluation: not needed."
+          "claim": "Model evaluation: recommended."
         }
       ],
-      "explanation": "Not needed: model evaluation was not triggered, and retraining only follows a failed evaluation.",
+      "explanation": "Decide after the model evaluation: retrain only if the second model is also poor.",
       "explanation_check": "rule text (not recommended)"
     }
   ],
   "summary": {
-    "recommended": 5,
-    "not needed": 4
+    "recommended": 6,
+    "not needed": 2,
+    "not checked": 1
   },
   "explanations": {
-    "requests": 5,
+    "requests": 6,
     "rejected_drafts": 0,
     "fallbacks": 0,
     "cost_usd": 0.0

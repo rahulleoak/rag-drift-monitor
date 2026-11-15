@@ -9,7 +9,7 @@ per-question tables stay in ``runs/``.
 Usage (from the repository root):
     python scripts/export_demo.py                     # the latest complete run
     python scripts/export_demo.py --run 20261107-202242
-    python scripts/export_demo.py --run 20261110-135233 --add   # keep the current demo run(s) too
+    python scripts/export_demo.py --run 20261114-171823 --add   # keep the current demo run(s) too
 """
 from __future__ import annotations
 

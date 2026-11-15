@@ -58,6 +58,10 @@ def test_sentences_follow_the_numbers():
     assert "not where quality is lost" not in s
     assert "2 went wrong with the right article" in story.overview_attribution(_run(mixed))
     assert story.attribution_takeaway(_run([])) == "" and story.overview_attribution(_run([])) == ""
+    failed = [dict(SPLIT[0], wrong=22, knowledge=17, retrieval=5), SPLIT[1]]   # a failed re-index (evidence loop)
+    o = story.overview_attribution(_run(failed))
+    assert ("and of 22 on the refreshed index, 17 were about articles it does not hold (knowledge) and 5 were "
+            "search misses (retrieval)") in o
 
 
 def test_the_demo_runs_carry_the_split():

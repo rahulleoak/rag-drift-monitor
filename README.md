@@ -18,6 +18,10 @@ Assurance"), November 2026. Brief: [`docs/project-brief.md`](docs/project-brief.
 [Key design decisions](#key-design-decisions) · [Quick start](#quick-start) ·
 [More detail](#more-detail) · [Documentation](#documentation)
 
+**Start here:** the [Results](#results) table, then
+[`docs/decisions.md`](docs/decisions.md) for why each choice was made, and
+[`driftmon/graph.py`](driftmon/graph.py) for how the agents depend on each other.
+
 ---
 
 ## Results
@@ -122,7 +126,7 @@ pip install -r requirements.txt
 pip install -e .
 
 streamlit run app/streamlit_app.py  # the dashboard, from the committed demo run
-pytest                              # 202 tests, ~30 s, synthetic data and a fake LLM
+pytest                              # 236 tests, ~40 s, synthetic data and a fake LLM
 ```
 
 With no local runs, the dashboard shows the run committed under

@@ -8,7 +8,7 @@ of the code (packages, classes, the sequence of one run) are in
 
 **Status (2026-11-09):** all five agents run in LangGraph
 (A → B → route → C → D → E, with the loop from D back to C), with typed
-reports, 202 tests and the Streamlit dashboard. Built: data cleaning, cached
+reports, 236 tests and the Streamlit dashboard. Built: data cleaning, cached
 embeddings, stale and refreshed FAISS indexes saved to disk (D22), document
 and query drift (D11, D12, D24), the LLM layer (D15), the question set
 (D23), retrieval evaluation (D25), answer quality and the segment classes
@@ -126,8 +126,9 @@ agent breaks the next one.
 - After B: if no segment drifted significantly, C runs only a small regression
   check (a small question set); D and E still run on it. The check still
   catches quality loss that happens without measurable drift.
-- After D: if a segment's impact estimate is borderline (its confidence
-  interval straddles the threshold), go back to C once for more questions.
+- After D: if a segment's impact estimate is borderline (its
+  loss is past the threshold but its interval still includes zero), go back
+  to C once for deeper retrieval (ranks 6-10) on the same questions.
 - After E (designed, not built, D29): if quality is still poor on the
   refreshed index (re-indexing does not fix it), go back to C once to evaluate
   the alternative embedding model on the affected segments, then re-run E

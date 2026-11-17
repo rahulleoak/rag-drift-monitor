@@ -273,7 +273,7 @@ impact:
   failed_reindex_share: 0.5      # D38: at least this share of a section's refreshed-index misses are articles the
                                  #   refreshed index does not hold -> the re-index failed (set before the rerun)
   bootstrap_resamples: 2000
-  max_evidence_loops: 1          # how many times Impact may ask Retrieval Eval for more queries
+  max_evidence_loops: 1          # how many times Impact may send a borderline section back to Retrieval Eval (ranks 6-10, same questions)
 
 # D39: the truth table. Same questions, same retrieved articles; change the answer model or
 # the answer prompt one at a time and see where wrong answers land (scripts/truth_table.py).

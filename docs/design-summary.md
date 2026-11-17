@@ -145,7 +145,7 @@ and Opus reviews them.
 
   Answer judge vs one person: 11/15 blind; all clear cases match, the 4
   differences are borderline partial answers.
-- **Total LLM spend so far:** about $15.60, using our own key.
+- **Total LLM spend:** $26.10 (10,591 calls), using our own key.
 
 ## 6. Chunking strategy and how it affects drift detection
 

@@ -182,7 +182,7 @@ against blind hand labels (first passes):
 
 Where judge and person disagree, the judge is almost always the stricter, so
 the losses are not inflated. Bulk jobs use the Batch API at half price; the
-whole project cost about **$15.60** in LLM calls, logged per call. Labelling
+whole project cost **$26.10** in LLM calls (10,591 calls), logged per call. Labelling
 rules: [`docs/labelling-guide.md`](docs/labelling-guide.md); details:
 [`docs/findings.md`](docs/findings.md) F19–F20.
 
@@ -349,8 +349,8 @@ Every threshold, path and model lives in
 |---|---|
 | How the system fits together | [`docs/architecture.md`](docs/architecture.md) |
 | UML: packages, classes, the sequence of one run | [`docs/uml.md`](docs/uml.md) |
-| Why each choice was made, with the options considered | [`docs/decisions.md`](docs/decisions.md) (D1–D34) |
-| Every result, with numbers and the command that reproduces it | [`docs/findings.md`](docs/findings.md) (F1–F26) |
+| Why each choice was made, with the options considered | [`docs/decisions.md`](docs/decisions.md) (D1–D40) |
+| Every result, with numbers and the command that reproduces it | [`docs/findings.md`](docs/findings.md) (F1–F30) |
 | How each requirement in the brief is covered | [`docs/requirements-coverage.md`](docs/requirements-coverage.md) |
 | Questions asked of the stakeholder, and the answers | [`docs/questions.md`](docs/questions.md) |
 | What happened day by day, including dead ends | [`docs/journal.md`](docs/journal.md) |

@@ -597,9 +597,9 @@ as D5.
 - **Money is controlled in code:** a $150 budget enforced *before* any
   request is sent, a ledger of every billed call, a 20-question pilot before
   any full run, and half-price batches for bulk jobs (D15).
-- **Decisions are logged** with options, reasons and evidence (D1–D34); when one
+- **Decisions are logged** with options, reasons and evidence (D1–D40); when one
   changes, it is marked "Revised", not deleted (e.g. D12, Q2, Q7, Q12).
-- **Total LLM spend:** about $17 for the whole project, every call in a
+- **Total LLM spend:** $26.10 for the whole project (10,591 calls), every call in a
   ledger (`runs/llm_costs.csv`).
 - **Requirements traceability:** `docs/requirements-coverage.md` maps every
   bullet of the assignment to the system.

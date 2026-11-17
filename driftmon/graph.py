@@ -11,9 +11,9 @@ small question set). The decision after B is recorded in the state
 
 Conditional edges, decided in Python:
     - after B: no flagged drift -> C runs a small regression check only,
-      then straight to E (still catches quality loss without drift)
-    - after D: a borderline segment -> back to C once for more queries
-      (bounded by ``impact.max_evidence_loops``)
+      then D and E as usual (still catches quality loss without drift)
+    - after D: a borderline segment -> back to C once, which grades ranks 6-10
+      for the same questions (bounded by ``impact.max_evidence_loops``)
     - E's model-evaluation rule (quality still poor on the refreshed index)
       would send C back once to try a second embedding model (D7); not
       built, because no section needs it (D29): the rule reports
